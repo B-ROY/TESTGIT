@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title>编辑渠道</title>
+<link rel="stylesheet" href="{{ STATIC_URL }}homepage/css/pintuer.css">
+<link rel="stylesheet" href="{{ STATIC_URL }}homepage/css/admin.css">
+<script src="{{ STATIC_URL }}homepage/js/jquery.js"></script>
+<script src="{{ STATIC_URL }}homepage/js/pintuer.js"></script>
+</head>
+
+<body>
+
+<ol class="bread">
+  <li><a href="/homepage" target="right" class="icon-home"> 首页</a></li>
+  <li><a href="{% url 'channel_list' %}">渠道信息</a></li>
+  <li>{% if channel.id %}修改{% else %}新增{% endif %}渠道</li>
+</ol>
+
+<form class="form-x" method="post" id="mainPageContent" action="{% url 'channel_edit' %}">
+  {% if channel %}
+  <input type="hidden" name="channel_id" value="{{channel.id}}">
+  {% endif %}
+
+  <div class="form-group">
+    <div class="label">
+      <label>渠道号:</label>
+    </div>
+    <div class="field">
+      <input type="text" class="input w50" id="channel_num" name="channel_num" placeholder="渠道号" 
+        {% if channel %} value="{{channel.channel_num}}" {% endif %}>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <div class="label">
+      <label>渠道名称:</label>
+    </div>
+    <div class="field">
+      <input type="text" class="input w50" id="channel_name" name="channel_name" placeholder="渠道名称" 
+        {% if channel %} value="{{channel.channel_name}}" {% endif %}>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <div class="label">
+      <label></label>
+    </div>
+    <div class="field">
+      <button class="button button-little bg-blue" id="desc_default_btn" type="submit">确定</button>
+      <a class="button button-little bg-red" href="{% url 'channel_list' %}" id="back">返回</a>
+    </div>
+  </div>
+</form>
+
+</body>
+
+{% block js %}
+
+<script src="{{ STATIC_URL }}select2/select2.js"></script>
+<script src="{{ STATIC_URL }}js/jquery.form.js"></script>
+<script src="{{ STATIC_URL }}jquery-validate/jquery.validate.js"></script>
+<script src="{{ STATIC_URL }}toast_message/jquery.toastmessage.js"></script>
+<link href="{{ STATIC_URL }}bootstrap-editable-1.5.1/bootstrap-editable/css/bootstrap-editable.css" rel="stylesheet" />
+{% endblock %}
+

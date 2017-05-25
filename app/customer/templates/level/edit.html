@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title>编辑等级</title>
+<link rel="stylesheet" href="{{ STATIC_URL }}homepage/css/pintuer.css">
+<link rel="stylesheet" href="{{ STATIC_URL }}homepage/css/admin.css">
+<script src="{{ STATIC_URL }}homepage/js/jquery.js"></script>
+<script src="{{ STATIC_URL }}homepage/js/pintuer.js"></script>
+</head>
+
+<body>
+
+<ol class="bread">
+  <li><a href="/homepage" target="right" class="icon-home"> 首页</a></li>
+  <li><a href="{% url 'level_list' %}">等级管理</a></li>
+  <li>{% if current_level.id %}修改{% else %}新增{% endif %}等级</li>
+</ol>
+
+<form class="form-x" method="post" id="mainPageContent" action="{% url 'level_edit' %}">
+  {% if current_level %}
+  <input type="hidden" name="level_id" value="{{current_level.id}}">
+  {% endif %}
+  <div class="form-group">
+    <div class="label">
+      <label>等级:</label>
+    </div>
+    <div class="label">
+      <label>{% if current_level %}{{current_level.grade}}{% else %}{{ plan_level }}{% endif %}</label>
+    </div>
+  </div>
+  <input type="hidden" class="input w50" name="edit_level_grade" 
+    value="{% if current_level %} {{current_level.grade}} {% else %}{{ plan_level }}{% endif %}">
+
+  <div class="form-group">
+    <div class="label">
+      <label>等级称谓:</label>
+    </div>
+    <div class="field">
+      <input type="text" class="input w50" id="edit_level_name" name="edit_level_name" placeholder="等级称谓" 
+        {% if current_level %} value="{{current_level.name}}" {% endif %}>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <div class="label">
+      <label>升级经验值:</label>
+    </div>
+    <div class="field">
+      <input type="number" class="input w50" id="edit_level_experience" name="edit_level_experience" placeholder="升级经验值" 
+        {% if current_level %} value="{{current_level.experience}}" {% endif %}>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <div class="label">
+      <label></label>
+    </div>
+    <div class="field">
+      <button class="button button-little bg-blue" id="desc_default_btn" type="submit">确定</button>
+      <a class="button button-little bg-red" href="{% url 'level_list' %}" id="back">返回</a>
+    </div>
+  </div>
+</form>
+
+</body>
+
+{% block js %}
+
+<script src="{{ STATIC_URL }}select2/select2.js"></script>
+<script src="{{ STATIC_URL }}js/jquery.form.js"></script>
+<script src="{{ STATIC_URL }}jquery-validate/jquery.validate.js"></script>
+<script src="{{ STATIC_URL }}toast_message/jquery.toastmessage.js"></script>
+<link href="{{ STATIC_URL }}bootstrap-editable-1.5.1/bootstrap-editable/css/bootstrap-editable.css" rel="stylesheet" />
+{% endblock %}
+

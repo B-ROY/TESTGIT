@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title>修改小号挂单</title>
+<link rel="stylesheet" href="{{ STATIC_URL }}homepage/css/pintuer.css">
+<link rel="stylesheet" href="{{ STATIC_URL }}homepage/css/admin.css">
+<script src="{{ STATIC_URL }}homepage/js/jquery.js"></script>
+<script src="{{ STATIC_URL }}homepage/js/pintuer.js"></script>
+</head>
+
+<body>
+
+<ol class="bread">
+  <li><a href="/homepage" target="right" class="icon-home"> 首页</a></li>
+  <li><a href="/audio/child_audio_list">小号语音列表</a></li>
+  <li>修改小号挂单</li>
+</ol>
+
+<form class="form-x" method="post" id="mainPageContent" action="{% url 'child_audio_edit' %}">
+  <div class="form-group">
+    <div class="label">
+      <label>用户id:</label>
+    </div>
+    <div class="field">
+      <input type="text" class="input w50" id="edit_user_identity" name="edit_user_identity" value="{{user.identity}}" placeholder="用户id" 
+      data-validate="required:请输入用户id">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <div class="label">
+      <label>挂单价格:</label>
+    </div>
+    <div class="field">
+      <select class="input w50" id="edit_audio_price" name="edit_audio_price">
+        {% for price in prices %}
+          <option value={{price.price}} {% if record.now_price == price.price %} selected="true" {% endif %}>{{ price.desc }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <div class="label">
+      <label>挂单状态:</label>
+    </div>
+    <div class="field">
+      <select class="input w50" id="edit_audio_status" name="edit_audio_status">
+        <option value="0" {% if record.status == 0 %} selected="true" {% endif %}>未挂单</option>
+        <option value="1" {% if record.status == 1 %} selected="true" {% endif %}>开启挂单</option>
+        <option value="2" {% if record.status == 2 %} selected="true" {% endif %}>通话中</option>
+        <option value="4" {% if record.status == 4 %} selected="true" {% endif %}>离线</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <div class="label">
+      <label>语音试听:</label>
+    </div>
+    <div class="field">
+      <input type="text" class="input w50" id="edit_listen_url" name="edit_listen_url" value="{{ record.listen_url }}" placeholder="试听url"
+      data-validate="required:请输入试听url">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <div class="label">
+      <label></label>
+    </div>
+    <div class="field">
+      <button class="button button-little bg-blue" id="desc_default_btn" type="submit">确定</button>
+      <a class="button button-little bg-red" href="/audio/child_audio_list" id="back">返回</a>
+    </div>
+  </div>
+</form>
+
+</body>
+
+{% block js %}
+
+<script src="{{ STATIC_URL }}select2/select2.js"></script>
+<script src="{{ STATIC_URL }}js/jquery.form.js"></script>
+<script src="{{ STATIC_URL }}jquery-validate/jquery.validate.js"></script>
+<script src="{{ STATIC_URL }}toast_message/jquery.toastmessage.js"></script>
+<link href="{{ STATIC_URL }}bootstrap-editable-1.5.1/bootstrap-editable/css/bootstrap-editable.css" rel="stylesheet" />
+{% endblock %}

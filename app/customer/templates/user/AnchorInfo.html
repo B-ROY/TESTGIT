@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title>用户信息</title>
+<link rel="stylesheet" href="{{ STATIC_URL }}homepage/css/pintuer.css">
+<link rel="stylesheet" href="{{ STATIC_URL }}homepage/css/admin.css">
+<script src="{{ STATIC_URL }}homepage/js/jquery.js"></script>
+<script src="{{ STATIC_URL }}homepage/js/pintuer.js"></script>
+</head>
+
+<body>
+
+<ol class="bread">
+  <li><a href="/homepage" target="right" class="icon-home"> 首页</a></li>
+  <li><a href="/customer/user/list">用户管理</a></li>
+  <li>热门主播信息</li>
+</ol>
+
+<form class="form-x" method="post" id="mainPageContent" action="">
+
+    <div class="form-group">
+        <div class="label">
+          <label>主播照片:</label>
+        </div>
+        <div class="field">
+          <img width='200' height="200" src="{{image}}">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="label">
+          <label>用户昵称:</label>
+        </div>
+        <div class="field">
+          <input type="text" class="input w50" disabled id="edit_user_source" name="nichName" placeholder="用户昵称" 
+                value="{{nichName| default_if_none:'无'}}">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="label">
+          <label>是否屏蔽:</label>
+        </div>
+        <div class="field">
+          <div class="tipss">{% if is_block %}是{% else %}否{% endif %}</div>
+        </div>
+    </div>
+
+
+    <div class="form-group">
+        <div class="label">
+          <label>用户长id:</label>
+        </div>
+        <div class="field">
+          <input type="text" class="input w50" disabled id="edit_user_source" name="identity" placeholder="用户长id" 
+                value="{{identity| default_if_none:'无'}}">
+        </div>
+    </div>
+
+
+    <div class="form-group">
+        <div class="label">
+          <label>电话:</label>
+        </div>
+        <div class="field">
+          <input type="text" class="input w50" disabled id="edit_user_source" name="phone" placeholder="电话" 
+                value="{{phone| default_if_none:'无'}}">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="label">
+          <label>是否是视频播主:</label>
+        </div>
+        <div class="field">
+          <div class="tipss">{% if is_video_auth %}是{% else %}否{% endif %}</div>
+        </div>
+    </div>
+
+
+    <div class="form-group">
+        <div class="label">
+          <label>性别:</label>
+        </div>
+        <div class="field">
+          <input type="text" class="input w50" disabled id="edit_gender" name="gender" placeholder="性别" 
+                value="{% if gender == 1%}男{% elif gender == 2 %}女{% else %}未填写{% endif %}">
+        </div>
+    </div>
+
+
+    <div class="form-group">
+        <div class="label">
+          <label>用户来源:</label>
+        </div>
+        <div class="field">
+          <input type="text" class="input w50" disabled id="edit_user_source" name="source" placeholder="用户来源" 
+                value="{% if source == 0%}自有注册{% elif source == 1 %}微信{% elif source == 2 %}微博{% elif source == 3 %}QQ{% elif source == 4 %}手机{% elif source == 5 %}友盟微信{% else %}无{% endif %}">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="label">
+          <label>自我描述:</label>
+        </div>
+        <div class="field">
+          <textarea type="text" class="input" id="edit_desc" name="desc" style="height:80px;" placeholder="自我描述">{{ desc | default_if_none:"无"}}</textarea>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="label">
+          <label></label>
+        </div>
+        <div class="field">
+          <a class="button button-little bg-red" href="{% url 'hotanchor' %}" id="back">返回</a>
+        </div>
+    </div>
+</form>
+</body>
+
+{% block js %}
+<script src="{{ STATIC_URL }}select2/select2.js"></script>
+<script src="{{ STATIC_URL }}js/jquery.form.js"></script>
+<script src="{{ STATIC_URL }}jquery-validate/jquery.validate.js"></script>
+<script src="{{ STATIC_URL }}toast_message/jquery.toastmessage.js"></script>
+<link href="{{ STATIC_URL }}bootstrap-editable-1.5.1/bootstrap-editable/css/bootstrap-editable.css" rel="stylesheet"/>
+{% endblock %}

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title>实名认证</title>
+<link rel="stylesheet" href="{{ STATIC_URL }}homepage/css/pintuer.css">
+<link rel="stylesheet" href="{{ STATIC_URL }}homepage/css/admin.css">
+<script src="{{ STATIC_URL }}homepage/js/jquery.js"></script>
+<script src="{{ STATIC_URL }}homepage/js/pintuer.js"></script>
+</head>
+
+<body>
+
+<ol class="bread">
+  <li><a href="/homepage" target="right" class="icon-home"> 首页</a></li>
+  <li>实名认证</li>
+</ol>
+
+<table class="table table-hover text-center">
+  <thead>
+    <th style="text-align: center">订单id</th>
+    <th style="text-align: center">用户id</th>
+    <th style="text-align: center">提现金额(分)</th>
+    <th style="text-align: center">提现所需收益</th>
+    <th style="text-align: center">提现日期</th>
+    <th style="text-align: center">结果反馈时间</th>
+    <th style="text-align: center">提现成功时间</th>
+    <th style="text-align: center">提现状态</th>
+    <th style="text-align: center">提现反馈</th>
+    <th style="text-align: center">用户ua</th>
+    <th style="text-align: center">商户下openid</th>
+    <th style="text-align: center">用户ip</th>
+    <th style="text-align: center">操作</th>
+  </thead>
+  <tbody>
+  {% for Withdraw in Withdraws %}
+    <tr>
+      <td style="text-align: center">{{Withdraw.id}}</td>
+      <td style="text-align: center"><b>{{Withdraw.user_id}}</b></td>
+      <td style="text-align: center"><b>{{Withdraw.request_money}}</b></td>
+      <td style="text-align: center"><b>{{Withdraw.request_ticket}}</b></td>
+      <td style="text-align: center"><b>{{Withdraw.request_time}}</b></td>
+      <td style="text-align: center"><b>{{Withdraw.feedback_time}}</b></td>
+      <td style="text-align: center"><b>{{Withdraw.fillin_time}}</b></td>
+      <td style="text-align: center"><b>{{Withdraw.status}}</b></td>
+      <td style="text-align: center"><b>{{Withdraw.feedback_reason}}</b></td>
+      <td style="text-align: center"><b>{{Withdraw.user_agent}}</b></td>
+      <td style="text-align: center"><b>{{Withdraw.openid}}</b></td>
+      <td style="text-align: center"><b>{{Withdraw.ip}}</b></td>
+      <td style="text-align: center">
+          <select class="input" input" style="width:100%; line-height:17px;text-align:center; " id="real_key" name="real_key" placeholder="">
+              <option value="">选择</option>
+              <option value="3">驳回</option>
+              <option value="4">通过</option>
+          </select>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+
+<script type="text/javascript">
+  $(document).ready(function(){
+    var real_key=document.querySelectorAll("#real_key");
+    var x=1;
+    console.log(real_key);
+    for(var i=0;i<real_key.length;i++) {
+      (function() {
+        var k=i;
+        // var s_value=real_key[k].options[real_key[k].selectedIndex].innerHTML;
+        // if(s_value!="选择") {
+        //   real_key[k].disabled="disabled";
+        // }
+        real_key[k].onchange=function() {
+         // if(x==1) {
+         //      real_key[k].disabled="disabled";
+         //      x=0;
+         //      if(x==0) {
+          
+
+                window.location.href = "/customer/choose?real_kw=" + $(this).val() + "&order_id=" + $(this).parent().parent().children('td:first-child').html();
+              // }
+              
+            // };    
+        }
+      })()
+    }
+
+  });
+</script>
+
+<script src="{{ STATIC_URL }}select2/select2.js"></script>
+<script src="{{ STATIC_URL }}js/jquery.form.js"></script>
+<script src="{{ STATIC_URL }}jquery-validate/jquery.validate.js"></script>
+<script src="{{ STATIC_URL }}toast_message/jquery.toastmessage.js"></script>
+<link href="{{ STATIC_URL }}bootstrap-editable-1.5.1/bootstrap-editable/css/bootstrap-editable.css" rel="stylesheet" />

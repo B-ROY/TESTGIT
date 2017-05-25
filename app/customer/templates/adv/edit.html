@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title>广告管理</title>
+<link rel="stylesheet" href="{{ STATIC_URL }}homepage/css/pintuer.css">
+<link rel="stylesheet" href="{{ STATIC_URL }}homepage/css/admin.css">
+<script src="{{ STATIC_URL }}homepage/js/jquery.js"></script>
+<script src="{{ STATIC_URL }}homepage/js/pintuer.js"></script>
+</head>
+
+<body>
+
+<ol class="bread">
+  <li><a href="/homepage" target="right" class="icon-home"> 首页</a></li>
+  <li><a href="/customer/adv/list">广告管理</a></li>
+  <li>编辑广告</li>
+</ol>
+
+<table class="table table-hover text-center">
+  <tr>
+    <th width="20%"><strong>编辑广告</strong></th>
+    <th width="80%"></th>
+  </tr>
+
+  <tr>     
+    <td>
+      <div class="form-group">
+      <img src="{% if adv.image %}{{ adv.image }}{% else %}{% endif %}" alt="" width="100%" height="20%" align="top">
+      </div>
+    </td>
+    <td>
+      <div class="form-group" style="margin-top: 15px">
+        <form class="form-x" method="post" id="mainPageContent" action="{% url 'adv_edit' %}">
+          {% if adv %}
+          <input type="hidden" name="adv_id" value="{{adv.id}}">
+          {% endif %}
+        
+          <div class="form-group">
+            <div class="label">
+              <label>图片:</label>
+            </div>
+            <div class="field">
+              <input type="file" class="input w50" id="edit_image" name="image" value="" onchange="previewFile()">
+              {% if adv %}
+              <button type="button" class="button bg-blue margin-left" id="upload" style="float:left;" onclick="UploadPic()">上传</button>
+              {% endif %}
+              <div class="tipss">*图片小于2M</div>
+            </div>
+          </div>  
+
+          <div class="form-group">
+            <div class="label">
+              <label>广告标题:</label>
+            </div>
+            <div class="field">
+              <input type="text" class="input w50" id="edit_adv_title" name="adv_title" placeholder="广告标题" 
+                 {% if adv %} value="{{adv.title}}" {% endif %} data-validate="required:请输入广告标题">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="label">
+              <label>跳转类型:</label>
+            </div>
+            <div class="field">
+              <select class="input w50" id="edit_adv_type" name="adv_type">
+                <option value="0" {% if adv.adv_type == 0 %} selected="selected" {% endif %}>URL内</option>
+                <option value="1" {% if adv.adv_type == 1 %} selected="selected" {% endif %}>URL外</option>
+                <option value="2" {% if adv.adv_type == 2 %} selected="selected" {% endif %}>房间号</option>
+                <option value="3" {% if adv.adv_type == 3 %} selected="selected" {% endif %}>个人详情页</option>
+                <option value="4" {% if adv.adv_type == 4 %} selected="selected" {% endif %}>充值页</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="label">
+              <label>跳转信息:</label>
+            </div>
+            <div class="field">
+              <input type="text" class="input w50" id="edit_adv_info" name="adv_info" placeholder="跳转信息" 
+                 {% if adv %} value="{{adv.adv_info}}" {% endif %} data-validate="required:请输入跳转信息">
+              <div class="tipss">*请以http://开头</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="label">
+              <label>状态:</label>
+            </div>
+            <div class="field">
+              <select class="input w50" id="edit_adv_status" name="status">
+                <option value="0" {% if adv.status == 0 %} selected="selected" {% endif %}>不可用</option>
+                <option value="1" {% if adv.status == 1 %} selected="selected" {% endif %}>可用</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="label">
+              <label></label>
+            </div>
+            <div class="field">
+            {% if adv %}
+              <button class="button button-little bg-blue" id="desc_default_btn" type="submit">确定</button>
+            {% else %}
+              <a class="button button-little bg-blue" onclick="UploadFile()">确定</a>
+            {% endif %}
+              <a class="button button-little bg-red" href="/customer/adv/list" id="back">返回</a>
+            </div>
+          </div>
+        </form>
+      </div>
+    </td>
+  </tr>
+</table>
+
+{% block js %}
+
+<script type="text/javascript">
+  function previewFile() {
+    var preview = document.querySelector('img');
+    var file    = document.querySelector('input[type=file]').files[0];
+    var reader  = new FileReader();
+
+    reader.addEventListener("load", function () {
+      preview.src = reader.result;
+    }, false);
+
+    if (file) {
+      reader.readAsDataURL(file);
+    }
+  }
+</script>
+
+<script>
+  function UploadPic() {
+    var fileobj = $("#edit_image")[0].files[0];
+    var form = new FormData();
+    form.append('edit_image',fileobj);
+    $.ajax({
+      type:'POST',
+      url:'{% url 'adv_upload' %}?adv_id={{adv.id}}',
+      data:form,
+      processData:false,  // 告诉jquery不转换数据
+      contentType:false,  // 告诉jquery不设置内容格式
+      success:function (arg) {
+        console.log(arg);
+        alert(arg);             
+      }
+    });
+  }
+</script>
+
+<script>
+  function UploadFile(){
+    var fileobj = $("#edit_image")[0].files[0];
+    var title = $("#edit_adv_title").val();
+    var type = $("#edit_adv_type").val();
+    var info = $("#edit_adv_info").val();
+    var status = $("#edit_adv_status").val();
+    var form = new FormData();
+
+    form.append('image',fileobj);
+    form.append('adv_title',title);
+    form.append('adv_type',type);
+    form.append('adv_info',info);
+    form.append('status',status);
+
+    $.ajax({
+      type:'POST',
+      url:'{% url 'adv_edit' %}',
+      data:form,
+      processData:false,  // 告诉jquery不转换数据
+      contentType:false,  // 告诉jquery不设置内容格式
+      success:function (arg) {
+        console.log(arg);
+        alert(arg);             
+      }
+    });
+  }
+</script>
+
+<script src="{{ STATIC_URL }}select2/select2.js"></script>
+<script src="{{ STATIC_URL }}js/jquery.form.js"></script>
+<script src="{{ STATIC_URL }}jquery-validate/jquery.validate.js"></script>
+<script src="{{ STATIC_URL }}toast_message/jquery.toastmessage.js"></script>
+<link href="{{ STATIC_URL }}bootstrap-editable-1.5.1/bootstrap-editable/css/bootstrap-editable.css" rel="stylesheet"/>
+<script src="{{ STATIC_URL }}file_upload/js/vendor/jquery.ui.widget.js"></script>
+<script src="{{ STATIC_URL }}file_upload/js/jquery.iframe-transport.js"></script>
+<script src="{{ STATIC_URL }}file_upload/js/jquery.fileupload.js"></script>
+
+{% endblock %}

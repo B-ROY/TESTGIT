@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title>超级管理员</title>
+<link rel="stylesheet" href="{{ STATIC_URL }}homepage/css/pintuer.css">
+<link rel="stylesheet" href="{{ STATIC_URL }}homepage/css/admin.css">
+<script src="{{ STATIC_URL }}homepage/js/jquery.js"></script>
+<script src="{{ STATIC_URL }}homepage/js/pintuer.js"></script>
+</head>
+
+<body>
+
+<ol class="bread">
+  <li><a href="/homepage" target="right" class="icon-home"> 首页</a></li>
+  <li><a href="/customer/user/superadmin/list" >超级管理员</a></li>
+  <li>添加超级管理员</li>
+</ol>
+
+<div class="row">
+	<div class="">
+    	<input type="text" class="input" placeholder="搜索用户" id="search-key" style="width:250px; line-height:17px;display:inline-block" value="{{ search_kw }}" onkeydown="if(event.keyCode==13) {document.getElementById('search-btn').click();return false;}">
+    	<span class="input-group-btn">
+        	<button class="button border-main icon-search" id='search-btn' type="button">搜索</button>
+        </span>
+	</div>
+</div>
+<br/>
+
+<div class="row">
+    <table class="table table-hover text-center">
+        <thead>
+            <th style="text-align: center">用户ID</th>
+            <th style="text-align: center">用户名</th>
+            <th style="text-align: center">状态</th>
+            <th style="text-align: center">操作</th>
+        </thead>
+
+        <tbody>
+        {% if user.identity != NULL %}
+            <tr>
+                <td style="text-align: center"><b>{{ user.uuid }}</b></td>
+                <td style="text-align: center"><b>{{ user.nickname }}</b></td>
+                <td style="text-align: center">
+                    {% if user.user_type != 0 %}
+                        超级管理员
+                    {% else %}
+                        非超级管理员
+                    {% endif %}
+                </td>
+                <td style="text-align: center">
+                  {% if user.user_type != 0 %}
+                    <a class="button border-main" href="{% url 'set_superadmin' %}?super_admin=1&user_id={{ user.id }}">取消超级管理员</a>
+                  {% else %}
+                    <a class="button border-main" data-id="{{ user.id }}" href="{% url 'set_superadmin' %}?super_admin=0&user_id={{ user.id }}">添加为超级管理员</a>
+                  {% endif %}
+                </td>
+            </tr>
+        {% endif %}
+        </tbody>
+    </table>
+</div>
+
+</body>
+
+
+{% block js %}
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            $('#order-key').change(function(){
+                window.location.href = "{% url 'superadmin_edit' %}?search_kw=" + "{{ search_kw }}"
+            })
+            $('#search-btn').click(function(){
+                window.location.href = "{% url 'superadmin_edit' %}?search_kw=" + $('#search-key').val()
+            })
+        });
+        
+    </script>
+
+<script src="{{ STATIC_URL }}select2/select2.js"></script>
+<script src="{{ STATIC_URL }}js/jquery.form.js"></script>
+<script src="{{ STATIC_URL }}jquery-validate/jquery.validate.js"></script>
+<script src="{{ STATIC_URL }}toast_message/jquery.toastmessage.js"></script>
+<link href="{{ STATIC_URL }}bootstrap-editable-1.5.1/bootstrap-editable/css/bootstrap-editable.css" rel="stylesheet"/>
+{% endblock %}

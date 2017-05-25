@@ -1,0 +1,1 @@
+*/3 * * * * /mydata/python2.7/bin/python /mydata/python/live_video/background/cron/close_room.py  > /mydata/logs/cron_close_room.log 2>&1

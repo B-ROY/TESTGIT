@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title>修改用户资料</title>
+<link rel="stylesheet" href="{{ STATIC_URL }}homepage/css/pintuer.css">
+<link rel="stylesheet" href="{{ STATIC_URL }}homepage/css/admin.css">
+<script src="{{ STATIC_URL }}homepage/js/jquery.js"></script>
+<script src="{{ STATIC_URL }}homepage/js/pintuer.js"></script>
+</head>
+
+<body>
+
+<ol class="bread">
+  <li><a href="/homepage" target="right" class="icon-home"> 首页</a></li>
+  <li><a href="/customer/child_user/list">小号列表</a></li>
+  <li>修改用户资料</li>
+</ol>
+
+
+<table class="table table-hover text-center">
+  <tr>
+    <th width="20%"><strong>小号信息</strong></th>
+    <th width="80%"></th>
+  </tr>
+
+  <tr>     
+    <td>
+      <div class="form-group">
+      <img src="{% if user.image %} {{ user.image }} {% else %}{{ STATIC_URL }}image/user_icon.png {% endif %}" alt="" width="160" height="160" align="top">
+      </div>
+    </td>
+    <td>
+      <div class="form-group" style="margin-top: 15px">
+      <form class="form-x" method="post" id="mainPageContent" action="{% url 'child_user_edit' %}?user_id={{ user.id }}">       
+        <div class="form-group">
+          <div class="label">
+            <label>用户ID:</label>
+          </div>
+          <div class="field">
+            <input type="text" class="input w50" disabled id="edit_child_user" name="edit_child_user" value="{{user.identity}}" placeholder="用户ID">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="label">
+            <label>昵称:</label>
+          </div>
+          <div class="field">
+            <input type="text" class="input w50" id="edit_nickname" value="{{user.nickname}}" name="edit_nickname" placeholder="用户昵称" 
+                data-validate="required:请输入昵称">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="label">
+            <label>生日:</label>
+          </div>
+          <div class="field">
+            <input type="date" class="input w50" id="edit_birth_date"  value="{{user.birth_date}}" name="edit_birth_date">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="label">
+            <label>头像:</label>
+          </div>
+          <div class="field">
+            <input type="file" class="input w50" id="edit_image" name="edit_image" value="" onchange="previewFile()">
+            <button type="button" class="button bg-blue margin-left" id="upload" style="float:left;" onclick="UploadFile()">上传</button>
+            <div class="tipss">*图片小于2M</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="label">
+            <label>性别:</label>
+          </div>
+          <div class="field">
+            <select class="input w50" id="edit_gender" name="edit_gender" value={{user.gender}}>
+              <option value="0" {% if user.gender == 0 %} selected="selected" {% endif %}>请选择性别</option>
+              <option value="1" {% if user.gender == 1 %} selected="selected" {% endif %}>男</option>
+              <option value="2" {% if user.gender == 2 %} selected="selected" {% endif %}>女</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="label">
+            <label>现居地:</label>
+          </div>
+          <div class="field">
+            <input type="text" class="input w50" id="edit_area" value="{{user.area}}" name="edit_area" placeholder="现居地">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="label">
+            <label>血型:</label>
+          </div>
+          <div class="field">
+            <select class="input w50" id="edit_blood_type" name="edit_blood_type">
+              <option value="" {% if user.blood_type == "" %} selected="selected" {% endif %}>未知</option>
+              <option value="A" {% if user.blood_type == "A" %} selected="selected" {% endif %}>A</option>
+              <option value="B" {% if user.blood_type == "B" %} selected="selected" {% endif %}>B</option>
+              <option value="O" {% if user.blood_type == "O" %} selected="selected" {% endif %}>O</option>
+              <option value="AB" {% if user.blood_type == "AB" %} selected="selected" {% endif %}>AB</option>             
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="label">
+            <label>情感状态:</label>
+          </div>
+          <div class="field">
+            <select class="input w50" id="edit_emotional" name="edit_emotional">
+              <option value="" {% if user.emotional == "" %} selected="selected" {% endif %}>未填写</option>
+              <option value="单身" {% if user.emotional == "单身" %} selected="selected" {% endif %}>单身</option>
+              <option value="恋爱中" {% if user.emotional == "恋爱中" %} selected="selected" {% endif %}>恋爱中</option>
+              <option value="已婚" {% if user.emotional == "已婚" %} selected="selected" {% endif %}>已婚</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="label">
+            <label>职业:</label>
+          </div>
+          <div class="field">
+            <input type="text" class="input w50" id="edit_occupation" value="{{user.occupation}}" name="edit_occupation" placeholder="职业">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="label">
+            <label>自我描述:</label>
+          </div>
+          <div class="field">
+            <textarea type="text" class="input" id="edit_desc" name="edit_desc" style="height:60%;" placeholder="自我描述">{{ user.desc | default_if_none:"无"}}</textarea>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="label">
+            <label></label>
+          </div>
+          <div class="field">
+            <button class="button button-little bg-blue" id="desc_default_btn" type="submit">确定</button>
+            <a class="button button-little bg-red" href="/customer/child_user/list" id="back">返回</a>
+          </div>
+        </div>
+
+      </form></div>
+    </td>
+  </tr>
+</table>
+
+
+
+</body>
+
+{% block js %}
+
+<script type="text/javascript">
+  function previewFile() {
+    var preview = document.querySelector('img');
+    var file    = document.querySelector('input[type=file]').files[0];
+    var reader  = new FileReader();
+
+    reader.addEventListener("load", function () {
+      preview.src = reader.result;
+    }, false);
+
+    if (file) {
+      reader.readAsDataURL(file);
+    }
+  }
+</script>
+
+<script>
+  function UploadFile() {
+    var fileobj = $("#edit_image")[0].files[0];
+    var form = new FormData();
+    form.append('edit_image',fileobj);
+    $.ajax({
+      type:'POST',
+      url:'/customer/child_user/upload?user_id={{ user.id }}',
+      data:form,
+      processData:false,  // 告诉jquery不转换数据
+      contentType:false,  // 告诉jquery不设置内容格式
+      success:function (arg) {
+        console.log(arg);
+        alert(arg);             
+      }
+    })
+  }
+  //function UploadFile() {
+  //  var fileobj = $("#edit_image")[0].files[0];
+  //  var form = new FormData();
+  //  form.append('edit_image',fileobj);
+  //  var fileid='sample'+parseInt(Date.now()/1000);
+  //  $.ajax({
+  //    type:'POST',
+  //    url:'http://web.image.myqcloud.com/photos/v2/10048692/hdlive/{{user.id}}/{{fileid}}',
+  //    data:form,
+  //    processData:false,  // 告诉jquery不转换数据
+  //    contentType:false,  // 告诉jquery不设置内容格式
+  //    success:function (arg) {
+  //      console.log(arg);
+  //      alert(arg);             
+  //    }
+  //  })
+  //function UploadFile(){
+  //  var fileobj = $("#edit_image")[0].files[0];
+  //  var form = new FormData();
+  //  form.append('edit_image',fileobj);
+  //  var headers = new FormData();
+  //  headers.append();
+  //  $.ajax({
+  //    type:'POST',
+  //    url:'http://web.image.myqcloud.com/photos/v2/10048692/hdlive/{{user.id}}',
+  //    data:{
+  //      Authorization:'oZzCoNxSbYenfXoSGQQz6utblpdhPTEwMDQ4NjkyJmI9aGRsaXZlJms9QUtJRGdrbnlCWWtOS25wT05ld2VUUndLOXQ2Tm4wam43OHlHJmU9MTQ3OTE3Nzc3MyZ0PTE0NzkxNzY3NzQmcj0zNzg4OTU0NzImdT0wJmY9Y2VzaGk=';
+
+  //    }
+  //    data:form,
+  //    success:function (arg) {
+  //      console.log(arg);
+  //      alert(arg);             
+  //    }
+  //  })
+  //}
+</script>
+
+<script src="{{ STATIC_URL }}select2/select2.js"></script>
+<script src="{{ STATIC_URL }}js/jquery.form.js"></script>
+<script src="{{ STATIC_URL }}jquery-validate/jquery.validate.js"></script>
+<script src="{{ STATIC_URL }}toast_message/jquery.toastmessage.js"></script>
+<link href="{{ STATIC_URL }}bootstrap-editable-1.5.1/bootstrap-editable/css/bootstrap-editable.css" rel="stylesheet"/>
+{% endblock %}

@@ -1,0 +1,31 @@
+
+base = 6.0
+rate=56
+
+
+
+USER_RATE = (100.0/rate)/base
+HARVEST_RATE = (base - 100.0/rate)/base
+
+
+HARVEST_RATE + USER_RATE = 6/base = 100%
+HARVEST_RATE =  100% - USER_RATE
+
+HARVEST_RATE/USER_RATE = 4.3/1.7 * 1
+
+money = 1
+ticket = money * rate = 56
+
+has_money = (HARVEST_RATE/USER_RATE) * money
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% load util_tags %}
+{% block link %}
+<link href="{{ STATIC_URL }}select2/select2.css" rel="stylesheet"/>
+<script src="{{ STATIC_URL }}select2/select2.js"></script>
+<link href="{{ STATIC_URL }}select2/select2-bootstrap.css" rel="stylesheet"/>
+<link rel="stylesheet" href="{{ STATIC_URL }}toast_message/jquery.toastmessage.css">
+<link rel="stylesheet" href="{{ STATIC_URL }}jquery-validate/jquery.validate.css">
+<link href="{{ STATIC_URL }}bootstrap-datetimepicker-master/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
+<script type="text/javascript" src="{{ STATIC_URL }}bootstrap-datetimepicker-master/js/bootstrap-datetimepicker.js"
+        charset="UTF-8"></script>
+<script type="text/javascript"
+        src="{{ STATIC_URL }}bootstrap-datetimepicker-master/js/locales/bootstrap-datetimepicker.zh-CN.js"
+        charset="UTF-8"></script>
+<style type="text/css">
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+    <ol class="breadcrumb">
+      <li><a href="/">首页</a></li>
+      <li class="active">送礼记录</li>
+    </ol>
+</div>
+
+<div class="row">
+    <div class="">
+         <form id="form_search" method="get" action="/content/address">
+            <div class="form-group form-inline">
+                <select class="form-control" id="order_key" name="order_key" placeholder="">
+                    <option value="0">收到者ID查询</option>
+                    <option value="1">赠送者ID查询</option>
+                </select>
+
+			    <div class="input-group">
+        			<input type="text" class="form-control" placeholder="搜索用户" id="user_id" value="{{ user_id }}" onkeydown="if(event.keyCode==13) {document.getElementById('search-btn').click();return false;}">
+        			<span class="input-group-btn">
+            			<button class="btn btn-default" id='search-btn' type="button">Go!</button>
+        			</span>
+    			</div>
+            </div>
+        </form> 
+    </div>
+</div>
+
+    <div class="row">
+        <table class="table table-striped table-hover table-bordered ">
+            <thead>
+                <th style="text-align: center">收到者长ID</th>
+                <th style="text-align: center">收到者用户名</th>
+                <th style="text-align: center">赠送者ID</th>
+                <th style="text-align: center">赠送者用户名</th>
+                <th style="text-align: center">礼物名称</th>
+                <th style="text-align: center">数量</th>
+                <th style="text-align: center">花的引力币</th>
+                <th style="text-align: center">送礼房间</th>
+                <th style="text-align: center">创建时间</th>
+            </thead>
+
+            <tbody>
+            {% for user in room_user_gift %}
+                <tr>
+                    <td style="text-align: center"><span class="label label-default">{{ user.user.uuid }}</span></td>
+                    <td style="text-align: center">{{ user.user.nickname }}</td>
+                    <td style="text-align: center"><span class="label label-default">{{ user.sender.uuid }}</td>
+                    <td style="text-align: center" >{{ user.sender.nickname }}</td>
+                    <td style="text-align: center" >{{ user.gift.name }}</td>
+                    <td style="text-align: center" >{{ user.num }}</td>
+                    <td style="text-align: center" >{{ user.cost }}</td>
+                    <td style="text-align: center" >{% if user.is_private == 0 %}{{ user.room.id }}{% else %}私信{% endif %}</td>
+                    <td style="text-align: center" >{{ user.created_at }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- 分页操作 -->
+        {% if room_user_gift.has_previous %}
+            <a class='paginator btn btn-default' title='上一页' href='?page={{ room_user_gift.previous_page_number }}{{ extra1 }}{{ extra2 }}'><span>上一页</span></a>
+        {% else %}
+            <a class='paginator btn btn-default disabled' title='上一页' href='#'><span>上一页</span></a>
+        {% endif %}
+
+        {% for page in pages_to_show %}
+         {% if page == -1 %}
+            <a class="paginator btn btn-default disabled" href="#">&hellip;</a>
+         {% elif page == room_user_gift.number %}
+             <a class='paginator_current btn btn-default disabled' title='当前页:{{ page }}'><span>{{ page }}</span></a>
+         {% else %}
+             <a class='paginator btn btn-default' href='?page={{ page }}{{ extra1 }}{{ extra2 }}' title='{{ page }}'><span>{{ page }}</span></a>
+         {% endif %}
+        {% endfor %}
+
+        {% if room_user_gift.has_next %}
+         <a class='paginator btn btn-default' title='下一页' href='?page={{ room_user_gift.next_page_number }}{{ extra1 }}{{ extra2 }}'><span>下一页</span></a>
+        {% else %}
+            <a class='paginator btn btn-default disabled' title='上一页' href='#'><span>下一页</span></a>
+        {% endif %}
+    </div>
+
+
+{% endblock %}
+
+{% block js %} 
+<script type="text/javascript">
+        $(document).ready(function () {
+        	$('#order-key').val({{ order_key }})
+            $('#order-key').change(function(){
+                window.location.href = "{% url 'room_user_gift' %}?order_key=" + $(this).val() + "&user_id=" + $('#user_id').val()
+            })
+            $('#search-btn').click(function(){
+                window.location.href = "{% url 'room_user_gift' %}?order_key=" + $('#order_key').val() + "&user_id=" + $('#user_id').val()
+            })
+        });
+    
+</script>
+
+
+<script src="{{ STATIC_URL }}select2/select2.js"></script>
+<script src="{{ STATIC_URL }}js/jquery.form.js"></script>
+<script src="{{ STATIC_URL }}jquery-validate/jquery.validate.js"></script>
+<script src="{{ STATIC_URL }}toast_message/jquery.toastmessage.js"></script>
+<link href="{{ STATIC_URL }}bootstrap-editable-1.5.1/bootstrap-editable/css/bootstrap-editable.css" rel="stylesheet" />
+<script src="{{ STATIC_URL }}bootstrap-editable-1.5.1/bootstrap-editable/js/bootstrap-editable.js"></script>
+{% endblock %}

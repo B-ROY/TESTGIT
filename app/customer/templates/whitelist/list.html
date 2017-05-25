@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% load util_tags %}
+{% block link %}
+<link href="{{ STATIC_URL }}select2/select2.css" rel="stylesheet"/>
+<script src="{{ STATIC_URL }}select2/select2.js"></script>
+<link href="{{ STATIC_URL }}select2/select2-bootstrap.css" rel="stylesheet"/>
+<link rel="stylesheet" href="{{ STATIC_URL }}toast_message/jquery.toastmessage.css">
+<link rel="stylesheet" href="{{ STATIC_URL }}jquery-validate/jquery.validate.css">
+<link href="{{ STATIC_URL }}bootstrap-datetimepicker-master/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
+<script type="text/javascript" src="{{ STATIC_URL }}bootstrap-datetimepicker-master/js/bootstrap-datetimepicker.js"
+        charset="UTF-8"></script>
+<script type="text/javascript"
+        src="{{ STATIC_URL }}bootstrap-datetimepicker-master/js/locales/bootstrap-datetimepicker.zh-CN.js"
+        charset="UTF-8"></script>
+<style type="text/css">
+</style>
+{% endblock %}
+
+
+{% block content %}
+<div class="row">
+    <ol class="breadcrumb">
+      <li><a href="/">首页</a></li>
+      <li><a href="{% url 'list_liveroom' %}">房间管理</a></li>
+      <li class="active">白名单管理</li>
+    </ol>
+</div>
+
+<div class="row" style="margin-bottom: 20px">
+    <a class="btn btn-primary pull-right"
+       href="{% url 'edit_whitelist' %}">添加白名单</a>
+</div>
+
+<div class="row">
+    <table class="table table-striped table-hover table-bordered ">
+        <thead>
+        <th style="text-align: center">用户ID</th>
+        <th style="text-align: center">用户名称</th>
+        <th style="text-align: center">位置</th>
+        <!--<th style="text-align: center">状态</th>-->
+        <th style="text-align: center">操作</th>
+        </thead>
+        <tbody id="sortable">
+        {% for whitelist in whitelists %}
+        <td style="text-align: center"><span class="label label-default">{{ whitelist.lister.uuid }}</span></td>
+        <td style="text-align: center">{{ whitelist.lister.nickname }}</td>
+        <td style="text-align: center">{{ whitelist.position }}</td>
+        <!--<td style="text-align: center">-->
+            <!--{%if whitelist.status == 0%}使用中{%endif%}-->
+            <!--{%if whitelist.status == 1%}已删除{%endif%}-->
+        <!--</td>-->
+        <td style="text-align: center">
+            <a href="{% url 'edit_whitelist' %}?whitelist_id={{whitelist.id}}" class="label label-info"
+               title="修改">
+                <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>修改</a>
+            <a href="{% url 'delete_whitelist' %}?whitelist_id={{whitelist.id}}" class="label label-info" title="删除">删除</a>
+        </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+
+{% block js %}
+
+<script src="{{ STATIC_URL }}select2/select2.js"></script>
+<script src="{{ STATIC_URL }}js/jquery.form.js"></script>
+<script src="{{ STATIC_URL }}jquery-validate/jquery.validate.js"></script>
+<script src="{{ STATIC_URL }}toast_message/jquery.toastmessage.js"></script>
+<link href="{{ STATIC_URL }}bootstrap-editable-1.5.1/bootstrap-editable/css/bootstrap-editable.css" rel="stylesheet"/>
+<script src="{{ STATIC_URL }}bootstrap-editable-1.5.1/bootstrap-editable/js/bootstrap-editable.js"></script>
+{% endblock %}

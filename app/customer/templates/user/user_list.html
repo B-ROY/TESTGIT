@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title>用户管理</title>
+<link rel="stylesheet" href="{{ STATIC_URL }}homepage/css/pintuer.css">
+<link rel="stylesheet" href="{{ STATIC_URL }}homepage/css/admin.css">
+<script src="{{ STATIC_URL }}homepage/js/jquery.js"></script>
+<script src="{{ STATIC_URL }}homepage/js/pintuer.js"></script>
+</head>
+
+<body>
+
+<ol class="bread">
+  <li><a href="/homepage" target="right" class="icon-home"> 首页</a></li>
+  <li>用户列表</li>
+</ol>
+
+    <div class="row">
+        <div class="">
+             <form id="form_search" method="get" action="/content/address">
+                <div class="form-group form-inline">
+                    <select class="input" input" style="width:80px; line-height:17px" id="order-key" name="order_key" placeholder="">
+                        <option value="0">时间排序</option>
+                        <option value="1">等级排序</option>
+                    </select>
+                      <input type="text" class="input" style="width:250px; line-height:17px;display:inline-block" placeholder="搜索用户" id="search-key" value="{{ search_kw }}" onkeydown="if(event.keyCode==13) {document.getElementById('search-btn').click();return false;}">
+                      
+                      <!--
+                      <input type="text" class="form-control" placeholder="搜索用户" id="search-key" value="{{ search_kw }}">
+                      -->
+
+                      <span class="input-group-btn">
+                        <button class="button border-main icon-search" id='search-btn' type="button">Go!</button>
+                      </span>
+                    <label for="search-date">输入日期:<input class="input" type="date" style="width:250px; line-height:17px;display:inline-block" value="{{ search_date }}" id="search-date"/></label>
+                </div>
+             </form> 
+        </div>
+    </div>
+
+    <div class="row">
+        <table class="table table-hover text-center">
+            <thead>
+                <th style="text-align: center">用户ID</th>
+                <th style="text-align: center">短ID</th>
+                <th style="text-align: center">用户名</th>
+                <th style="text-align: center">用户来源</th>
+                <th style="text-align: center">等级</th>
+                <th style="text-align: center">经验</th>
+                <th style="text-align: center">状态</th>
+                <th style="text-align: center">创建时间</th>
+                <th style="text-align: center">操作</th>
+            </thead>
+
+            <tbody>
+            
+            {% for user in users %}
+                <tr>
+                    <td style="text-align: center"><b>{{ user.uuid }}</b></td>
+                    <td style="text-align: center">{{ user.id }}</td>
+                    <td style="text-align: center" ><a href="{% url 'user_show' user.id %}?order_kw={{ order_kw }}&search_kw={{ search_kw }}&page={{ page }}" class="button border-main" title="修改"><b>{{ user.nickname }}</b></a></td>
+                    <td style="text-align: center" >{{ user.source_zh |default_if_none:'无'}}</td>
+                    <td style="text-align: center" >{{ user.level_desc|default_if_none:'无' }}</td>
+                    <td style="text-align: center" >{{ user.experience }}</td>
+                    <td style="text-align: center" >{% if user.is_block %}<font color="#FF0000">屏蔽</font>{% else %}<font color="#00CC99">可用</font>{% endif %}</td>
+                    <td style="text-align: center" >{{ user.created_at }}</td>
+                    <td style="text-align: center">
+                    <a href="/customer/account?user_id={{user.id}}" class="button border-main">账户详情</a>
+                    <a href="" class="button border-main">语音历史</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+    <!-- 分页操作 -->
+      <div class="pagelist">
+        {% if users.has_previous %}
+            <a href="?page={{ users.previous_page_number }}{{ extra1 }}{{ extra2 }}{{ extra3 }}">上一页</a>
+        {% else %}
+            <span>上一页</span>
+        {% endif %}
+
+        {% for page in pages_to_show %}
+         {% if page == -1 %}
+             <a href="#">&hellip;</a>
+         {% elif page == users.number %}
+             <span><strong>{{ page }}</strong></span>
+         {% else %}
+             <a href='?page={{ page }}{{ extra1 }}{{ extra2 }}{{ extra3 }}' title='{{ page }}'>{{ page }}</a>
+         {% endif %}
+        {% endfor %}
+
+        {% if users.has_next %}
+            <a href="?page={{ users.next_page_number }}{{ extra1 }}{{ extra2 }}{{ extra3 }}">下一页</a>
+        {% else %}
+            <span>下一页</span>
+        {% endif %}
+      </div>
+    </div>
+</body>
+
+
+
+{% block js %}
+    <script type="text/javascript">
+        $(document).ready(function () {
+            /* list table sortbale */
+            /*$("#sortable").sortable({
+                revert: true,
+                start: function(event, ui) {
+                    ui.item.startPos = ui.item.index();
+                },
+                stop: function(event, ui) {
+                    console.log("Start position: " + ui.item.startPos);
+                    console.log("New position: " + ui.item.index());
+                    {% if not key %}
+                    if(ui.item.startPos!=ui.item.index())
+                        $("#save_position_btn").removeClass("disabled");
+                    {% endif %}
+                }
+
+            });*/
+
+             /* save positoin */
+            /*$("#save_position_btn").click(function(){
+
+                var item_ids = collect_module_ids_with_order();
+                console.log(item_ids)
+                if(item_ids==''){
+                    alert('没有要排序的内容');
+                    return false;
+                }
+                var $btn = $(this).button('loading');
+                $("#user_ids").val(item_ids);
+
+                $('#form_positoin').submit();
+
+            });*/
+
+            /* save position form */
+            /*var options = {
+                success:  function(responseText, statusText){
+                    
+                    setTimeout(function () {$("#save_position_btn").button('reset')}, 1000);
+
+                    if(responseText.status=="success"){
+                       $().toastmessage('showSuccessToast', '操作成功');
+                       setTimeout(function () {location.reload()}, 1000);
+                    } else {
+                        $().toastmessage('showErrorToast', "操作失败");
+                    }
+                }
+            };
+            $('#form_positoin').ajaxForm(options);
+
+
+            $('[data-toggle="tooltip"]').tooltip();*/
+            $('#order-key').val({{ order_kw }})
+            $('#order-key').change(function(){
+                window.location.href = "{% url 'user_list' %}?order_kw=" + $(this).val() + "&search_kw=" + "{{ search_kw }}"
+            })
+            $('#search-btn').click(function(){
+                window.location.href = "{% url 'user_list' %}?order_kw=" + $('#order-key').val() + "&search_kw=" + $('#search-key').val()
+            })
+            $('#search-date').change(function(){
+                window.location.href = "{% url 'user_list' %}?order_kw=" + $('#order-key').val() + "&search_date=" + $('#search-date').val()
+            })
+        });
+
+        function collect_module_ids_with_order(){
+                children = $("#sortable").children();
+                ret = ''
+                for(i=0;i<children.length;i++){
+                    child = children[i];
+                    ret += $(child).attr('value')+',';
+                }
+                return ret.substring(0, ret.length-1);
+        }
+        
+</script>
+<script src="{{ STATIC_URL }}select2/select2.js"></script>
+<script src="{{ STATIC_URL }}js/jquery.form.js"></script>
+<script src="{{ STATIC_URL }}jquery-validate/jquery.validate.js"></script>
+<script src="{{ STATIC_URL }}toast_message/jquery.toastmessage.js"></script>
+<link href="{{ STATIC_URL }}bootstrap-editable-1.5.1/bootstrap-editable/css/bootstrap-editable.css" rel="stylesheet" />
+{% endblock %}

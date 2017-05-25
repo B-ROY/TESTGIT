@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title>用户图片</title>
+<link rel="stylesheet" href="{{ STATIC_URL }}homepage/css/pintuer.css">
+<link rel="stylesheet" href="{{ STATIC_URL }}homepage/css/admin.css">
+<script src="{{ STATIC_URL }}homepage/js/jquery.js"></script>
+<script src="{{ STATIC_URL }}homepage/js/pintuer.js"></script>
+
+</head>
+
+<body>
+
+<ol class="bread">
+  <li><a href="/homepage" target="right" class="icon-home"> 首页</a></li>
+  <li><a href="/customer/child_user/list" target="right">小号列表</a></li>
+  <li>用户图片</li>
+</ol>
+
+<table class="table table-hover text-center">
+    <tr>
+      <th width="10%" style="text-align: center;"><strong>基本信息</strong></th>
+      <th width="40%"></th>
+      <th width="40%"></th>
+      <th width="10%">
+        <a href="/customer/child_user/pictureadd?user_id={{ user.id }}" class="button border-yellow">
+        <span class="icon-plus-square-o"></span>添加图片</a>
+      </th>
+    </tr>
+
+    <tr>     
+      <td><img src="{% if user.image %} {{ user.image }} {% else %}{{ STATIC_URL }}image/user_icon.png {% endif %}" alt="" width="120" height="120" /></td>
+      <td><div class="form-group" style="margin-top: 15px">
+        <div class="label"><label><strong>用户ID:</strong>&nbsp; {{ user.identity }}</label></div>
+        <div class="label"><label><strong>昵称:</strong>&nbsp; {{ user.nickname }}</label></div>
+        <div class="label"><label><strong>金币:</strong>&nbsp; {{ account.diamond }}</label></div>
+        <div class="label"><label><strong>灵石:</strong>&nbsp; {{ user.ticket }}</label></div>
+        <div class="label"><label><strong>经验:</strong>&nbsp; {{ user.experience }}</label></div>
+      </div></td>
+      <td><div class="form-group" style="margin-top: 15px">
+        <div class="label"><label><strong>电话:</strong>{{ user.phone|default_if_none:'无' }}</label></div>
+        <div class="label"><label><strong>创建时间:</strong>&nbsp; {{ user.created_at }}</label></div>
+        <div class="label"><label><strong>最后更新时间:</strong>&nbsp; {{ account.update_time }}</label></div>
+        <div class="label"><label><strong>上次消费(金币):</strong>&nbsp; {{ user.ticket }}</label></div>
+        <div class="label"><label><strong>等级:</strong>&nbsp; {{ user.level_desc }}</label></div>      
+      </div></td>
+      <td></td>
+    </tr>
+</table>
+
+<hr style="margin-bottom: 20px;margin-top: 10px">
+
+<div class="row">
+  <table class="table table-hover text-center">
+    <thead>
+      <th style="text-align: center">图片</th>
+      <th style="text-align: center">图片描述</th>
+      <th style="text-align: center">图片价格(金币)</th>
+      <th style="text-align: center">点赞数</th>
+      <th style="text-align: center">浏览数</th>
+      <th style="text-align: center">购买数</th>
+      <th style="text-align: center">评论数</th>
+      <th style="text-align: center">创建时间</th>
+      <th style="text-align: center">状态</th>
+      <th style="text-align: center">操作</th>
+    </thead>
+
+    <tbody>
+      {% for picture in pictures %}
+      <tr>
+        <td style="text-align: center">
+          <img src="{{ picture.picture_real_url }}" alt="" width="120" height="120" id="{{ picture.id }}">
+          <script type="text/javascript">
+            var img_url='{{ picture.picture_real_url }}';
+            var img = new Image();
+            img.src = img_url;
+            var width = img.width;
+            var height = img.height;
+            var ratio = width/height;
+            if(ratio==16/9){
+              img=document.getElementById('{{ picture.id }}');
+              img.width=160;
+              img.height=90;
+            }
+            else if(ratio==9/16){
+              img=document.getElementById('{{ picture.id }}');
+              img.width=90;
+              img.height=160;
+            }
+            else if(ratio==4/3){
+              img=document.getElementById('{{ picture.id }}');
+              img.width=160;
+              img.height=120;
+            }
+            else if(ratio==3/4){
+              img=document.getElementById('{{ picture.id }}');
+              img.width=120;
+              img.height=160;
+            }
+            else{
+              img=document.getElementById('{{ picture.id }}');
+              img.width=120;
+              img.height=120;
+            }
+          </script>
+        </td>
+        <td style="text-align: center">{{ picture.desc }}</td>
+        <td style="text-align: center">{{ picture.price }}</td>
+        <td style="text-align: center">{{ picture.like_count }}</td>
+        <td style="text-align: center">{{ picture.view_count }}</td>
+        <td style="text-align: center">{{ picture.purchase_count }}</td>
+        <td style="text-align: center">{{ picture.comment_count }}</td>
+        <td style="text-align: center">{{ picture.created_at }}</td>
+        <td style="text-align: center">
+          {% if picture.status == 0 %}
+            <a class="button button-little bg-green" href="{% url 'child_picture_delete' %}?user_id={{ user.id }}&id={{ picture.id }}" onclick="if(confirm('确定删除?')==false)return false;">可见</a>
+          {% else %}
+            <span class="button button-little bg-red">已删除</span>
+          {% endif %}
+        </td>
+        <td style="text-align: center">
+          <a href="/customer/child_user/pictureinfo?id={{ picture.id }}" class="button border-main">查看详情</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- 分页操作 -->
+  <div class="pagelist">
+    {% if pictures.has_previous %}
+      <a href="?page={{ pictures.previous_page_number }}{{ extra }}">上一页</a>
+    {% else %}
+      <span>上一页</span>
+    {% endif %}
+
+    {% for page in pages_to_show %}
+      {% if page == -1 %}
+        <a href="#">&hellip;</a>
+      {% elif page == pictures.number %}
+        <span><strong>{{ page }}</strong></span>
+      {% else %}
+        <a href='?page={{ page }}{{ extra }}' title='{{ page }}'>{{ page }}</a>
+      {% endif %}
+    {% endfor %}
+
+    {% if pictures.has_next %}
+      <a href="?page={{ pictures.next_page_number }}{{ extra }}">下一页</a>
+    {% else %}
+      <span>下一页</span>
+    {% endif %}
+  </div>
+</div>
+
+</body>
+
+{% block js %}
+
+<script src="{{ STATIC_URL }}select2/select2.js"></script>
+<script src="{{ STATIC_URL }}js/jquery.form.js"></script>
+<script src="{{ STATIC_URL }}jquery-validate/jquery.validate.js"></script>
+<script src="{{ STATIC_URL }}toast_message/jquery.toastmessage.js"></script>
+<link href="{{ STATIC_URL }}bootstrap-editable-1.5.1/bootstrap-editable/css/bootstrap-editable.css" rel="stylesheet"/>
+{% endblock %}

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="renderer" content="webkit">
+    <title>爱聊吧社区后台管理系统</title>  
+    <link rel="stylesheet" href="{{ STATIC_URL }}homepage/css/pintuer.css">
+    <link rel="stylesheet" href="{{ STATIC_URL }}homepage/css/admin.css">
+    <script src="{{ STATIC_URL }}homepage/js/jquery.js"></script>   
+</head>
+<body style="background-color:#f2f9fd;">
+<div class="header bg-main">
+  <div class="logo margin-big-left fadein-top">
+    <h1><img src="{{ STATIC_URL }}homepage/images/WechatIMG.jpg" class="radius-circle rotate-hover" height="50" alt="" />爱聊吧社区后台管理系统</h1>
+  </div>
+  <div class="head-l">
+    <a class="button button-little bg-blue"><span class="icon-home"></span> 登录用户:{{ request.user }}</a>&nbsp;&nbsp;
+    <a class="button button-little bg-red" href="/signout/"><span class="icon-power-off"></span> 退出登录</a>
+  </div>
+
+</div>
+<div class="leftnav" style="overflow:auto;">
+  <div class="leftnav-title"><strong><span class="icon-list"></span>菜单列表</strong></div>
+  <h2><span class="icon-user"></span>用户</h2>
+  <ul style="display:block">
+    <li><a href="/customer/user/list" target="right"><span class="icon-caret-right"></span>用户管理</a></li>
+    <li><a href="/customer/user/superadmin/list" target="right"><span class="icon-caret-right"></span>超级管理员</a></li>
+    <li><a href="/customer/block_user/list" target="right"><span class="icon-caret-right"></span>封号管理</a></li>  
+    <li><a href="/customer/account/apple_verify" target="right"><span class="icon-caret-right"></span>交易记录</a></li>
+    <li><a href="/customer/user/channel_list" target="right"><span class="icon-caret-right"></span>渠道信息</a></li>
+    <li><a href="/customer/WithdrawHandler" target="right"><span class="icon-caret-right"></span>提现申请</a></li>
+    <li><a href="/customer/RealName" target="right"><span class="icon-caret-right"></span>实名认证</a></li>
+    <li><a href="/customer/videoManagerHandler" target="right"><span class="icon-caret-right"></span>视频播主认证</a></li>
+    <li><a href="/customer/hotanchor" target="right"><span class="icon-caret-right"></span>热门主播</a></li>
+    <li><a href="/customer/gift/list" target="right"><span class="icon-caret-right"></span>礼物</a></li>   
+  </ul>
+
+  <h2><span class="icon-user"></span>小号管理</h2>
+  <ul style="display:block">
+    <li><a href="/customer/child_user/list" target="right"><span class="icon-caret-right"></span>小号列表</a></li>
+    <li><a href="/audio/child_audio_list" target="right"><span class="icon-caret-right"></span>小号挂单</a></li>
+  </ul>
+
+  <h2><span class="icon-user"></span>语音</h2>
+  <ul style="display:block">
+    <li><a href="/audio/audio_price_list" target="right"><span class="icon-caret-right"></span>语音价格</a></li>
+    <li><a href="/audio/video_price_list" target="right"><span class="icon-caret-right"></span>视频价格</a></li>
+    <li><a href="/audio/push_msg" target="right"><span class="icon-caret-right"></span>消息推送</a></li>
+    <li><a href="/audio/push_msg_record" target="right"><span class="icon-caret-right"></span>消息推送历史记录</a></li>
+  </ul>
+
+  <h2><span class="icon-user"></span>应用管理</h2>
+  <ul style="display:block">
+    <li><a href="/customer/adv/list" target="right"><span class="icon-caret-right"></span>广告位</a></li>
+    <li><a href="/customer/startup_image/list" target="right"><span class="icon-caret-right"></span>开机图</a></li>
+    <li><a href="/customer/level/list" target="right"><span class="icon-caret-right"></span>等级管理</a></li>
+    <li><a href="/customer/experience/list" target="right"><span class="icon-caret-right"></span>经验管理</a></li>
+    <li><a href="/customer/trade/rule" target="right"><span class="icon-caret-right"></span>充值规则</a></li>
+    <li><a href="/customer/switch/list" target="right"><span class="icon-caret-right"></span>开关管理</a></li>
+    <li><a href="/customer/version/list" target="right"><span class="icon-caret-right"></span>版本升级</a></li>   
+  </ul>
+
+  <h2><span class="icon-pencil-square-o"></span>系统</h2>
+  <ul>
+    <li><a href="/admin" target="right"><span class="icon-caret-right"></span>系统管理</a></li>       
+  </ul>
+
+</div>
+<script type="text/javascript">
+$(function(){
+  $(".leftnav h2").click(function(){
+      $(this).next().slideToggle(200);  
+      $(this).toggleClass("on"); 
+  })
+  $(".leftnav ul li a").click(function(){
+        $("#a_leader_txt").text($(this).text());
+        $(".leftnav ul li a").removeClass("on");
+        $(this).addClass("on");
+  })
+});
+</script>
+
+<div class="admin">
+  <iframe scrolling="auto" rameborder="0" src="/homepage" name="right" width="100%" height="100%"></iframe>
+</div>
+
+</body>
+</html>

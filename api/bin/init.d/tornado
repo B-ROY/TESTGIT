@@ -1,0 +1,73 @@
+#!/bin/bash
+#
+# tomcatd      This shell script takes care of starting and stopping
+#             standalone tomcat
+#
+# chkconfig: 345 91 10
+# description:  tomcat service
+# processname: tomcat
+# config file:
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+# Source networking configuration.
+. /etc/sysconfig/network
+
+# Check that networking is up.
+[ ${NETWORKING} = "no" ] && exit 0
+
+prog="/mydata/python2.7/bin/python main.py"
+
+export TORNADO_HOME=/mydata/python/live_video/api
+PATH=$PATH:$/bin
+
+STARTUP=$TORNADO_HOME/bin/startup.sh
+SHUTDOWN=$TORNADO_HOME/bin/shutdown.sh 
+
+if [ ! -f $TORNADO_HOME/bin/startup.sh ]
+then
+        echo "TORNADO_HOME for tornado not available"
+        exit
+fi
+
+start() {
+        # Start daemons.
+
+        echo -n $"Startting tornado service: "
+        daemon $STARTUP
+        RETVAL=$?
+        return $RETVAL
+}
+
+stop() {
+        # Stop daemons.
+        echo -n $"Stoping tornado service: "
+        $SHUTDOWN
+ RETVAL=$?
+        return $RETVAL
+}
+
+# See how we were called.
+case "$1" in
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  restart|reload)
+        stop
+        start
+        RETVAL=$?
+        ;;
+  status)
+        status $prog
+        RETVAL=$?
+        ;;
+  *)
+        echo $"Usage: $0 {start|stop|restart|status}"
+        exit 1
+esac
+
+exit $RETVAL

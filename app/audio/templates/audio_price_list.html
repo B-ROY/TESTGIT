@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title>语音价格</title>
+<link rel="stylesheet" href="{{ STATIC_URL }}homepage/css/pintuer.css">
+<link rel="stylesheet" href="{{ STATIC_URL }}homepage/css/admin.css">
+<script src="{{ STATIC_URL }}homepage/js/jquery.js"></script>
+<script src="{{ STATIC_URL }}homepage/js/pintuer.js"></script>
+</head>
+
+<body>
+
+<ol class="bread">
+  <li><a href="/homepage" target="right" class="icon-home"> 首页</a></li>
+  <li>语音价格</li>
+</ol>
+
+<div class="padding border-bottom" style="text-align: right">  
+  <a href="{% url 'audio_price_add' %}" class="button border-yellow">
+  <span class="icon-plus-square-o"></span>添加价格</a>
+</div>
+
+<table class="table table-hover text-center">
+  <thead>
+    <th width="40%" style="text-align: center">价格</th>
+    <th width="40%" style="text-align: center">描述</th>
+    <th width="20%" style="text-align: center">操作</th>
+  </thead>
+  <tbody>
+  {% for price in audio_price_list %}
+    <tr>
+      <td style="text-align: center"><b>{{ price.price }}</b></td>
+      <td style="text-align: center"><b>{{ price.desc }}</b></td>
+      <td style="text-align: center">
+      	<a href="/audio/audio_price_edit?price_id={{price.id}}" class="button border-main">修改价格</a>
+      </td>
+    </tr>
+  {% endfor %}	
+  </tbody>
+</table>
+
+{% block js %}
+
+<script src="{{ STATIC_URL }}select2/select2.js"></script>
+<script src="{{ STATIC_URL }}js/jquery.form.js"></script>
+<script src="{{ STATIC_URL }}jquery-validate/jquery.validate.js"></script>
+<script src="{{ STATIC_URL }}toast_message/jquery.toastmessage.js"></script>
+<link href="{{ STATIC_URL }}bootstrap-editable-1.5.1/bootstrap-editable/css/bootstrap-editable.css" rel="stylesheet" />
+{% endblock %}

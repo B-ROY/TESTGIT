@@ -1,0 +1,64 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>系统 登录</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="{{ STATIC_URL }}bootstrap/css/bootstrap.css" rel="stylesheet">
+    <!-- Bootstrap core CSS -->
+    <link href="{{ STATIC_URL }}bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+
+    <!-- Custom styles for this template -->
+    <link href="{{ STATIC_URL }}css/signin.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="{{ STATIC_URL }}js/html5shiv.min.js"></script>
+      
+    <![endif]-->
+  </head>
+
+  <body>
+
+    <div class="container">
+
+      {% if form.errors %}
+        <div class="alert alert-danger" role="alert">
+            {% for error in form.non_field_errors %}
+            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+             {{ error }}
+            {% endfor %}
+        </div>
+      {% endif %}
+
+
+
+
+      
+      <form class="form-signin" method="post" action="{% url 'signin' %}">
+        {% csrf_token %}
+        <h2 class="form-signin-heading"><span class="glyphicon glyphicon-grain" aria-hidden="true"></span>&nbsp; 黑洞直播-管理系统</h2>
+        <label for="username" class="sr-only">账号</label>
+        <input type="text" name="username" id="username" class="form-control" placeholder="账号" required autofocus>
+        
+
+        <label for="password" class="sr-only">密码</label>
+        <input type="password" id="password" name="password" class="form-control" placeholder="密码" required>
+        
+        <button class="btn btn-lg btn-primary btn-block" type="submit">登 录</button>
+      </form>
+
+    </div> <!-- /container -->
+
+
+  </body>
+</html>

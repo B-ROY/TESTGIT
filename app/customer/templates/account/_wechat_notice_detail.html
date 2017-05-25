@@ -1,0 +1,28 @@
+
+    <div class="row alert alert-info">
+        <div class="col-sm-6" style="margin-top: 5px;padding-left: 60px">
+            <p><span><strong>订单号: &nbsp; </strong> </span>  <span >{{ notice.out_trade_no }}</span></p>
+            <p><span><strong>记录创建时间: &nbsp;</strong></span>  <span > {{ notice.created_at }}</span></p>
+            <p><span><strong>返回状态码: &nbsp;</strong></span>  <span >{{ notice.return_code }}</span></p>
+            <p><span><strong>业务结果: &nbsp;</strong></span>  <span >{{ notice.result_code }}</span></p>
+            <p><span><strong>现金支付金额(分): &nbsp;</strong></span>  <span >{{ notice.cash_fee |default_if_none:'无'}}</span></p>
+            <p><span><strong>总金额: &nbsp;</strong></span>  <span > {{ notice.total_fee |default_if_none:'无'}}</span></p>
+            <p><span><strong>优惠金额: &nbsp;</strong></span>  <span > {{ notice.coupon_fee|default_if_none:'无' }}</span></p>
+            <p><span><strong>货币种类: &nbsp;</strong></span>  <span >{{ notice.fee_type }}</span></p>
+            <p><span><strong>付款银行: &nbsp;</strong></span>  <span >{{ notice.bank_type }}</span></p>
+            <p><span><strong>支付完成时间: &nbsp;</strong></span>  <span > {{ notice.time_end }}</span></p>
+            <p><span><strong>微信支付订单号: &nbsp;</strong></span>  <span > {{ notice.transaction_id }}</span></p>
+            <p><span><strong>错误代码描述: &nbsp;</strong></span>  <span > {{ notice.err_code_des |default_if_none:'无'}}</span></p>
+        </div>
+        <div class="col-sm-6" style="margin-top: 5px">
+            <p><span><strong>用户标识: &nbsp;</strong></span>  <span >{{ notice.openid }}</span></p>
+            <p><span><strong>应用id: &nbsp; </strong> </span>  <span >{{ notice.appid | default_if_none:'无' }}</span></p>
+            <p><span><strong>商户号: &nbsp;</strong></span>  <span >{{ notice.mch_id }}</span></p>
+            <p><span><strong>是否关注公众账号: &nbsp;</strong></span>  <span >{{ notice.is_subscribe }}</span></p>
+            <p><span><strong>签名: &nbsp;</strong></span>  <span > {{ notice.sign }} </span></p>
+            <p><span><strong>随机字符串: &nbsp;</strong></span>  <span >{{ notice.nonce_str }}</span></p>
+            <p><span><strong>设备号: &nbsp;</strong></span>  <span >{{ notice.device_info |default_if_none:'无'}}</span></p>
+            <p><span><strong>交易类型: &nbsp;</strong></span>  <span > {{ notice.trade_type }}</span></p>
+            <p><span><strong>商家数据包: &nbsp;</strong></span>  <span > {{ notice.attach|default_if_none:'无' }}</span></p>
+        </div>
+    </div>

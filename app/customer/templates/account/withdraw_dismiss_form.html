@@ -1,0 +1,7 @@
+    <form id="order_dismiss_form" class="form" method="post" action="{% url 'dissmiss_withdraw_order' %}">
+        <div class="form-group">
+            <label for="dismiss_reason">驳回原因</label>
+            <input id="order_id" type="hidden" name="id" {%if order.id%} value="{{ order.id }}" {% endif %}/>
+            <input type="text" class="form-control" id="dismiss_reason" name="dismiss_reason"/>
+        </div>
+    </form>

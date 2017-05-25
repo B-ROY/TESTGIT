@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load util_tags %}
+{% block link %}
+    <link href="{{ STATIC_URL }}select2/select2.css" rel="stylesheet"/>
+    <script src="{{ STATIC_URL }}select2/select2.js"></script>
+    <link href="{{ STATIC_URL }}select2/select2-bootstrap.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="{{ STATIC_URL }}toast_message/jquery.toastmessage.css">
+    <link rel="stylesheet" href="{{ STATIC_URL }}jquery-validate/jquery.validate.css">
+    <link href="{{ STATIC_URL }}bootstrap-datetimepicker-master/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
+    <script type="text/javascript" src="{{ STATIC_URL }}bootstrap-datetimepicker-master/js/bootstrap-datetimepicker.js"
+            charset="UTF-8"></script>
+    <script type="text/javascript"
+            src="{{ STATIC_URL }}bootstrap-datetimepicker-master/js/locales/bootstrap-datetimepicker.zh-CN.js" charset="UTF-8"></script>
+    <style type="text/css">
+    </style>
+{% endblock %}
+
+
+
+{% block content %}
+<div class="row">
+    <ol class="breadcrumb">
+      <li><a href="/">首页</a></li>
+      <li><a href="{% url 'list_liveroom' %}">房间管理</a></li>
+      <li class="active">系统消息管理</a></li>
+    </ol>
+</div>
+    <div class="row">
+        <form method="post">
+
+            <label>系统消息</label>
+            <textarea class="form-control" rows="3" name="comment">{%if message%}{{message.desc}}{%endif%}</textarea>
+            <button type="submit" class="btn btn-primary pull-right" style="margin-top: 10px">提交</button>
+        </form>
+    </div>
+{% endblock %}
+
+
+{% block js %}
+<script src="{{ STATIC_URL }}select2/select2.js"></script>
+<script src="{{ STATIC_URL }}js/jquery.form.js"></script>
+<script src="{{ STATIC_URL }}jquery-validate/jquery.validate.js"></script>
+<script src="{{ STATIC_URL }}toast_message/jquery.toastmessage.js"></script>
+<link href="{{ STATIC_URL }}bootstrap-editable-1.5.1/bootstrap-editable/css/bootstrap-editable.css" rel="stylesheet" />
+<script src="{{ STATIC_URL }}bootstrap-editable-1.5.1/bootstrap-editable/js/bootstrap-editable.js"></script>
+{% endblock %}

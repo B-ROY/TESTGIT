@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title>添加图片</title>
+<link rel="stylesheet" href="{{ STATIC_URL }}homepage/css/pintuer.css">
+<link rel="stylesheet" href="{{ STATIC_URL }}homepage/css/admin.css">
+<script src="{{ STATIC_URL }}homepage/js/jquery.js"></script>
+<script src="{{ STATIC_URL }}homepage/js/pintuer.js"></script>
+</head>
+
+<body>
+
+<ol class="bread">
+  <li><a href="/homepage" target="right" class="icon-home"> 首页</a></li>
+  <li><a href="/customer/child_user/list" target="right">小号列表</a></li>
+  <li><a href="/customer/child_user/picture?user_id={{ user_id }}" target="right">用户图片</a></li>
+  <li>添加图片</li>
+</ol>
+
+<table class="table table-hover text-center">
+  <tr>
+    <th width="40%"><strong>添加图片</strong></th>
+    <th width="60%"></th>
+  </tr>
+  <tr>
+  	<td>
+  	  <div class="form-group">
+        <img src="{{ STATIC_URL }}image/WechatIMG5.png" alt="" width="50%" height="50%" align="top">
+      </div>
+  	</td>
+
+  	<td>
+  	  <form class="form-x" method="post" id="mainPageContent" action="">
+  	    <div class="form-group">
+          <div class="label">
+            <label>图片:</label>
+          </div>
+          <div class="field">
+            <input type="file" class="input w50" id="edit_picture" name="edit_picture" onchange="previewFile()" data-validate="required:请添加照片">
+            <div class="tipss">*图片小于2M</div>
+          </div>
+        </div>
+
+		<div class="form-group">
+          <div class="label">
+            <label>价格:</label>
+          </div>
+          <div class="field">
+            <select class="input w50" id="edit_price" name="edit_price" value="">
+              <option value="0" selected="true">免费图片</option>
+              {% for price in price_list %}}
+              <option value="{{price.picture_price}}">{{price.price_desc}}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+  	    <div class="form-group">
+          <div class="label">
+            <label>描述:</label>
+          </div>
+          <div class="field">
+            <textarea type="text" class="input" id="edit_desc" name="edit_desc" value="" placeholder="图片描述" data-validate="required:请输入照片描述"></textarea>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="label">
+            <label></label>
+          </div>
+          <div class="field">
+            <a class="button button-little bg-blue" id="desc_default_btn" onclick="UploadData()">确定</a>
+            <a class="button button-little bg-red" href="/customer/child_user/picture?user_id={{ user_id }}" id="back">返回</a>
+          </div>
+        </div>
+      </form>
+    </td>
+  </tr>
+</table>
+
+</body>
+
+{% block js %}
+<script type="text/javascript">
+  function previewFile() {
+    var preview = document.querySelector('img');
+    var file    = document.querySelector('input[type=file]').files[0];
+    var reader  = new FileReader();
+    reader.addEventListener("load", function () {
+      preview.src = reader.result;
+    }, false);
+
+    if (file) {
+      reader.readAsDataURL(file);
+    }
+  }
+</script>
+<script type="text/javascript">
+  function UploadData() {
+    var fileobj = $("#edit_picture")[0].files[0];
+    var pic_price = $("#edit_price").val();
+    var desc = $("#edit_desc").val();
+    var form = new FormData();
+    form.append('edit_picture',fileobj);
+    form.append('edit_price',pic_price);
+    form.append('edit_desc',desc);
+    $.ajax({
+      type:'POST',
+      url:'/customer/child_user/picturecreate?user_id={{user_id}}',
+      data:form,
+      processData:false,  // 告诉jquery不转换数据
+      contentType:false,  // 告诉jquery不设置内容格式
+      success:function (arg) {
+        console.log(arg);
+        alert(arg);             
+      }
+    })
+  }
+</script>
+
+<script src="{{ STATIC_URL }}select2/select2.js"></script>
+<script src="{{ STATIC_URL }}js/jquery.form.js"></script>
+<script src="{{ STATIC_URL }}jquery-validate/jquery.validate.js"></script>
+<script src="{{ STATIC_URL }}toast_message/jquery.toastmessage.js"></script>
+<link href="{{ STATIC_URL }}bootstrap-editable-1.5.1/bootstrap-editable/css/bootstrap-editable.css" rel="stylesheet"/>
+{% endblock %}

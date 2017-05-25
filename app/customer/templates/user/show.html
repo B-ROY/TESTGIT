@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title>用户信息</title>
+<link rel="stylesheet" href="{{ STATIC_URL }}homepage/css/pintuer.css">
+<link rel="stylesheet" href="{{ STATIC_URL }}homepage/css/admin.css">
+<script src="{{ STATIC_URL }}homepage/js/jquery.js"></script>
+<script src="{{ STATIC_URL }}homepage/js/pintuer.js"></script>
+</head>
+
+<body>
+
+<ol class="bread">
+  <li><a href="/homepage" target="right" class="icon-home"> 首页</a></li>
+  <li><a href="/customer/user/list">用户管理</a></li>
+  <li>用户信息</li>
+</ol>
+
+<form class="form-x" method="post" id="mainPageContent" action="">
+    <div class="form-group">
+        <div class="label">
+          <label>昵称:</label>
+        </div>
+        <div class="field">
+          <input type="text" class="input w50" id="edit_nickname" value="{{user.nickname}}" name="nickname" placeholder="用户昵称" 
+                data-validate="required:请输入标题" />
+          <input type="button" class="button bg-blue margin-left" id="nickname_edit_btn" value="修改" style="float:left;">
+          <input type="button" class="button bg-blue margin-left" id="nickname_default_btn" value="还原" style="float:left;">
+            {% if user.is_block %}
+              <div class="tipss">
+                <font color="#FF0000">屏蔽</font>
+              </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="label">
+          <label>是否屏蔽:</label>
+        </div>
+        <div class="field">
+          <div class="tipss">{% if user.is_block %}是{% else %}否{% endif %}</div>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="label">
+          <label>用户id:</label>
+        </div>
+        <div class="field">
+          <input type="text" class="input w50" id="edit_identity" value="{{user.identity}}" name="edit_identity" placeholder="用户id" 
+                data-validate="required:请输入标题" />
+          <input type="button" class="button bg-blue margin-left" onclick="check_allow()" id="identity_edit_btn" value="修改" style="float:left;">
+          <div class="tipss">
+            <span id="identity_error" style="display: none" class="text-danger">*用户id重复，请重新输入</span>
+          </div>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="label">
+          <label>手机:</label>
+        </div>
+        <div class="field">
+          <input type="text" class="input w50" disabled id="edit_phone" name="phone" placeholder="手机" 
+                value="{{user.phone| default_if_none:'无'}}">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="label">
+          <label>性别:</label>
+        </div>
+        <div class="field">
+          <input type="text" class="input w50" disabled id="edit_gender" name="gender" placeholder="性别" 
+                value="{% if user.gender == 1%}男{% elif user.gender == 2 %}女{% else %}未填写{% endif %}">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="label">
+          <label>用户来源:</label>
+        </div>
+        <div class="field">
+          <input type="text" class="input w50" disabled id="edit_user_source" name="source" placeholder="用户来源" 
+                value="{{user.source_zh| default_if_none:'无'}}">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="label">
+          <label>自我描述:</label>
+        </div>
+        <div class="field">
+          <textarea type="text" class="input" id="edit_desc" name="desc" style="height:80px;" placeholder="自我描述">{{ user.desc | default_if_none:"无"}}</textarea>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="label">
+          <label></label>
+        </div>
+        <div class="field">
+          <button class="button button-little bg-blue" id="desc_default_btn" type="submit">提交</button>
+          <a class="button button-little bg-red" href="{% url 'user_list' %}?{{ other_params}}" id="back">返回</a>
+        </div>
+    </div>
+</form>
+</body>
+
+{% block js %}
+<script src="{{ STATIC_URL }}select2/select2.js"></script>
+<script src="{{ STATIC_URL }}js/jquery.form.js"></script>
+<script src="{{ STATIC_URL }}jquery-validate/jquery.validate.js"></script>
+<script src="{{ STATIC_URL }}toast_message/jquery.toastmessage.js"></script>
+<link href="{{ STATIC_URL }}bootstrap-editable-1.5.1/bootstrap-editable/css/bootstrap-editable.css" rel="stylesheet"/>
+<script type="text/javascript">
+    $('.user-block').click(function(){
+        var val = $(this).attr("value")
+        $.ajax({
+                url: "{% url 'user_block' %}",
+                type: "POST",
+                dataType: 'json',
+                data: {
+                    user_id: {{ user.id }},
+                    value: val
+                },
+                success: function (data) {
+                    window.location.reload()
+                }
+            })
+    })
+
+    function check_allow(){
+        var identity = $('#edit_identity').val();
+        if (identity!='{{user.identity}}'){
+            $.ajax({
+                url: "{% url 'user_check_identity_exist' %}"+"?edit_identity="+identity,
+                type: "GET",
+                dataType: 'json',
+                success: function (data) {
+                    if(data.code){
+                        $('#identity_error').hide();
+                        update_identity(identity)
+                    }else{
+                        $('#identity_error').show();
+                    }
+                },
+                error: function(e){
+
+                }
+
+            });
+        }else{
+
+        }
+    }
+
+    function update_identity(identity){
+        $.ajax({
+                url: "{% url 'update_identity' %}",
+                type: "POST",
+                dataType: 'json',
+                data: {
+                    user_id: {{ user.id }},
+                    edit_identity: identity
+                },
+                success: function (data) {
+                    window.location.reload()
+                }
+            })
+    }
+    $("#nickname_edit_btn").click(function() {
+        var nickname = $("#edit_nickname").val().trim();
+        if(nickname.length == 0){
+            alert("昵称不能为空");
+        } else {
+            $.ajax({
+                    url: "{% url 'update_nickname' %}",
+                    type: "POST",
+                    dataType: 'json',
+                    data: {
+                        user_id: {{ user.id }},
+                        nickname: nickname
+                    },
+                    success: function (data) {
+                        window.location.reload()
+                    }
+            });
+        }
+    })
+    $("#nickname_default_btn").click(function() {
+        var nickname = '哇啦用户' + '{{user.identity}}';
+            $.ajax({
+                url: "{% url 'update_nickname' %}",
+                type: "POST",
+                dataType: 'json',
+                data: {
+                    user_id: {{ user.id }},
+                    nickname: nickname
+                },
+                success: function (data) {
+                    window.location.reload()
+                }
+            });
+    })
+    $("#desc_default_btn").click(function() {
+        var desc = $("#edit_desc").val().trim();
+            $.ajax({
+                url: "{% url 'update_desc' %}",
+                type: "POST",
+                dataType: 'json',
+                data: {
+                    user_id: {{ user.id }},
+                    desc: desc
+                },
+                success: function (data) {
+                    window.location.reload()
+                }
+            });
+    })
+
+</script>
+{% endblock %}

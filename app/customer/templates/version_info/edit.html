@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title>版本信息</title>
+<link rel="stylesheet" href="{{ STATIC_URL }}homepage/css/pintuer.css">
+<link rel="stylesheet" href="{{ STATIC_URL }}homepage/css/admin.css">
+<script src="{{ STATIC_URL }}homepage/js/jquery.js"></script>
+<script src="{{ STATIC_URL }}homepage/js/pintuer.js"></script>
+</head>
+
+<body>
+
+<ol class="bread">
+  <li><a href="/homepage" target="right" class="icon-home"> 首页</a></li>
+  <li><a href="/customer/version/list">版本信息</a></li>
+  <li>编辑版本</li>
+</ol>
+
+<form class="form-x" method="post" id="mainPageContent" action="{% url 'version_edit' %}">
+  {% if version %}
+    <input type="hidden" name="version_id" value="{{version.id}}">
+  {% endif %}
+  <div class="form-group">
+    <div class="label">
+      <label>app名称:</label>
+    </div>
+    <div class="field">
+      <input type="text" class="input w50" id="edit_version_app_name" name="app_name" placeholder="app名称"
+      {% if version %} value="{{version.app_name}}" {% endif %}>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <div class="label">
+      <label>版本:</label>
+    </div>
+    <div class="field">
+      <input type="text" class="input w50" id="edit_version_version" name="version" placeholder="客户端当前版本" 
+      {% if version %} value="{{version.version}}" {% endif %}>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <div class="label">
+      <label>版本号:</label>
+    </div>
+    <div class="field">
+      <input type="text" class="input w50" id="edit_version_code" name="version_code" placeholder="版本号" 
+      {% if version %} value="{{version.version_code}}" {% endif %}>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <div class="label">
+      <label>升级类型:</label>
+    </div>
+    <div class="field">
+      <select class="input w50" id="edit_version_upgrade_type" name="upgrade_type">
+      {% if version.upgrade_type == "1" %}
+        <option value="0">无升级提示</option>
+        <option value="1" selected="true">强制升级</option>
+        <option value="2">普通升级</option>
+      {% elif version.upgrade_type == "2" %}
+        <option value="0">无升级提示</option>
+        <option value="1">强制升级</option>
+        <option value="2" selected="true">普通升级</option>
+      {% else %}
+        <option value="0" selected="true">无升级提示</option>
+        <option value="1">强制升级</option>
+        <option value="2">普通升级</option>
+      {% endif %}
+      </select>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <div class="label">
+      <label>平台:</label>
+    </div>
+    <div class="field">
+      <select class="input w50" id="edit_version_platform" name="platform">
+      {% if version.platform == "IOS" %}
+        <option value="ALL">未选择</option>
+        <option value="IOS" selected="true">IOS</option>
+        <option value="ANDROID">ANDROID</option>
+        <option value="H5">H5</option>
+        <option value="WEB">WEB</option>
+      {% elif version.platform == "ANDROID" %}
+        <option value="ALL">未选择</option>
+        <option value="IOS">IOS</option>
+        <option value="ANDROID" selected="true">ANDROID</option>
+        <option value="H5">H5</option>
+        <option value="WEB">WEB</option>
+      {% elif version.platform == "H5" %}
+        <option value="ALL">未选择</option>
+        <option value="IOS">IOS</option>
+        <option value="ANDROID">ANDROID</option>
+        <option value="H5" selected="true">H5</option>
+        <option value="WEB">WEB</option>
+      {% elif version.platform == "WEB" %}
+        <option value="ALL">未选择</option>
+        <option value="IOS">IOS</option>
+        <option value="ANDROID">ANDROID</option>
+        <option value="H5">H5</option>
+        <option value="WEB" selected="true">WEB</option>
+      {% else %}
+        <option value="ALL" selected="true">未选择</option>
+        <option value="IOS">IOS</option>
+        <option value="ANDROID">ANDROID</option>
+        <option value="H5">H5</option>
+        <option value="WEB">WEB</option>
+      {% endif %}
+      </select>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <div class="label">
+      <label>下载地址:</label>
+    </div>
+    <div class="field">
+      <input type="text" class="input w50" id="edit_version_download_url" name="download_url" placeholder="下载地址" 
+      {% if version %} value="{{version.download_url}}" {% endif %}>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <div class="label">
+      <label>升级描述:</label>
+    </div>
+    <div class="field">
+      <textarea type="text" class="input" id="edit_version_upgrade_info" name="upgrade_info" style="height:60%;" placeholder="升级描述">{% if version %}{{version.upgrade_info}}{% endif %}</textarea>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <div class="label">
+      <label></label>
+    </div>
+    <div class="field">
+      <button class="button button-little bg-blue" id="desc_default_btn" onclick="submitMyForm()">确定</button>
+      <a class="button button-little bg-red" href="{% url 'version_list' %}" id="back">返回</a>
+    </div>
+  </div>
+</form>
+
+</body>
+
+
+{% block js %}
+<script src="{{ STATIC_URL }}select2/select2.js"></script>
+<script src="{{ STATIC_URL }}js/jquery.form.js"></script>
+
+<script src="{{ STATIC_URL }}js/typeahead.bundle.min.js"></script>
+<script src="{{ STATIC_URL }}bootstrap-tagsinput-master/dist/bootstrap-tagsinput.min.js"></script>
+<script src="{{ STATIC_URL }}bootstrap-tagsinput-master/examples/assets/app.js"></script>
+<script src="{{ STATIC_URL }}bootstrap-switch/static/js/bootstrap-switch.js"></script>
+<script>
+function submitMyForm(){
+    $('#mainPageContent').submit();
+}
+
+var platforms = new Bloodhound({
+  datumTokenizer: Bloodhound.tokenizers.obj.whitespace('name'),
+  queryTokenizer: Bloodhound.tokenizers.whitespace,
+  prefetch: {
+    url: '/customer/switch/platform_json',
+    filter: function(list) {
+      return $.map(list, function(platform) {
+        return { name: platform }; });
+    }
+  }
+});
+platforms.initialize();
+
+$('#platform_id').tagsinput({
+  typeaheadjs: {
+    name: 'platforms',
+    displayKey: 'name',
+    valueKey: 'name',
+    source: platforms
+  }
+});
+
+    $('.radio2').on('switch-change', function () {
+        $('.radio2').bootstrapSwitch('toggleRadioStateAllowUncheck', true);
+    });
+
+</script>
+{% endblock %}

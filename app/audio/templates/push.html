@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title>推送消息</title>
+<link rel="stylesheet" href="{{ STATIC_URL }}homepage/css/pintuer.css">
+<link rel="stylesheet" href="{{ STATIC_URL }}homepage/css/admin.css">
+<script src="{{ STATIC_URL }}homepage/js/jquery.js"></script>
+<script src="{{ STATIC_URL }}homepage/js/pintuer.js"></script>
+</head>
+
+<body>
+
+<ol class="bread">
+  <li><a href="/homepage" target="right" class="icon-home"> 首页</a></li>
+  <li>推送消息</li>
+</ol>
+
+
+<table class="table table-hover text-center">
+
+  <tr>     
+    <td>
+      <div class="form-group" style="margin-top: 15px">
+      <form class="form-x" method="post" id="mainPageContent" action="{% url 'push_msg' %}">
+
+        <div class="form-group">
+          <div class="label">
+            <label>发送消息类型:</label>
+          </div>
+          <div class="field">
+              <select class="input" input" style="width:80px; line-height:17px" id="order-key" name="order_key" placeholder="">
+                  <option value="0">文本消息</option>
+                  <option value="1">自定义消息</option>
+              </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="label">
+            <label>发送用户ID:</label>
+          </div>
+          <div class="field">
+            <input type="text" class="input w50" id="edit_nickname" value="" name="pushUser" placeholder="发送用户ID" 
+                data-validate="required:请输入发送用户ID">
+            <div class="tipss">(必填)</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="label">
+            <label>接收用户UID:</label>
+          </div>
+          <div class="field">
+            <input type="text" class="input w50" id="edit_nickname" value="" name="recvUser" placeholder="接收用户UID" 
+                data-validate="required:请输入接收用户UID">
+            <div class="tipss">(必填)</div>
+          </div>
+        </div>
+
+
+        <div class="form-group">
+          <div class="label">
+            <label>内容:</label>
+          </div>
+          <div class="field">
+            <textarea type="text" class="input" id="edit_desc" name="content" style="height:60%;" placeholder="内容"></textarea>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="label">
+            <label></label>
+          </div>
+          <div class="field">
+            <button class="button button-little bg-blue" id="desc_default_btn" type="submit">发送</button>
+            <a class="button button-little bg-red" href="/customer/child_user/list" id="back">返回</a>
+          </div>
+        </div>
+
+      </form></div>
+    </td>
+  </tr>
+</table>
+
+
+
+</body>
+
+{% block js %}
+
+<script type="text/javascript">
+  function previewFile() {
+    var preview = document.querySelector('img');
+    var file    = document.querySelector('input[type=file]').files[0];
+    var reader  = new FileReader();
+
+    reader.addEventListener("load", function () {
+      preview.src = reader.result;
+    }, false);
+
+    if (file) {
+      reader.readAsDataURL(file);
+    }
+  }
+</script>
+
+<script>
+  function UploadFile() {
+    var fileobj = $("#edit_image")[0].files[0];
+    var nickname = $("#edit_nickname").val();
+    var birth_date = $("#edit_birth_date").val();
+    var gender = $("#edit_gender").val();
+    var area = $("#edit_area").val();
+    var blood_type = $("#edit_blood_type").val();
+    var emotional = $("#edit_emotional").val();
+    var occupation = $("#edit_occupation").val();
+    var desc = $("#edit_desc").val();
+
+    var form = new FormData();
+    form.append('edit_image',fileobj);
+    form.append('edit_nickname', nickname);
+    form.append('edit_birth_date', birth_date);
+    form.append('edit_gender', gender);
+    form.append('edit_area', area);
+    form.append('edit_blood_type', blood_type);
+    form.append('edit_emotional', emotional);
+    form.append('edit_occupation', occupation);
+    form.append('edit_desc', desc);
+    $.ajax({
+      type:'POST',
+      url:'/customer/child_user/create',
+      data:form,
+      processData:false,  // 告诉jquery不转换数据
+      contentType:false,  // 告诉jquery不设置内容格式
+      success:function (arg) {
+        console.log(arg);
+        alert(arg);             
+      }
+    })
+  }
+</script>
+
+<script src="{{ STATIC_URL }}select2/select2.js"></script>
+<script src="{{ STATIC_URL }}js/jquery.form.js"></script>
+<script src="{{ STATIC_URL }}jquery-validate/jquery.validate.js"></script>
+<script src="{{ STATIC_URL }}toast_message/jquery.toastmessage.js"></script>
+<link href="{{ STATIC_URL }}bootstrap-editable-1.5.1/bootstrap-editable/css/bootstrap-editable.css" rel="stylesheet"/>
+{% endblock %}

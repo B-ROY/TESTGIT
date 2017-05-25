@@ -1,0 +1,145 @@
+    <form id="order_pass_form" class="form" method="post" action="{% url 'allow_withdraw_order' %}">
+        <div class="form-group">
+            <label for="alipay_order_id">支付宝订单</label>
+            <input id="order_id" type="hidden" name="id" {%if order.id%} value="{{ order.id }}" {% endif %}/>
+            <input type="text" class="form-control" id="alipay_order_id" name="alipay_order_id"/>
+        </div>
+        <div class="form-group">
+            <label for="alipay_order_image">支付宝订单支付成功截图</label>
+            <div id="show_image_div" class="">
+                <span class="btn btn-success fileinput-button form-control" {% if order.alipay_order_image %}
+                      style="display: none;" {% endif %}>
+                        <i class="glyphicon glyphicon-plus"></i>
+                        <span>添加展示图片</span>
+                        <input id="show_img_input" class="image_input" type="file" name="files[]"
+                               accept="image/png, image/gif, image/jpg, image/jpeg">
+                </span>
+                <div class="alert alert-success img_div"
+                     style="display: {% if not order.alipay_order_image %}none{% endif %};font-size: 20px;margin-top: 10px">
+                    <button type="button" class="close">&times;</button>
+                        <img src="{{ order.alipay_order_image }}" class="img-responsive img-polaroid" style="max-height: 300px;"/>
+                </div>
+                <div class="progress progress-success progress-striped active" style="display: none">
+                    <div class="bar"></div>
+                </div>
+                <input type='hidden' id='show_image' class='result-input' name="image" value="{{ order.alipay_order_image }}"/>
+            </div>
+        </div>
+    </form>
+
+<script>
+
+uploadImage2v($('#show_image_div'), null, null);
+
+//upload single image
+function uploadImage2v(input_file, width, height){
+    var url = '/customer/upload/image';
+    var fileSelector = input_file.find('.image_input');
+    var imageDivSelector = input_file.find('.img_div');
+    var progressBarSelector = input_file.find('.progress');
+    var inputButtonSelector = input_file.find('.fileinput-button');
+    var imageContainerSelector = input_file.find('.img-polaroid');
+    var imageInputSelector = input_file.find('.result-input');
+    var closeBtnSelector = input_file.find('.alert button');
+
+    $(closeBtnSelector).click(function () {
+            $(imageContainerSelector).attr("src", "");
+            $(imageInputSelector).attr("value", "");
+            $(imageDivSelector).hide();
+            $(inputButtonSelector).show();
+        });
+
+    $(fileSelector).fileupload({
+        autoUpload: true,//是否自动上传
+        url: url,//上传地址
+        dataType: 'json',
+        acceptFileTypes: /(\.|\/)(gif|jpe?g|png)$/i,
+        maxFileSize: 1048576,
+
+        add: function (e, data) {
+            var uploadErrors = [];
+            var acceptFileTypes = /^image\/(gif|jpe?g|png)$/i;
+            var _URL = window.URL || window.webkitURL;
+            var img = new Image();
+            img.src = _URL.createObjectURL(data.originalFiles[0]);
+            if ('type' in data.originalFiles[0] && !acceptFileTypes.test(data.originalFiles[0]['type'])) {
+                uploadErrors.push('上传图片格式错误!');
+            }
+
+            if ('size' in data.originalFiles[0] && data.originalFiles[0]['size'] > 1048576) {
+                uploadErrors.push('上传图片需要小于1M!');
+            }
+            img.onload = function () {
+                if (width != null && height != null && (img.width != width || img.height != height)) {
+                    uploadErrors.push('上传图片尺寸错误。');
+                }
+                if (uploadErrors.length > 0) {
+                    alert(uploadErrors.join("\n"));
+                } else {
+                    data.submit();
+                }
+            }
+        },
+
+        done: function (e, data) {//设置文件上传完毕事件的回调函数
+            //console.log(inputButtonSelector);
+
+            if ("e" in data.result && data.result["e"]["code"] < 0) {
+               //console.log(inputButtonSelector);
+               //console.log(progressBarSelector);
+               $(inputButtonSelector).show();
+               $(progressBarSelector).hide();
+               alert("upload error:" + data.result["e"]["code"] + ':' + data.result["e"]["desc"]);
+               return;
+            }
+
+            $.each(data.result.files, function (index, file) {//
+                $(imageContainerSelector).attr("src", file.url);
+
+                var img_input = $(imageInputSelector);
+                img_input.attr('value', file.url);
+            });
+
+            $(progressBarSelector).hide();
+            $(imageDivSelector).show();
+        },
+
+        progressall: function (e, data) {//设置上传进度事件的回调函数
+
+            $(inputButtonSelector).hide();
+            $(progressBarSelector).show();
+
+            var progress = parseInt(data.loaded / data.total * 100, 10);
+            $(progressBarSelector.find('.bar')).css(
+                    'width',
+                    progress + '%'
+            );
+        },
+
+        fail: function (e, data) {
+            $(inputButtonSelector).show();
+            $(progressBarSelector).hide();
+            console.log(inputButtonSelector);
+            console.log(progressBarSelector);
+            console.log(e);
+            console.log(data);
+            alert("上传失败!");
+        }
+
+    }).prop('disabled', !$.support.fileInput)
+            .parent().addClass($.support.fileInput ? undefined : 'disabled');
+    }
+
+    $("#order_pass_form").validate({
+        rules: {
+            alipay_order_id: {
+                required: true
+            },
+            image: {
+                required: true,
+                url: true
+            }
+        },
+        ignore: ".ignore:not(#show_image)"
+    })
+</script>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title>添加视频价格</title>
+<link rel="stylesheet" href="{{ STATIC_URL }}homepage/css/pintuer.css">
+<link rel="stylesheet" href="{{ STATIC_URL }}homepage/css/admin.css">
+<script src="{{ STATIC_URL }}homepage/js/jquery.js"></script>
+<script src="{{ STATIC_URL }}homepage/js/pintuer.js"></script>
+</head>
+
+<body>
+
+<ol class="bread">
+  <li><a href="/homepage" target="right" class="icon-home"> 首页</a></li>
+  <li><a href="/audio/video_price_list">视频价格</a></li>
+  <li>添加视频价格</li>
+</ol>
+
+<form class="form-x" method="post" id="mainPageContent" action="{% url 'add_handler' %}?price_id={{price.id}}">
+  <div class="form-group">
+    <div class="label">
+      <label>价格:</label>
+    </div>
+    <div class="field">
+      <input type="text" class="input w50" id="edit_video_price" name="edit_video_price" value="" placeholder="价格" 
+      data-validate="required:请输入价格">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <div class="label">
+      <label>价格描述:</label>
+    </div>
+    <div class="field">
+      <textarea type="text" class="input" id="edit_video_desc" name="edit_video_desc" style="height:60%;" placeholder="价格描述"></textarea>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <div class="label">
+      <label>最低选择时长:</label>
+    </div>
+    <div class="field">
+      <textarea type="text" class="input" id="edit_limit_time" name="edit_limit_time" style="height:60%;" placeholder="最低选择时长"></textarea>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <div class="label">
+      <label></label>
+    </div>
+    <div class="field">
+      <button class="button button-little bg-blue" id="desc_default_btn" type="submit">确定</button>
+      <a class="button button-little bg-red" href="/audio/video_price_list" id="back">返回</a>
+    </div>
+  </div>
+</form>
+
+</body>
+
+{% block js %}
+
+<script src="{{ STATIC_URL }}select2/select2.js"></script>
+<script src="{{ STATIC_URL }}js/jquery.form.js"></script>
+<script src="{{ STATIC_URL }}jquery-validate/jquery.validate.js"></script>
+<script src="{{ STATIC_URL }}toast_message/jquery.toastmessage.js"></script>
+<link href="{{ STATIC_URL }}bootstrap-editable-1.5.1/bootstrap-editable/css/bootstrap-editable.css" rel="stylesheet" />
+{% endblock %}

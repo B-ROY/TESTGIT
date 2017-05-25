@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% load util_tags %}
+{% block link %}
+<link href="{{ STATIC_URL }}select2/select2.css" rel="stylesheet"/>
+<script src="{{ STATIC_URL }}select2/select2.js"></script>
+<link href="{{ STATIC_URL }}select2/select2-bootstrap.css" rel="stylesheet"/>
+<link rel="stylesheet" href="{{ STATIC_URL }}toast_message/jquery.toastmessage.css">
+<link rel="stylesheet" href="{{ STATIC_URL }}jquery-validate/jquery.validate.css">
+<link href="{{ STATIC_URL }}bootstrap-datetimepicker-master/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
+<script type="text/javascript" src="{{ STATIC_URL }}bootstrap-datetimepicker-master/js/bootstrap-datetimepicker.js"
+        charset="UTF-8"></script>
+<script type="text/javascript"
+        src="{{ STATIC_URL }}bootstrap-datetimepicker-master/js/locales/bootstrap-datetimepicker.zh-CN.js"
+        charset="UTF-8"></script>
+<style type="text/css">
+</style>
+{% endblock %}
+
+
+{% block content %}
+<div class="row">
+    <ol class="breadcrumb">
+      <li><a href="/">首页</a></li>
+      <li class="active">录播白名单管理</a></li>
+    </ol>
+</div>
+<div class="row" style="margin-bottom: 20px">
+    <a class="btn btn-primary pull-right" href="{% url 'demand_edit' %}">添加白名单</a>
+    <div class="input-group">
+    <input type="text" class="form-control" placeholder="搜索用户" id="search-key" value="{{ search_kw }}" onkeydown="if(event.keyCode==13) {document.getElementById('search-btn').click();return false;}">
+    <span class="input-group-btn">
+    <button class="btn btn-default" id='search-btn' type="button">Go!</button>
+    </span>
+</div>
+</div>
+
+
+<div class="row">
+    <table class="table table-striped table-hover table-bordered ">
+        <thead>
+        <th style="text-align: center">ID</th>
+        <th style="text-align: center">用户短ID</th>
+        <th style="text-align: center">用户长ID</th>
+        <th style="text-align: center">用户名</th>
+        <th style="text-align: center">状态</th>
+        <th style="text-align: center"></th>
+        </thead>
+        <tbody id="sortable">
+        {% for demand in demands %}
+        <td style="text-align: center">{{ demand.id }}</td>
+        <td style="text-align: center">{{ demand.uid.id }}</td>
+        <td style="text-align: center">{{ demand.uuid }}</td>
+        <td style="text-align: center">{{ demand.uid.nickname }}</td>
+        <td style="text-align: center">{% if demand.flag == 0 %}允许{% else %}不允许{% endif %}</td>
+        <td style="text-align: center">
+            <a href="{% url 'demand_edit' %}?demand_id={{demand.id}}" class="label label-info"
+               title="修改">
+                <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+                修改</a>
+                   <a href="/customer/demand/delete?user_id={{demand.uid.id}}" class="label label-info" title="删除" onclick="if(confirm('确定删除?')==false)return false;" >
+                        删除</a>                
+        </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+        <!-- 分页操作 -->
+        {% if demands.has_previous %}
+            <a class='paginator btn btn-default' title='上一页' href='?page={{ demands.previous_page_number }}'><span>上一页</span></a>
+        {% else %}
+            <a class='paginator btn btn-default disabled' title='上一页' href='#'><span>上一页</span></a>
+        {% endif %}
+
+        {% for page in pages_to_show %}
+         {% if page == -1 %}
+            <a class="paginator btn btn-default disabled" href="#">&hellip;</a>
+         {% elif page == demands.number %}
+             <a class='paginator_current btn btn-default disabled' title='当前页:{{ page }}'><span>{{ page }}</span></a>
+         {% else %}
+             <a class='paginator btn btn-default' href='?page={{ page }}' title='{{ page }}'><span>{{ page }}</span></a>
+         {% endif %}
+        {% endfor %}
+
+        {% if demands.has_next %}
+         <a class='paginator btn btn-default' title='下一页' href='?page={{ demands.next_page_number }}'><span>下一页</span></a>
+        {% else %}
+            <a class='paginator btn btn-default disabled' title='上一页' href='#'><span>下一页</span></a>
+        {% endif %}
+
+</div>
+{% endblock %}
+
+
+{% block js %}
+<script type="text/javascript">
+        $(document).ready(function () {
+            $('#search-btn').click(function(){
+                window.location.href = "{% url 'demand_list' %}?search_kw=" + $('#search-key').val()
+            })
+        });    
+</script>
+
+<script src="{{ STATIC_URL }}select2/select2.js"></script>
+<script src="{{ STATIC_URL }}js/jquery.form.js"></script>
+<script src="{{ STATIC_URL }}jquery-validate/jquery.validate.js"></script>
+<script src="{{ STATIC_URL }}toast_message/jquery.toastmessage.js"></script>
+<link href="{{ STATIC_URL }}bootstrap-editable-1.5.1/bootstrap-editable/css/bootstrap-editable.css" rel="stylesheet"/>
+<script src="{{ STATIC_URL }}bootstrap-editable-1.5.1/bootstrap-editable/js/bootstrap-editable.js"></script>
+{% endblock %}

@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% load util_tags %}
+{% block link %}
+<link href="{{ STATIC_URL }}select2/select2.css" rel="stylesheet"/>
+<script src="{{ STATIC_URL }}select2/select2.js"></script>
+<link href="{{ STATIC_URL }}select2/select2-bootstrap.css" rel="stylesheet"/>
+<link rel="stylesheet" href="{{ STATIC_URL }}toast_message/jquery.toastmessage.css">
+<link rel="stylesheet" href="{{ STATIC_URL }}jquery-validate/jquery.validate.css">
+<link href="{{ STATIC_URL }}bootstrap-datetimepicker-master/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
+<script type="text/javascript" src="{{ STATIC_URL }}bootstrap-datetimepicker-master/js/bootstrap-datetimepicker.js"
+        charset="UTF-8"></script>
+<script type="text/javascript"
+        src="{{ STATIC_URL }}bootstrap-datetimepicker-master/js/locales/bootstrap-datetimepicker.zh-CN.js"
+        charset="UTF-8"></script>
+<style type="text/css">
+</style>
+{% endblock %}
+
+
+{% block content %}
+<div class="row">
+    <ol class="breadcrumb">
+      <li><a href="/">首页</a></li>
+      <li><a href="{% url 'list_liveroom' %}">房间管理</a></li>
+      <li><a href="{% url 'whitelist_list' %}">白名单管理</a></li>
+        <li class="active">{% if current_whitelist.id %}修改{%else%}新增{%endif%}白名单</li>
+    </ol>
+</div>
+<form class="form-horizontal" method="post" id="whitelist_form" action="{% url 'edit_whitelist' %}">
+    {% if current_whitelist %}
+    <input type="hidden" name="whitelist_id" value="{%if current_whitelist.id %}{{current_whitelist.id}}{%endif%}">
+    {% endif %}
+    <div class="form-group">
+        <label class="col-sm-2 control-label" for="lister_id">用户ID</label>
+
+        <div class="col-sm-10">
+            <input type="text" class="form-control" id="lister_id" name="lister_id" placeholder="用户ID"
+                   {% if current_whitelist.lister_id %}value="{{current_whitelist.lister_id}}" {% endif %}>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="position" class="col-sm-2 control-label">排序</label>
+
+        <div class="col-sm-10">
+            <input type="text" class="form-control" id="position" name="position" placeholder="位置"
+                   value="{{current_whitelist.position}}">
+        </div>
+    </div>
+    <!--<div class="form-group">-->
+        <!--<label for="status" class="col-sm-2 control-label">状态</label>-->
+
+        <!--<div class="col-sm-10">-->
+            <!--<select name="status" id="status" class="form-control">-->
+                <!--<option value="0" {% if current_whitelist.status == 0 %} selected="selected" {%endif%}>使用</option>-->
+                <!--<option value="1" {% if current_whitelist.status == 1 %} selected="selected" {%endif%}>不使用</option>-->
+            <!--</select>-->
+        <!--</div>-->
+    <!--</div>-->
+    <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+            <button type="submit" class="btn btn-info">确定</button>
+            <a class="btn btn-default" href="{% url 'whitelist_list' %}">返回</a>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+
+{% block js %}
+
+<script src="{{ STATIC_URL }}select2/select2.js"></script>
+<script src="{{ STATIC_URL }}js/jquery.form.js"></script>
+<script src="{{ STATIC_URL }}jquery-validate/jquery.validate.js"></script>
+<script src="{{ STATIC_URL }}toast_message/jquery.toastmessage.js"></script>
+<link href="{{ STATIC_URL }}bootstrap-editable-1.5.1/bootstrap-editable/css/bootstrap-editable.css" rel="stylesheet"/>
+<script src="{{ STATIC_URL }}bootstrap-editable-1.5.1/bootstrap-editable/js/bootstrap-editable.js"></script>
+<script>
+    $("#whitelist_form").validate({
+        rules: {
+            lister_id: {
+                required: true,
+                digits: true
+            },
+            position: {
+                required: true,
+                digits: true,
+                range: [1,18]
+            }
+        }
+    })
+</script>
+{% endblock %}
+
+

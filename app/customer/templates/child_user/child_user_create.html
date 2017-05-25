@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title>创建用户</title>
+<link rel="stylesheet" href="{{ STATIC_URL }}homepage/css/pintuer.css">
+<link rel="stylesheet" href="{{ STATIC_URL }}homepage/css/admin.css">
+<script src="{{ STATIC_URL }}homepage/js/jquery.js"></script>
+<script src="{{ STATIC_URL }}homepage/js/pintuer.js"></script>
+</head>
+
+<body>
+
+<ol class="bread">
+  <li><a href="/homepage" target="right" class="icon-home"> 首页</a></li>
+  <li><a href="/customer/child_user/list">小号列表</a></li>
+  <li>创建用户</li>
+</ol>
+
+
+<table class="table table-hover text-center">
+  <tr>
+    <th width="20%"><strong>个人信息</strong></th>
+    <th width="80%"></th>
+  </tr>
+
+  <tr>     
+    <td>
+      <div class="form-group">
+      <img src="{% if user.image %} {{ user.image }} {% else %}{{ STATIC_URL }}image/user_icon.png {% endif %}" alt="" width="160" height="160" align="top">
+      </div>
+    </td>
+    <td>
+      <div class="form-group" style="margin-top: 15px">
+      <form class="form-x" method="post" id="mainPageContent" action="{% url 'child_user_create' %}">
+
+        <div class="form-group">
+          <div class="label">
+            <label>昵称:</label>
+          </div>
+          <div class="field">
+            <input type="text" class="input w50" id="edit_nickname" value="{{user.nickname}}" name="edit_nickname" placeholder="用户昵称" 
+                data-validate="required:请输入昵称">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="label">
+            <label>生日:</label>
+          </div>
+          <div class="field">
+            <input type="date" class="input w50" id="edit_birth_date"  value="{{user.birth_date}}" name="edit_birth_date">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="label">
+            <label>头像:</label>
+          </div>
+          <div class="field">
+            <input type="file" class="input w50" id="edit_image" name="edit_image" value="" onchange="previewFile()">
+            <div class="tipss">*图片小于2M</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="label">
+            <label>性别:</label>
+          </div>
+          <div class="field">
+            <select class="input w50" id="edit_gender" name="edit_gender" value={{user.gender}}>
+              {% if user.gender == 1 %}
+              <option value="0">请选择性别</option>
+              <option value="1" selected="true">男</option>
+              <option value="2">女</option>
+              {% elif user.gender == 2 %}
+              <option value="0">请选择性别</option>
+              <option value="1">男</option>
+              <option value="2" selected="true">女</option>
+              {% else %}
+              <option value="0" selected="true">请选择性别</option>
+              <option value="1">男</option>
+              <option value="2">女</option>
+              {% endif %}
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="label">
+            <label>现居地:</label>
+          </div>
+          <div class="field">
+            <input type="text" class="input w50" id="edit_area" value="{{user.area}}" name="edit_area" placeholder="现居地">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="label">
+            <label>血型:</label>
+          </div>
+          <div class="field">
+            <select class="input w50" id="edit_blood_type" name="edit_blood_type">
+              {% if user.blood_type == "A" %}
+                <option value="">未知</option>
+                <option value="A" selected="true">A</option>
+                <option value="B">B</option>
+                <option value="O">O</option>
+                <option value="AB">AB</option>
+              {% elif user.blood_type == "B" %}
+                <option value="">未知</option>
+                <option value="A">A</option>
+                <option value="B" selected="true">B</option>
+                <option value="O">O</option>
+                <option value="AB">AB</option>
+              {% elif user.blood_type == "O" %}
+                <option value="">未知</option>
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="O" selected="true">O</option>
+                <option value="AB">AB</option>
+              {% elif user.blood_type == "AB" %}
+                <option value="">未知</option>
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="O">O</option>
+                <option value="AB" selected="true">AB</option>
+              {% else %}
+                <option value="" selected="true">未知</option>
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="O">O</option>
+                <option value="AB">AB</option>
+              {% endif %}               
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="label">
+            <label>情感状态:</label>
+          </div>
+          <div class="field">
+            <select class="input w50" id="edit_emotional" name="edit_emotional">
+            {% if user.emotional == "单身" %}
+              <option value="">未填写</option>
+              <option value="单身" selected="true">单身</option>
+              <option value="恋爱中">恋爱中</option>
+              <option value="已婚">已婚</option>
+            {% elif user.emotional == "恋爱中" %}
+              <option value="">未填写</option>
+              <option value="单身">单身</option>
+              <option value="恋爱中" selected="true">恋爱中</option>
+              <option value="已婚">已婚</option>
+            {% elif user.emotional == "已婚" %}
+              <option value="">未填写</option>
+              <option value="单身">单身</option>
+              <option value="恋爱中">恋爱中</option>
+              <option value="已婚" selected="true">已婚</option>
+            {% else %}
+              <option value="" selected="true">未填写</option>
+              <option value="单身">单身</option>
+              <option value="恋爱中">恋爱中</option>
+              <option value="已婚">已婚</option>
+            {% endif %}
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="label">
+            <label>职业:</label>
+          </div>
+          <div class="field">
+            <input type="text" class="input w50" id="edit_occupation" value="{{user.occupation}}" name="edit_occupation" placeholder="职业">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="label">
+            <label>自我描述:</label>
+          </div>
+          <div class="field">
+            <textarea type="text" class="input" id="edit_desc" name="edit_desc" style="height:60%;" placeholder="自我描述">{{ user.desc | default_if_none:"无"}}</textarea>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="label">
+            <label></label>
+          </div>
+          <div class="field">
+            <button type="button" class="button button-little bg-blue" id="upload" onclick="UploadFile()">上传</button>
+            <a class="button button-little bg-red" href="/customer/child_user/list" id="back">返回</a>
+          </div>
+        </div>
+
+      </form></div>
+    </td>
+  </tr>
+</table>
+
+
+
+</body>
+
+{% block js %}
+
+<script type="text/javascript">
+  function previewFile() {
+    var preview = document.querySelector('img');
+    var file    = document.querySelector('input[type=file]').files[0];
+    var reader  = new FileReader();
+
+    reader.addEventListener("load", function () {
+      preview.src = reader.result;
+    }, false);
+
+    if (file) {
+      reader.readAsDataURL(file);
+    }
+  }
+</script>
+
+<script>
+  function UploadFile() {
+    var fileobj = $("#edit_image")[0].files[0];
+    var nickname = $("#edit_nickname").val();
+    var birth_date = $("#edit_birth_date").val();
+    var gender = $("#edit_gender").val();
+    var area = $("#edit_area").val();
+    var blood_type = $("#edit_blood_type").val();
+    var emotional = $("#edit_emotional").val();
+    var occupation = $("#edit_occupation").val();
+    var desc = $("#edit_desc").val();
+
+    var form = new FormData();
+    form.append('edit_image',fileobj);
+    form.append('edit_nickname', nickname);
+    form.append('edit_birth_date', birth_date);
+    form.append('edit_gender', gender);
+    form.append('edit_area', area);
+    form.append('edit_blood_type', blood_type);
+    form.append('edit_emotional', emotional);
+    form.append('edit_occupation', occupation);
+    form.append('edit_desc', desc);
+    $.ajax({
+      type:'POST',
+      url:'/customer/child_user/create',
+      data:form,
+      processData:false,  // 告诉jquery不转换数据
+      contentType:false,  // 告诉jquery不设置内容格式
+      success:function (arg) {
+        console.log(arg);
+        alert(arg);             
+      }
+    })
+  }
+</script>
+
+<script src="{{ STATIC_URL }}select2/select2.js"></script>
+<script src="{{ STATIC_URL }}js/jquery.form.js"></script>
+<script src="{{ STATIC_URL }}jquery-validate/jquery.validate.js"></script>
+<script src="{{ STATIC_URL }}toast_message/jquery.toastmessage.js"></script>
+<link href="{{ STATIC_URL }}bootstrap-editable-1.5.1/bootstrap-editable/css/bootstrap-editable.css" rel="stylesheet"/>
+{% endblock %}

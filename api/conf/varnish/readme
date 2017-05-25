@@ -1,0 +1,87 @@
+#!/bin/bash
+
+#groupadd varnish
+#useradd -g varnish varnish
+#passwd varnish
+
+
+#建立目录
+mkdir /opt/logs/varnish/
+mkdir /opt/varnish
+touch /var/run/varnish.pid
+
+yum install rhgb
+yum install automake autoconf ncurses-devel libxslt groff pcre-devel pkgconfig
+
+
+#下载安装
+mkdir /opt/download
+cd /opt/download
+
+##install libtool
+#wget http://mirrors.ustc.edu.cn/gnu/libtool/libtool-1.5.tar.gz
+#tar zxf libtool-1.5.tar.gz
+#cd libtool-1.5
+#./configure
+#make
+#make install
+
+#install pcre
+wget ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.33.tar.gz
+tar zxf pcre-8.33.tar.gz
+cd pcre-8.33
+./configure --prefix=/usr/local/pcre
+make
+make install
+
+export PKG_CONFIG_PATH=/usr/local/pcre/lib/pkgconfig/
+
+cd ..
+
+#install varnish
+#wget http://repo.varnish-cache.org/source/varnish-2.1.5.tar.gz
+#tar zxf varnish-2.1.5.tar.gz
+#cd varnish-2.1.5
+
+wget http://repo.varnish-cache.org/source/varnish-3.0.4.tar.gz
+tar zxf varnish-3.0.4.tar.gz
+cd varnish-3.0.4
+
+
+#自动编译
+./autogen.sh
+./configure
+make
+make install
+
+
+#复制配置
+cp -f /opt/app/python/m-game-platform/api/conf/varnish/varnish.sysconfig /etc/sysconfig/varnish
+cp -f /opt/app/python/m-game-platform/api/conf/varnish/varnish_reload_vcl /opt/varnish/bin/
+cp -f /opt/app/python/m-game-platform/api/conf/varnish/varnish.initrc /etc/init.d/varnish
+
+ln -s /usr/local/sbin/varnish* /usr/sbin/
+ln -s /usr/local/bin/varnish* /usr/bin/
+
+ln -s /usr/local/lib/varnish/ /usr/lib64/
+ln -s /usr/local/lib/libvcl* /usr/lib64/
+ 
+#自动启动
+/sbin/chkconfig --add varnish
+
+
+#crontab 手动
+#############crontab
+#57 11 * * * /opt/app/python/m-game-platform/api/conf/varnish/rotate.sh  > /dev/null 2>&1
+#0 1 * * * /opt/app/python/m-game-platform/api/conf/varnish/clean_varnish_log.sh  > /dev/null 2>&1
+
+
+#access log
+/usr/bin/varnishncsa  -m "TxHeader:X-Cache: HIT" -F '"%{X-Real-Ip}i" "%{%Y-%m-%dT%H:%M:%S+08:00}t" %m "%U" "%q" - %s %b %D "%{User-Agent}i"' -P /opt/logs/varnish/varinsh.pid  -a -w /opt/logs/varnish/log -D
+
+
+#others
+#varnishd -a 0.0.0.0:81 -f /opt/app/python/m-game-platform/api/conf/varnish/varnish2.vcl -T 0.0.0.0:2003 -s malloc,2G -p thread_pools=4 -p thread_pool_min=500 -p thread_pool_max=5000 -p thread_pool_add_delay=2
+
+
+
