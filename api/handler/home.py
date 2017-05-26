@@ -21,14 +21,17 @@ class RecommendList(BaseHandler):
         heartbeats = UserHeartBeat.objects.filter(last_report_time__gte=five_min_ago)
         hots=[]
         anchors = Anchor.objects.all()
+        hot_ids = []
         for anchor in anchors:
             user = User.objects.get(id=anchor.sid)
             user_heart = UserHeartBeat.objects.get(user=user)
             if user_heart.last_report_time > five_min_ago:
                 hots.append(user)
+                hot_ids.append(user.id)
 
         for heartbeat in heartbeats:
-            if heartbeat.user.charm_value > 1000 and heartbeat.user.disturb_mode != 1:
+            if heartbeat.user.charm_value > 1000 and heartbeat.user.disturb_mode != 1 \
+                    and heartbeat.user.id not in hot_ids :
                 hots.append(heartbeat.user)
 
         if not hots:
