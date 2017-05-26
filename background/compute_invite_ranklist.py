@@ -77,9 +77,9 @@ def compute_invite_ranklist_second():
         count = UserInviteCode.objects.filter(invite_date__gte=start_time, invite_date__lt=now, invite_id=uid).count()
         invite_counts[uid] = count
         pass
-    invite_counts[953] = 32
-    invite_counts[25338] = 29
-    invite_counts[6819] = 25
+    invite_counts[953] = 34
+    invite_counts[25338] = 38
+    invite_counts[6819] = 29
     uids_ranklist = sorted(invite_counts.keys(), key=lambda x: invite_counts[x], reverse=True)
     InviteRankTwo.drop_collection()
     uids_count = len(uids_ranklist)

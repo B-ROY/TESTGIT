@@ -4,6 +4,7 @@ from api.document.doc_tools import *
 from api.view.base import *
 from app.customer.models.report import *
 from app.util.messageque.msgsender import MessageSender
+from app.customer.models.porncheck import PornCheckItem
 
 @handler_define
 class PornCheck(BaseHandler):
@@ -25,9 +26,8 @@ class PornCheck(BaseHandler):
         room_id = self.arg("room_id")
         user_id = self.arg("user_id")
         join_id = self.arg("user_id")
-
-        MessageSender.send_porn_check(file_id=file_id, pic_url=pic_url,room_id=room_id, user_id=user_id, join_id=join_id)
-
+        PornCheckItem.create_item(file_id=file_id, pic_url=pic_url,room_id=room_id,user_id=user_id,join_id=join_id)
+        #MessageSender.send_porn_check(file_id=file_id, pic_url=pic_url,room_id=room_id, user_id=user_id, join_id=join_id)
         return self.write({
             "status": "success",
         })
@@ -83,4 +83,4 @@ class ReportMessageUpload(BaseHandler):
                                           text=message, pic_url=pic_url,
                                           file_id=file_id, report_type=report_type)
 
-        return self.write({"status": "success"})
+        return self.write({"status": "success"}) 
