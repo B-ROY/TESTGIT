@@ -52,7 +52,7 @@ class Account(Document):
         self.update_time = datetime.datetime.now()
         self.save()
         #发送充值漂流瓶
-        if diamond >= 3000:
+        if diamond >= 1:
             MessageSender.send_charge_bottle_message(self.user.id)
             MessageSender.send_charge_info_message(self.user.id, self.user.nickname, diamond)
 
