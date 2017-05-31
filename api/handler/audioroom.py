@@ -501,6 +501,10 @@ class ReportAudioRoom(BaseHandler):
         user_id = self.current_user_id
         end_time = datetime.datetime.now()
 
+        if room.audit_status == 1:
+            AudioRoomRecord.finish_roomrecord(room_id, end_time=datetime.datetime.now())
+            return self.write({'status': "failed", "error": "huangaaa", 'errcode': '4001', "audit_status":1, "room_operation":0, "message":"huang"})
+
         if room.status != 2:
             AudioRoomRecord.finish_roomrecord(room_id=room_id, end_time=end_time)
             logging.error("/audio/report errcode 3001")

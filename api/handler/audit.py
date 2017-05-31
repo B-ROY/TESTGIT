@@ -25,9 +25,10 @@ class PornCheck(BaseHandler):
         pic_url = self.arg("pic_url")
         room_id = self.arg("room_id")
         user_id = self.arg("user_id")
-        join_id = self.arg("user_id")
-        PornCheckItem.create_item(file_id=file_id, pic_url=pic_url,room_id=room_id,user_id=user_id,join_id=join_id)
-        #MessageSender.send_porn_check(file_id=file_id, pic_url=pic_url,room_id=room_id, user_id=user_id, join_id=join_id)
+        join_id = self.arg("join_id")
+
+        #PornCheckItem.create_item(file_id=file_id, pic_url=pic_url,room_id=room_id,user_id=user_id,join_id=join_id)
+        MessageSender.send_porn_check(file_id=file_id, pic_url=pic_url,room_id=room_id, user_id=user_id, join_id=join_id)
         return self.write({
             "status": "success",
         })
