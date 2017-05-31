@@ -36,6 +36,10 @@ class AudioRoomRecord(Document):
         (0, u'语音房间'),
         (1, u'视频房间'),
     ]
+    AUDIT_STATUS = [
+        (0, u'正常房间'),
+        (1, u'涉黄房间')
+    ]
 
     user_id = IntField(verbose_name=u'用户id', required=True)
     user_gender = IntField(verbose_name=u'用户性别')
@@ -53,6 +57,7 @@ class AudioRoomRecord(Document):
     listen_url = StringField(verbose_name=u'试听url', max_length=256, default="")
     pay_times = IntField(verbose_name=u'实际扣费次数')
     gift_value = IntField(verbose_name=u'房间送礼礼物价值')
+    audit_status = IntField(verbose_name=u"鉴黄等房间审查结果", default=0, choices=AUDIT_STATUS)
 
     class Meta:
         app_label = "audio"
@@ -443,4 +448,10 @@ class AudioRoomRecord(Document):
     def add_gift_value(self, price):
         self.gift_value += price
         self.save()
+
+    @classmethod
+    def set_room_for_porn(cls, room_id):
+        # todo 关闭房间
+        room = cls.objects.get(id=room_id)
+        room.update(set__audit_status=1)
 

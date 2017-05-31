@@ -115,3 +115,77 @@ class VersionInfo(Document):
             'channel':self.channel,
             'desc': self.upgrade_info
         }
+
+
+class VersionUpdate(Document):
+
+    PLATFORM = [
+        (0, "ANDROID"),
+        (1, "IOS")
+    ]
+
+
+    platform = IntField(verbose_name=u"平台")
+    app_name = StringField(verbose_name=u"应用名称")
+    channel = StringField(verbose_name=u"渠道")
+    min_version = StringField(verbose_name=u"应用版本")
+    current_version = StringField(verbose_name=u"当前版本")
+    download_url = StringField(verbose_name=u"下载地址")
+
+    @classmethod
+    def create_version_update(cls, platform, app_name, channel, min_version, current_version):
+        version_update_item = cls.objects(platform=platform, app_name=app_name, channel=channel, min_version=min_version, current_version=current_version)
+        version_update_item.save()
+        pass
+
+    @classmethod
+    def get_version_info(cls,platform, app_name, channel, min_version, current_version):
+        platform = platform.upper()
+        if platform == "ANDROID":
+            platform_num = 0
+        else:
+            platform_num = 1
+
+        if platform_num == 0:#安卓
+
+
+            pass
+        elif platform_num == 1:#ios
+            version_info = cls.objects.filter(app_name=app_name, channel=channel).first()
+
+            if not version_info:
+                app_name = "liaoai"#默认查询liaoai
+
+
+            pass
+
+
+        pass
+
+
+
+class VersionReview(Document):
+    platform = IntField(verbose_name=u"平台")
+    app_name = StringField(verbose_name=u"应用名称")
+    channel = StringField(verbose_name=u"渠道")
+    version = StringField(verbose_name=u"应用版本")
+
+    @classmethod
+    def create_version_review(cls, platform, app_name, channel, version):
+        version_review_item = cls(platform=platform, app_name=app_name, channel=channel,version=version)
+        version_review_item.save()
+
+    """
+        check the app whether need review
+    
+    """
+    def check_review(cls, platform, app_name, channel, version):
+
+
+
+
+
+        pass
+
+
+

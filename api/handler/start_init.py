@@ -55,6 +55,20 @@ class Initial(BaseHandler):
         else:
             switches["review"] = 1
 
+        if platform.upper() == 'ANDROID' and ua_version < "2.1.2":
+            if channel == "chatpa" or channel == "600009":
+                channel = "600000"
+            version_info["upgrade_type"] = 1
+            version_info["version_code"] = 213
+            downloads_url = "http://heydo-10048692.file.myqcloud.com/android_apk/chatpa2.1.2_" + channel + ".apk"
+
+            print downloads_url
+            version_info["download_url"] = downloads_url
+            version_info["desc"] = "亲爱的女神、男神：您好！为了给大家提供更好的服务，我们将现有版本升级，新版特性：" \
+                                   "增加漂流瓶，遇见神秘的ta" \
+                                   "增加公告轮播，提供更多最新消息"
+
+
         self.write({
             'status': "success",
             'start_image': data,

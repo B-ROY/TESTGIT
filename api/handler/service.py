@@ -53,7 +53,7 @@ class BottleMessageSend(BaseHandler):
     @login_required
     def get(self):
         user = self.current_user
-        message_content = self.decode_argument(self.arg("message_content"))
+        message_content = BottleMessageText.get_one_mesasge_text(0).message
         if user.is_video_auth == 1 and user.disturb_mode == 0:
             status_code = MessageSender.send_bottle_message(user.id, message_content)
             count = UserHeartBeat.get_bottle_users_count()
@@ -65,7 +65,7 @@ class BottleMessageSend(BaseHandler):
             self.write({
                 "status": "failed",
                 "errcode": 30001,
-                "error": u"尚未通过视频认证"
+               "error": u"尚未通过视频认证"
             })
         else:
             self.write({

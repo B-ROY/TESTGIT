@@ -1123,7 +1123,7 @@ class UpdateUserInfo(BaseHandler):
     @login_required
     def get(self):
         user = self.current_user
-        desc_change = False
+
         is_change = False
 
         if self.has_arg("desc") and user.desc != self.arg("desc"):
@@ -1132,8 +1132,7 @@ class UpdateUserInfo(BaseHandler):
                                    'param': 'desc',
                                    'error': "Desc length needs to be less than 32"})
             user.desc = self.arg("desc")
-            if user.gender == 2 and user.is_video_auth == 1:
-                desc_change = True
+
             is_change = True
 
         if self.has_arg("gender"):
@@ -1188,26 +1187,6 @@ class UpdateUserInfo(BaseHandler):
             is_change = True
         if is_change:
             user.save()
-
-        if desc_change and user.bottle_switch == 1:
-            """
-            to_list = []
-            online_users = OnlineUser.get_list()
-            for online_user in online_users:
-                if online_user.user.bottle_switch == 1 and online_user.user.gender == 1:
-                    to_list.append(online_user.user.sid)
-
-            if to_list:
-                random_int = int(time.mktime(datetime.datetime.now().timetuple()))
-                result = QCloudIM.message_in_bottle(user=user, to_list=to_list, random_int=random_int, desc=user.desc)
-                print result
-            """
-
-            status_code = MessageSender.send_bottle_message(user.id, user.desc)
-            if status_code==200:
-                return self.write({"status:success"})
-            else:
-                return self.write({"status":"fail","error_code": status_code, "error":u"漂流瓶消息发送失败"})
 
         self.write({'status': "success"})
 

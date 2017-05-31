@@ -80,15 +80,15 @@ class Gift(Document):
 
     @classmethod
     def list(cls, gift_type=1):
-        return cls.objects.filter(status=Gift.STATUS_USING, gift_type=gift_type).order_by("seq")
+        return cls.objects.filter(status=Gift.STATUS_USING, gift_type=gift_type).order_by("price")
 
     @classmethod
     def list_all(cls):
-        return cls.objects.filter(status=Gift.STATUS_USING).order_by("seq")
+        return cls.objects.filter(status=Gift.STATUS_USING).order_by("price")
 
     @classmethod
     def list_mall(cls):
-        return cls.objects.filter(status=Gift.STATUS_USING, gift_type__in=[1, 2]).order_by("seq")
+        return cls.objects.filter(status=Gift.STATUS_USING, gift_type__in=[1, 2]).order_by("price")
 
     @classmethod
     def create(cls, name, price, experience, ticket, continuity, animation_type, logo, is_flower=0, gift_type=0, wealth_value=0, charm_value=0):
