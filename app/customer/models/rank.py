@@ -75,3 +75,10 @@ class InviteRankTwo(Document):
     @classmethod
     def get_top_5(cls):
         return InviteRankTwo.objects.all()
+
+
+class NewAnchorRank(Document):
+    """
+    新人驾到 列表
+    """
+    user_id = IntField(verbose_name=u"用户id")

@@ -4,6 +4,8 @@
 from api.document.doc_tools import *
 from api.view.base import *
 from app.customer.models.rank import *
+from app.customer.models.activity import Activity
+from api.convert.convert_user import *
 
 
 @handler_define
@@ -43,4 +45,20 @@ class InviteRankList1(BaseHandler):
 
         self.write({"status": "success",
                    "data": data})
+
+# 活动页
+@handler_define
+class GetActivity(BaseHandler):
+    @api_define("get activity", "/activity/get_activity",
+                [], description=u"活动图")
+    def get(self):
+        activity = Activity.objects.filter(status_type=0).order_by("-create_time").first()
+
+        data = {
+            "activity": convert_activity(activity)
+        }
+        self.write({"status": "success",
+                    "data": data})
+
+
 

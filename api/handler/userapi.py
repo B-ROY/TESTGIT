@@ -21,6 +21,8 @@ from app.customer.models.personal_tags import *
 from app.customer.models.share import *
 from app.picture.models.picture import *
 from app.util.messageque.msgsender import MessageSender
+from app.customer.models.tools import *
+from app.customer.models.vip import *
 
 
 
@@ -931,6 +933,12 @@ class AUserInfo(BaseHandler):
         dic["audio_status"] = AudioRoomRecord.get_room_status(user_id=user.id)
         dic["check_real_name"] = RealNameVerify.check_user_verify(user_id=user.id)
 
+        # 判断是否是vip
+        user_vip = UserVip.objects.filter(user_id=user.id).first()
+        if user_vip:
+            vip = Vip.objects.filter(id=user_vip.vip_id).first()
+            dic["vip"] = convert_vip(vip)
+
         data.update(dic)
 
         self.write(data)
@@ -998,6 +1006,11 @@ class UserHomepageV1(BaseHandler):
         dic["personal_tags"] = personal_tags
         dic["user"]["picture_count"] = PictureInfo.objects.filter(user_id=home_id, status=0).count()
         dic["picture"] = data_pic
+
+        user_vip = UserVip.objects.filter(user_id=user_id).first()
+        if user_vip:
+            vip = Vip.objects.filter(id=user_vip.vip_id).first()
+            dic["vip"] = convert_vip(vip)
 
         data.update(dic)
 
@@ -1713,5 +1726,62 @@ class UserReport(BaseHandler):
     @login_required
     def post(self):
         return self.write({"status": "success"})
+
+@handler_define
+class RichUserList(BaseHandler):
+    @api_define("rich user list ", r'/live/user/rich_list', [], description=u"千里眼 土豪列表 5个")
+
+    @login_required
+    def get(self):
+
+        # 查看此人是否有千里眼道具
+        user_id = self.current_user_id
+        tool = Tools.objects.filter(tools_type=2).first()
+        tools_count = UserTools.objects.filter(tools_id=str(tool.id), user_id=user_id).count()
+        if tools_count == 0:
+            return self.write({"status": "failed", "error": "目前您没有千里眼道具~"})
+
+        accounts = Account.objects.all().order_by("-diamond")
+
+        # 获取当前时间的前两分钟
+        import time
+        time = int(time.time())
+        pre_time = time - 60 * 2
+        data = []
+
+        for account in accounts:
+            user = account.user
+            # user_beat = UserHeartBeat.objects.filter(user=user, last_report_time__gte=pre_time)
+            # if user_beat:
+            #     if len(data) == 5:
+            #         break
+            #     else:
+            #         dic = {
+            #             "user": convert_user(user)
+            #         }
+            #         data.append(dic)
+
+            # 测试使用:
+            if len(data) == 5:
+                break
+            else:
+                user_vip = UserVip.objects.filter(user_id=user.id).first()
+                if not user_vip:
+                    dic = {
+                        "user": convert_user(user)
+                    }
+                else:
+                    vip = Vip.objects.filter(id=user_vip.vip_id).first()
+                    dic = {
+                        "user": convert_user(user),
+                        "vip": convert_vip(vip)
+                    }
+                data.append(dic)
+
+        # 用户减少一个道具,  消耗道具记录
+        UserTools.reduce_tools(user_id, str(tool.id))
+
+        return self.write({"status": "success", "data": data})
+
 
 

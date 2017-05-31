@@ -23,3 +23,12 @@ def convert_real_picture(picture, with_detail=False):
 
 def convert_comment(comment, with_detail=False):
     return comment.normal_info()
+
+def convert_activity(activity, with_detail=False):
+    return activity.normal_info()
+
+def convert_vip(vip, with_detail=False):
+    return vip.normal_info()
+
+def convert_tools(tools, with_detail=False):
+    return tools.normal_info()

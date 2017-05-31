@@ -25,6 +25,7 @@ from api.handler.thridpard.qcloud_cos import CreateFolderRequest
 from api.handler.thridpard.qcloud.im import QCloudIM
 import json
 from django.conf import settings
+from app.customer.models.vip import *
 
 
 appID = settings.Agora_AppId
@@ -780,13 +781,70 @@ class GetVoiceRoomListV2(BaseHandler):
             personal_tags = UserTags.get_usertags(user_id=user.id)
             if not personal_tags:
                 personal_tags = []
-            dic = {
-                "audioroom": convert_audioroom(audioroom),
-                "user": convert_user(user),
-                "personal_tags":personal_tags,
-                "time_stamp":datetime_to_timestamp(audioroom.open_time)
-            }
+            user_vip = UserVip.objects.filter(user_id=user.id).first()
+            if user_vip:
+                vip = Vip.objects.filter(id=user_vip.vip_id).first()
+                dic = {
+                    "audioroom": convert_audioroom(audioroom),
+                    "user": convert_user(user),
+                    "personal_tags": personal_tags,
+                    "time_stamp": datetime_to_timestamp(audioroom.open_time),
+                    "vip": convert_vip(vip)
+                }
+            else:
+                dic = {
+                    "audioroom": convert_audioroom(audioroom),
+                    "user": convert_user(user),
+                    "personal_tags": personal_tags,
+                    "time_stamp": datetime_to_timestamp(audioroom.open_time)
+                }
+
             data.append(dic)
 
         self.write({"status": "success", "data": data, })
+
+
+# 新人驾到  (在线的, 认证主播 认证时间倒序)
+@handler_define
+class GetNewAnchorList(BaseHandler):
+    @api_define("Get new anchor online list ", r'/audio/room/new_anchor_list', [
+        Param('page', True, str, "1", "1", u'page'),
+        Param('page_count', True, str, "10", "10", u'page_count')
+    ], description=u"新人驾到")
+    def get(self):
+        import time
+
+        from app.customer.models.rank import NewAnchorRank
+        page = self.arg_int('page')
+        page_count = self.arg_int('page_count')
+
+        anchor_list = NewAnchorRank.objects.all()[(page - 1) * page_count:page * page_count]
+        data = []
+        for anchor in anchor_list:
+            user = User.objects.filter(id=anchor.user_id).first()
+            if user.id == 1 or user.id == 2:
+                continue
+            audioroom = AudioRoomRecord.objects.get(id=user.audio_room_id)
+            personal_tags = UserTags.get_usertags(user_id=user.id)
+            user_vip = UserVip.objects.filter(user_id=user.id).first()
+            if user_vip:
+                vip = Vip.objects.filter(id=user_vip.vip_id).first()
+                dic = {
+                    "audioroom": convert_audioroom(audioroom),
+                    "user": convert_user(user),
+                    "personal_tags": personal_tags,
+                    "vip": convert_vip(vip)
+                }
+            else:
+                # 测试
+                vip = Vip.objects.filter(id="5928e5ee2040e4079fff2322").first()
+                dic = {
+                    "audioroom": convert_audioroom(audioroom),
+                    "user": convert_user(user),
+                    "personal_tags": personal_tags,
+                    "vip": convert_vip(vip)
+                }
+            data.append(dic)
+        self.write({"status": "success", "data": data, })
+
 
