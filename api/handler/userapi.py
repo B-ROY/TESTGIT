@@ -224,7 +224,11 @@ class ThridPardLogin(BaseHandler):
         else:
             raise Exception(u"验证码失效")
 
-        return self.create_user(openid=openid, access_token=access_token,phone=phone,userinfo=None,
+        user = User.objects.filter(phone=phone).first()
+        if user:
+            return False, user
+        else:
+            return self.create_user(openid=openid, access_token=access_token,phone=phone,userinfo=None,
                                 source=User.SOURCE_PHONE, channel=channel, site_openid=openid)
 
 
