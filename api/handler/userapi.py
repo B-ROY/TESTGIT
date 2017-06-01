@@ -212,6 +212,7 @@ class ThridPardLogin(BaseHandler):
             channel = uas[5]
 
         ucpass = UcpaasSMS()
+
         result = ucpass.getCacheData(phone)
 
         if result != None:
@@ -344,6 +345,7 @@ class Login(ThridPardLogin):
         #audio_status = AudioRoomRecord.get_room_status(user_id=user.id)
         #if audio_status == 4:
         #    AudioRoomRecord.set_room_status(user_id=user.id, status=1)
+        print data
 
         self.write(data)
 
@@ -769,10 +771,10 @@ class SmsCode(ThridPardLogin):
         result = {}
         reg = usms.sendRegiesterCode(phone, method)
 
-        if reg['respCode'] != '000000':
+        if reg['respCode'] != 0:
             return self.write({"status": "fail", "error": u"获取验证码失败", "message_code": 3, })
 
-        if reg['respCode'] == '000000':
+        if reg['respCode'] == 0:
             result['status'] = "success"
             result['openId'] = reg['openId']
             result['user_key'] = reg['user_key']
