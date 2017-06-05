@@ -6,6 +6,7 @@ from api.document.doc_tools import *
 from api.view.base import *
 from app.customer.models.report import *
 from app.util.messageque.msgsender import MessageSender
+from app.util.shumeitools.shumeitools import *
 
 
 @handler_define
