@@ -345,7 +345,6 @@ class Login(ThridPardLogin):
         #audio_status = AudioRoomRecord.get_room_status(user_id=user.id)
         #if audio_status == 4:
         #    AudioRoomRecord.set_room_status(user_id=user.id, status=1)
-        print data
 
         self.write(data)
 

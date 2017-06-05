@@ -1026,7 +1026,7 @@ class VideoManagerVerify(Document):
 
 
 class UserHeartBeat(Document):
-    REPORT_INTERVAL = 8
+    REPORT_INTERVAL = 60
     PLATFORM = [
         (0, u'Android'),
         (1, u'IOS'),

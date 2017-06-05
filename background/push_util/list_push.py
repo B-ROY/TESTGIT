@@ -105,7 +105,15 @@ GETUI_CONSTANT = {
         "DEVICETOKEN": ""
 
     },
+    "liaoai_xiangliao": {
+        "APPID": "qLvVcpMd2kAn0ZCiPLt581",
+        "APPKEY": "Q4YjUx5BRa65XkNHY6DSP3",
+        "APPSECRET": "64beJRyf4a8Bwc9BxHAld9",
+        "MASTERSECRET": "6F4T36CY0t79Atl2LUbt38",
+        "Alias": '请输入别名',
+        "DEVICETOKEN": ""
 
+    },
 
     "chatpa": {
         "APPID": "ynQsQmDn4SAGEN0tpJ1ER9",

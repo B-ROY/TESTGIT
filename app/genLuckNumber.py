@@ -6,7 +6,7 @@ from redis_model.genlucknum import checkLuckNumber
 
 def gen_luck_number():
     count = LuckIDInfo.objects.all().count()
-    for n in range(3010000, 3040000):
+    for n in range(3040001, 31000000):
         strNum = str(n)
         result = checkLuckNumber(strNum)
         if result:

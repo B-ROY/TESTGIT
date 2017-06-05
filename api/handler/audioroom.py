@@ -650,7 +650,7 @@ class UpdateNowPrice(BaseHandler):
     def get(self):
         user_id = self.current_user_id
         now_price = self.arg("price")
-        if not now_price:
+        if not now_price or int(now_price)==0:
             now_price = 10
         result = AudioRoomRecord.update_now_price(user_id, now_price, 0)
         if result:
