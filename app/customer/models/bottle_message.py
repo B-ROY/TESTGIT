@@ -33,12 +33,12 @@ class BottleMessageText(Document):
     create_time = DateTimeField(verbose_name=u"创建时间")
 
     @classmethod
-    def create_message_text(cls, label, message, sender_type, gender):
+    def create_message_text(cls, label, message, sender_type, to_gender):
         obj_ = cls()
         obj_.label = label
         obj_.message = message
         obj_.sender_type = sender_type
-        obj_.gender = gender
+        obj_.gender = to_gender
         obj_.create_time = datetime.datetime.now()
         obj_.save()
 
@@ -50,7 +50,7 @@ class BottleMessageText(Document):
     @classmethod
     def get_one_mesasge_text(cls, sender_type):
 
-        messages = cls.objects.all()
+        messages = cls.objects.filter(sender_type=sender_type)
         num = random.randint(0,messages.count()-1)
         return messages[num]
 
