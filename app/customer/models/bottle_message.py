@@ -32,6 +32,14 @@ class BottleMessageText(Document):
     delete_status = IntField(verbose_name=u"是否删除", )
     create_time = DateTimeField(verbose_name=u"创建时间")
 
+    def normal_info(self):
+        return {
+            "lable": self.label,
+            "message": self.message,
+            "sender_type": self.sender_type,
+            "gender": self.gender
+        }
+
     @classmethod
     def create_message_text(cls, label, message, sender_type, to_gender):
         obj_ = cls()
@@ -53,6 +61,21 @@ class BottleMessageText(Document):
         messages = cls.objects.filter(sender_type=sender_type)
         num = random.randint(0,messages.count()-1)
         return messages[num]
+
+    @classmethod
+    def get_two_message(cls):
+        to_male_messages = cls.objects.filter(gender=2)  # delete_status=2
+        to_female_messages = cls.objects.filter(gender=1)
+        message_list = []
+
+        if to_male_messages:
+            to_male_num = random.randint(0, to_male_messages.count()-1)
+            message_list.append(to_male_messages[to_male_num])
+        if to_female_messages:
+            to_female_num = random.randint(0, to_female_messages.count()-1)
+            message_list.append(to_female_messages[to_female_num])
+
+        return message_list
 
 
     @classmethod

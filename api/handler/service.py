@@ -7,6 +7,7 @@ from app.customer.models.rank import *
 from app.customer.models.share import *
 from app.util.messageque.msgsender import MessageSender
 from app.customer.models.bottle_message import *
+from app.customer.models.tools import *
 
 
 @handler_define
@@ -130,6 +131,44 @@ class BottleMessageShow(BaseHandler):
 
 
 @handler_define
+class BottleMessageShowV3(BaseHandler):
+    @api_define("bottle message", "/service/bottle/message_v3",
+                [], description=u"服务器返回漂流瓶消息新版v3")
+    @login_required
+    def get(self):
+        count = random.randint(500, 1000)
+        messages = BottleMessageText.get_two_message()
+        message_list = []
+        if len(messages) > 0:
+            for message in messages:
+                dic = {
+                    "label": message.label,
+                    "message": message.message,
+                    "gender": message.gender
+                }
+                message_list.append(dic)
+
+        user_id = int(self.current_user_id)
+        tools = Tools.objects.filter(tools_type=1).first()
+        tools_count = UserTools.objects.filter(user_id=user_id, tools_id=str(tools.id)).sum("tools_count")
+
+        # 漂流瓶
+        tools = Tools.objects.filter(tools_type=1).first()
+
+        data = {
+            "message_list": message_list,
+            "count": count,
+            "tools_count": tools_count,
+            "price": tools.price
+        }
+
+        return self.write({
+            "status": "success",
+            "data": data
+        })
+
+
+@handler_define
 class BottleMessaegSend_V2(BaseHandler):
     @api_define("bottle message send", "/service/bottle/v2_send",
                 [
@@ -158,6 +197,57 @@ class BottleMessaegSend_V2(BaseHandler):
                 "errcode": 30001,
                 "error": u"尚未通过视频认证"
             })
+        else:
+            self.write({
+                "status": "failed",
+                "errcode": 30002,
+                "error": u"勿扰模式下，不能发送漂流瓶"
+            })
+
+
+@handler_define
+class BottleMessaegSend_V3(BaseHandler):
+    @api_define("bottle message send v3 ", "/service/bottle/v3_send",
+                [
+                    Param("label", True, int, 0, 0, description=u"漂流瓶消息标签v3"),
+                    Param("message", True, str, "", "一轮红日"),
+                    Param("gender", True, str, "")
+                ],description=u"发送漂流瓶消息v3 新版")
+    @login_required
+    def get(self):
+        user = self.current_user
+        label = self.arg_int("label")
+        #todo 鉴定label 是否和message匹配 将来加上redis的时候做
+        message_content = self.arg("message")
+        gender = self.arg_int("gender")
+
+        #todo 加上判断
+        if user.disturb_mode == 0:
+            status_code = MessageSender.send_bottle_message_v3(user.id, message_content, gender)
+            count = UserHeartBeat.get_bottle_users_count()
+            if status_code == 200:
+                # todo  创建一条 漂流瓶记录
+                BottleRecord.create_bottle_record(user.id, label, message_content, 0, count)
+
+                # 消耗道具 或者 消耗余额
+                tools = Tools.objects.filter(tools_type=1).first()
+                user_tools = UserTools.objects.filter(user_id=user.id, tools_id=str(tools.id)).first()
+                if user_tools:
+                    # 消耗道具
+                    UserTools.reduce_tools(user_id=user.id, tools_id=str(tools.id))
+                else:
+                    # 消耗余额
+                    # 用户账号余额
+                    account = Account.objects.filter(user=user).first()
+                    # account.last_diamond = account.diamond
+                    # account.diamond -= tools.price
+                    # account.update_time = datetime.datetime.now()
+                    # account.save()
+                    account.diamond_trade_out(price=tools.price, desc=u"漂流瓶消耗金额", trade_type=TradeDiamondRecord.TradeTypeBottle)
+
+                return self.write({"status": "success", "count": count})
+            else:
+                return self.write({"status": "failed", "error_code": status_code, "error": u"漂流瓶消息发送失败"})
         else:
             self.write({
                 "status": "failed",

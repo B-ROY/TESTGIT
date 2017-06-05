@@ -304,6 +304,9 @@ class TradeDiamondRecord(Document):
     TradeTypeShare = 5  # 分享
     TradeTypeMessage = 6  # 消息门槛送礼
     TradeTypeVideo = 7  # 视频聊天
+    TradeTypeTools = 8  # 购买道具
+    TradeTypeBottle = 9  # 漂流瓶消耗余额
+    TradeTypeVIP = 10  # 购买会员
 
     TradeType = [
         (0, u'兑换'),
@@ -314,6 +317,9 @@ class TradeDiamondRecord(Document):
         (5, u'分享'),
         (6, u'消息门槛送礼'),
         (7, u'视频聊天'),
+        (8, u'购买道具'),
+        (9, u'漂流瓶消耗余额'),
+        (10, u'购买会员')
     ]
 
     user = GenericReferenceField("User", verbose_name=u'用户')

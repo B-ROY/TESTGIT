@@ -23,6 +23,7 @@ from app.picture.models.picture import *
 from app.util.messageque.msgsender import MessageSender
 from app.customer.models.tools import *
 from app.customer.models.vip import *
+from app.customer.models.block_user_device import *
 
 
 
@@ -319,6 +320,13 @@ class Login(ThridPardLogin):
             logging.error("login error: blocked user")
             return self.write({"status":"fail","error":"您已被封号！请遵守用户协议！","errcode":"2001"})
 
+        # 判断封设备
+        guid = self.arg("guid")
+        block_dev = BlockUserDev.objects.filter(status__ne=3, devno=guid).first()
+        if block_dev:
+            return self.write({"status": "fail", "error": "您已被封设备！请遵守用户协议！","errcode":"2002"})
+
+
         #convert user info
         data = {}
         data["user"] = convert_user(user)
@@ -569,6 +577,12 @@ class PhoneLogIn(BaseHandler):
             if user.is_blocked:
                 logging.error("phone login error: blocked user")
                 return self.write({"status": "fail", "error": "您已被封号！请遵守用户协议！", "errcode": "2001"})
+
+            # 判断封设备
+            guid = self.arg("guid")
+            block_dev = BlockUserDev.objects.filter(status__ne=3, devno=guid).first()
+            if block_dev:
+                return self.write({"status": "fail", "error": "您已被封设备！请遵守用户协议！","errcode":"2002"})
 
             # convert user info
             data = {}
@@ -1017,6 +1031,17 @@ class UserHomepageV1(BaseHandler):
             vip = Vip.objects.filter(id=user_vip.vip_id).first()
             dic["vip"] = convert_vip(vip)
 
+        # 是否在线 查看心跳
+        import time
+        time = int(time.time())
+        pre_time = time - 60
+        user_beat = UserHeartBeat.objects.filter(user=home_user, last_report_time__gte=pre_time).first()
+        if user_beat:
+            is_online = 1
+        else:
+            is_online = 0
+
+        dic["is_online"] = is_online
         data.update(dic)
 
         self.write({"status": "success", "data": data, })
@@ -1524,7 +1549,7 @@ class MessageCheck(BaseHandler):
                 return self.write({"status": "success", "friend_status": True, })
             else:
                 message_gift = Gift.objects.filter(gift_type=3, status=1).first()
-                data={
+                data = {
                     "id": str(message_gift.id),
                     "name": message_gift.name,
                     "price": message_gift.price,
@@ -1538,6 +1563,35 @@ class MessageCheck(BaseHandler):
                 return self.write({"status": "success", "friend_status": False, "gift":data})
         else:
             return self.write({"status": "fail",})
+
+
+# 消息门槛检测_v1
+@handler_define
+class MessageCheckV1(BaseHandler):
+    @api_define("message check v1", r'/live/user/message/check_v1', [
+        Param("receive_id", True, str, "", "", u"收礼人用户id"),
+    ], description=u"消息门槛检测_V1")
+    @login_required
+    def get(self):
+        send_id = int(self.current_user_id)
+        send_user = User.objects.filter(id=send_id).first()
+        receive_id = self.arg_int("receive_id")
+
+        # 判断是否是主播.主播没有门槛
+        if send_user.is_video_auth == 1:
+            return self.write({"status": "success", "chat_status": True})
+
+        tool = Tools.objects.filter(tools_type=0).first()
+        record = SendToolsRecord.objects.filter(send_id=send_id, receive_id=receive_id, tools_id=str(tool.id)).first()
+        if record:
+            return self.write({"status": "success", "chat_status": True})
+
+        tools_count = UserTools.objects.filter(user_id=send_id, tools_id=str(tool.id)).sum("tools_count")
+        data = {
+            "tool": convert_tools(tool),
+            "count": tools_count
+        }
+        return self.write({"status": "success", "chat_status": False, "data": data})
 
 
 # 消息门槛送礼物
@@ -1559,6 +1613,32 @@ class MessageSendGift(BaseHandler):
                 return self.write({"status": "fail", "error": u"余额不足", })
             else:
                 return self.write({"status": "success", })
+
+
+# 消息门槛送礼物 新版 发道具
+@handler_define
+class MessageSendToolV1(BaseHandler):
+    @api_define("message send gift_v1", r'/live/user/message/send_tool_v1', [
+        Param("receive_id", True, str, "", "", u"收礼人用户id"),
+    ], description=u"消息门槛送礼物_v1 新版")
+    @login_required
+    def get(self):
+        send_id = int(self.current_user_id)
+        receive_id = self.arg_int("receive_id")
+
+        tool = Tools.objects.filter(tools_type=0).first()
+
+        # 判断道具, 有就发道具
+        status = UserTools.has_tools(send_id, str(tool.id))
+        if status == 1:
+            # 消耗道具
+            UserTools.reduce_tools(send_id, str(tool.id))
+            # 添加记录
+            SendToolsRecord.add(send_id, receive_id, str(tool.id), 1)
+            return self.write({"status": "success"})
+        else:
+            return self.write({"status": "fail", "error": u"无可用门槛道具", })
+
 
 
 @handler_define
@@ -1766,6 +1846,21 @@ class RichUserList(BaseHandler):
         UserTools.reduce_tools(user_id, str(tool.id))
 
         return self.write({"status": "success", "data": data})
+
+
+@handler_define
+class OnlineChargeCount(BaseHandler):
+    @api_define("online charge count", "/live/user/online_charge_count",
+                [], description=u"聊友在线人数,土豪充值人数")
+    def get(self):
+        online_count = random.randint(500, 1000)
+        charge_count = random.randint(200, 500)
+        return self.write({
+            "status": "success",
+            "online_count": online_count,
+            "charge_count": charge_count
+        })
+
 
 
 

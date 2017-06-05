@@ -57,3 +57,10 @@ def init_vip_intro_pic():
     vip_pic.name = "会员等级说明"
     vip_pic.save()
 
+def add_vip_adv():
+    adv = VipAdv()
+    adv.img_url = "http://heydopic-10048692.image.myqcloud.com/1496403505_805a3c7cf6a4787978e80f60928c0596"
+    adv.name = "办理vip,无限量加好友"
+    adv.adv_status = 1
+    adv.save()
+

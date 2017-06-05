@@ -23,6 +23,24 @@ class MessageSender:
             logging.error("send bottle message to mq error")
             return 400
 
+
+    @classmethod
+    def send_bottle_message_v3(cls, from_id, desc, gender):
+        body = {}
+        body["from_id"] = from_id
+        body["desc"] = desc
+        body["gender"] = gender
+        path = "/tecent/bottle_v3"  # 记得修改url!!!!!!!!!!!!
+        data = RequestApi.post_body_request_http(path=path, body=json.dumps(body), headers={}, host=cls.Host)
+        result = json.loads(data)
+        print result.get("status_code")
+        if result.get("status_code") == 200:
+            return 200
+        elif result.get("status_code") == 400:
+            logging.error("send bottle message to mq error")
+            return 400
+
+
     @classmethod
     def send_block_user_message(cls, user_id, desc):
         body = {}

@@ -19,7 +19,8 @@ INSTALL_HANDLERS = [
     "api.handler.activity",  # 活动临时接口
     "api.handler.audit",  # 鉴黄举报相关接口
     "api.handler.tools",  # 道具接口
-    "api.handler.vip"  # vip会员接口
+    "api.handler.vip",  # vip会员接口
+    "api.handler.friend"  # 好友会员接口
 ]
 
 INSTALL_HANDLERS_NAME = {
@@ -42,5 +43,6 @@ INSTALL_HANDLERS_NAME = {
     "api.handler.activity": "活动临时接口",
     "api.handler.audit": "净化app接口",
     "api.handler.tools": "道具接口",
-    "api.handler.vip": "会员接口"
+    "api.handler.vip": "会员接口",
+    "api.handler.friend": "好友接口"
 }

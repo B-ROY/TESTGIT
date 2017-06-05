@@ -98,7 +98,7 @@ class Can_Receive(BaseHandler):
             # print "endtime", endtime
             record = UserToolsRecord.objects.filter(user_id=user_id, time_type=0, create_time__gte=starttime, create_time__lte=endtime, oper_type=4).first()
             if not record:
-                print "user_id......", user_id
+                # print "user_id......", user_id
                 can_receive = 1
 
         self.write({"status": "success", "can_receive": can_receive})

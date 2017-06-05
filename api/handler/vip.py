@@ -117,3 +117,22 @@ class Buy_Vip(BaseHandler):
             self.write({"status": "success", "data": data})
         else:
             self.write({"status": "failed", "error_message": message})
+
+
+    @handler_define
+    class Buy_Vip_Adv(BaseHandler):
+        @api_define("buy vip adv ", r'/vip/buy_vip_adv', [], description="办理vip,无限加好友 (广告)")
+
+        def get(self):
+            vip_adv = VipAdv.objects.filter(adv_status=1).first()
+            data = {}
+            vips = Vip.objects.all().order_by("vip_type")
+            vip_list = []  # 会员列表
+            for v in vips:
+                vip_list.append(convert_vip(v))
+
+
+            data["adv_img_url"] = Vip.convert_http_to_https(vip_adv.img_url)
+            data["vip_list"] = vip_list
+            self.write({"status": "success", "data": data})
+

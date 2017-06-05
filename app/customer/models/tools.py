@@ -15,7 +15,7 @@ connect(CHATPAMONGO.db, host=CHATPAMONGO.host, port=CHATPAMONGO.port, username=C
 class Tools(Document):
 
     TOOLS_TYPE = (
-        (0, u'万能钥匙'),
+        (0, u'门禁卡'),
         (1, u'漂流瓶'),
         (2, u'千里眼'),
     )
@@ -84,6 +84,17 @@ class UserTools(Document):
             message = "您的账户余额不足"
             return status, message
         try:
+
+            # 用户账号余额
+            # account.last_diamond = account.diamond
+            # account.diamond -= tools.price
+            # account.update_time = datetime.datetime.now()
+            # account.save()
+
+            account.diamond_trade_out(price=tools.price, desc=u"购买道具, 道具id=%s" %
+                                                                   (str(tools.id)), trade_type=TradeDiamondRecord.TradeTypeTools)
+
+
             user_tools = UserTools.objects.filter(user_id=user_id, tools_id=str(tools_id), time_type=1).first()
             if user_tools:
                 user_tools.tools_count += 1
@@ -113,6 +124,14 @@ class UserTools(Document):
             status = -1
             message = "error"
             return status, message
+
+    @classmethod
+    def has_tools(cls, user_id, tool_id):
+        count = UserTools.objects.filter(tools_id=tool_id, user_id=user_id).count()
+        if count == 0:
+            return 0  # 无道具
+        else:
+            return 1  # 有道具
 
     # 消耗一个道具
     @classmethod
@@ -169,5 +188,38 @@ class UserToolsRecord(Document):
     time_type = IntField(verbose_name=u"道具时限类型", choices=TIME_TYPE)
     oper_type = IntField(verbose_name=u"操作形式", choices=OPER_TYPE)
     create_time = DateTimeField(verbose_name=u"创建时间")
+
+
+# 道具赠送 记录表
+class SendToolsRecord(Document):
+
+    send_id = IntField(verbose_name=u'发送道具用户id', required=True)
+    receive_id = IntField(verbose_name=u'接收道具用户id', required=True)
+    tools_id = StringField(max_length=64, verbose_name=u"道具id")
+    tools_count = IntField(verbose_name=u"道具数量", default=0)
+    create_time = DateTimeField(verbose_name=u"创建时间")
+    update_time = DateTimeField(verbose_name=u"更新时间")
+
+    @classmethod
+    def add(cls,send_id, receive_id, tools_id, tools_count):
+        record = SendToolsRecord.objects.filter(send_id=send_id, receive_id=receive_id, tools_id=tools_id).first()
+        now = datetime.datetime.now()
+        if record:
+            record.tools_count += tools_count
+            record.update_time = now
+            record.save()
+        else:
+            send_record = SendToolsRecord()
+            send_record.send_id = send_id
+            send_record.receive_id = receive_id
+            send_record.tools_id = tools_id
+            send_record.tools_count = tools_count
+            send_record.create_time = now
+            send_record.update_time = now
+            send_record.save()
+
+
+
+
 
 

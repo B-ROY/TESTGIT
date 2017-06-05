@@ -88,10 +88,13 @@ class UserVip(Document):
 
         try:
             # 用户账号余额
-            account.last_diamond = account.diamond
-            account.diamond -= vip.price
-            account.update_time = datetime.datetime.now()
-            account.save()
+            # account.last_diamond = account.diamond
+            # account.diamond -= vip.price
+            # account.update_time = datetime.datetime.now()
+            # account.save()
+
+            account.diamond_trade_out(price=vip.price, desc=u"购买会员, 会员id=%s" %
+                                                              (str(vip.id)), trade_type=TradeDiamondRecord.TradeTypeVIP)
 
             # 用户会员
             user_vip = UserVip.objects.filter(user_id=user_id).first()
@@ -192,6 +195,26 @@ class VipIntroPic(Document):
             return url
         else:
             return url.replace("http", "https")
+
+class VipAdv(Document):
+
+    ADV_STATUS = (
+        (0, u"不可用"),
+        (1, u"可用"),
+    )
+
+    name = StringField(max_length=64, verbose_name=u"vip 广告 名称")
+    img_url = StringField(max_length=512, verbose_name=u"vip adv　图片地址")
+    adv_status = IntField(verbose_name=u"是否可用", choices=ADV_STATUS)
+
+    @classmethod
+    def convert_http_to_https(cls, url):
+        if "https" in url:
+            return url
+        else:
+            return url.replace("http", "https")
+
+
 
 
 
