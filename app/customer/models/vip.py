@@ -1,11 +1,6 @@
 # coding=utf-8
 
-import datetime
-from mongoengine import *
-from base.settings import CHATPAMONGO
-from app.customer.models.account import *
-from app.customer.models.user import User
-from django.db.models import F
+
 from app.customer.models.tools import *
 
 

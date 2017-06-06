@@ -2,7 +2,7 @@
 from django.db import models
 import logging
 from app.customer.models.user import User
-from datetime import *
+import datetime
 from mongoengine import *
 from base.settings import CHATPAMONGO
 
@@ -56,7 +56,7 @@ class BlockUser(Document):
                 _obj.block_room = block_room
             if block_start:
                 _obj.block_start = block_start
-            if blcok_end:
+            if block_end:
                 _obj.block_end = block_end
             if reason:
                 _obj.reason = reason
@@ -85,7 +85,7 @@ class BlockUser(Document):
         return cls.objects.filter(block_user=user).order_by("-block_start").first()
 
     def cancel_block(self):
-        self.block_end = datetime.now()
+        self.block_end = datetime.datetime.now()
         self.status = 0
         user = User.objects.get(id=self.block_user)
         user.is_block = 0

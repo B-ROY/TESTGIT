@@ -1,8 +1,6 @@
 # coding=utf-8
 from django.db import models
 import logging
-from app.customer.models.user import User
-from datetime import *
 from mongoengine import *
 from base.settings import CHATPAMONGO
 
