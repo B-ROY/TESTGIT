@@ -170,6 +170,10 @@ class FriendStatusRecord(Document):
         cls.objects.filter(oper_user_id=oper_user_id, to_user_id=to_user_id).delete()
         cls.objects.filter(oper_user_id=to_user_id, to_user_id=oper_user_id).delete()
 
+    @classmethod
+    def clear_record(cls, record_id):
+        cls.objects.filter(id=record_id).delete()
+
 
 
 
