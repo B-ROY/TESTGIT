@@ -982,7 +982,8 @@ class VideoManagerVerify(Document):
     user_id = IntField(verbose_name=u"用户id")
     avtar_auth = StringField(verbose_name=u"头像认证照片", max_length=256)
     active_auth = StringField(verbose_name=u"动作认证照片", max_length=256)
-    verify_time = DateTimeField(verbose_name=u"上传时间", default=datetime.datetime.now())
+    create_time = DateTimeField(verbose_name=u"上传时间", default=datetime.datetime.now())
+    verify_time = DateTimeField(verbose_name=u"确认时间", default=datetime.datetime.now())
     feedback_reason = StringField(verbose_name=u"认证审核反馈", max_length=256)
     status = IntField(verbose_name=u"认证状态", choices=VERIFY_STATUS)
 
@@ -1001,7 +1002,7 @@ class VideoManagerVerify(Document):
                 avtar_auth=avtar_auth,
                 active_auth=active_auth,
                 feedback_reason=feedback_reason,
-                verify_time=datetime.datetime.now(),
+                create_time=datetime.datetime.now(),
                 status=status,
             )
             verify.save()
@@ -1018,7 +1019,7 @@ class VideoManagerVerify(Document):
 
     @classmethod
     def check_video_manager_verify(cls, user_id):
-        verify = cls.objects(user_id=user_id, status__lt=2).order_by("-verify_time").first()
+        verify = cls.objects(user_id=user_id, status__lt=2).order_by("-create_time, -verify_time").first()
         if verify:
             return verify.status
         else:
