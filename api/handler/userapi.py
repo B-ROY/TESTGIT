@@ -24,6 +24,7 @@ from app.util.messageque.msgsender import MessageSender
 from app.customer.models.tools import *
 from app.customer.models.vip import *
 from app.customer.models.block_user_device import *
+from app.customer.models.rank import *
 
 
 
@@ -1827,33 +1828,15 @@ class RichUserList(BaseHandler):
         tool = Tools.objects.filter(tools_type=2).first()
         tools_count = UserTools.objects.filter(tools_id=str(tool.id), user_id=user_id).count()
         if tools_count == 0:
-            return self.write({"status": "failed", "error": "目前您没有千里眼道具~"})
+            return self.write({"status": "success", "tools": convert_tools(tool), "has_tools": 0})
 
-        accounts = Account.objects.all().order_by("-diamond")
-
-        # 获取当前时间的前两分钟
-        import time
-        time = int(time.time())
-        pre_time = time - 60 * 2
+        ranks = ClairvoyantRank.objects.all()
         data = []
-
-        for account in accounts:
-            user = account.user
-            # user_beat = UserHeartBeat.objects.filter(user=user, last_report_time__gte=pre_time)
-            # if user_beat:
-            #     if len(data) == 5:
-            #         break
-            #     else:
-            #         dic = {
-            #             "user": convert_user(user)
-            #         }
-            #         data.append(dic)
-
-            # 测试使用:
-            if len(data) == 5:
-                break
-            else:
-                user_vip = UserVip.objects.filter(user_id=user.id).first()
+        if ranks:
+            for rank in ranks:
+                userid = rank.user_id
+                user = User.objects.filter(id=userid).first()
+                user_vip = UserVip.objects.filter(user_id=userid).first()
                 if not user_vip:
                     dic = {
                         "user": convert_user(user)
@@ -1866,10 +1849,12 @@ class RichUserList(BaseHandler):
                     }
                 data.append(dic)
 
+        data.reverse()
+
         # 用户减少一个道具,  消耗道具记录
         UserTools.reduce_tools(user_id, str(tool.id))
 
-        return self.write({"status": "success", "data": data})
+        return self.write({"status": "success", "data": data, "has_tools": 1})
 
 
 @handler_define

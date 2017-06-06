@@ -13,7 +13,7 @@ def clear_send_tools():
     now_start = now.strftime("%Y-%m-%d 00:00:00")
     now_end = now.strftime("%Y-%m-%d 23:59:59")
 
-    # 清空昨天的 限时道具
+    # # 清空昨天的 限时道具
     old_tools = UserTools.objects.filter(time_type=0, invalid_time__gte=now_start, invalid_time__lte=now_end)
     if old_tools:
         for old in old_tools:
@@ -96,3 +96,17 @@ def init_tools():
     t3.save()
 
     print "===", Tools.TOOLS_TYPE[2][0]
+
+
+def init_tools_activity():
+    activity = ToolsActivity()
+
+    dic1 = {
+        "0": "1",
+        "1": "1"
+    }
+
+    activity.tools_data = str(dic1)
+    activity.create_time = datetime.datetime.now()
+    activity.delete_status = 1
+    activity.save()

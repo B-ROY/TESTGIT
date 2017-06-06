@@ -120,11 +120,12 @@ class UserVip(Document):
                 tools = Tools.objects.filter(tools_type=int(key)).first()  # 道具
 
                 if int(key) == Tools.TOOLS_TYPE[2][0]:  # 千里眼
-                    #  千里眼是永久的(不会每天送)
+
                     user_tools = UserTools.objects.filter(user_id=user_id, time_type=1, tools_id=str(tools.id)).first()
                     record_time_type = 1
                     if user_tools:
                         user_tools.tools_count = int(value)
+                        user_tools.save()
                     else:
                         user_tools = UserTools()
                         user_tools.user_id = user_id
@@ -136,7 +137,7 @@ class UserVip(Document):
                         user_tools.save()
                 else:
                     # 限时的 (累加  当然每天会被清掉,每天是可以累加的)
-                    user_tools = UserTools.objects.filter(user_id=user_id, time_type=0, get_type=1, tools_id=tools.id).first()
+                    user_tools = UserTools.objects.filter(user_id=user_id, time_type=0, get_type=1, tools_id=str(tools.id)).first()
                     record_time_type = 0
                     if user_tools:
                         user_tools.tools_count = int(value)

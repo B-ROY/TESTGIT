@@ -82,3 +82,7 @@ class NewAnchorRank(Document):
     新人驾到 列表
     """
     user_id = IntField(verbose_name=u"用户id")
+
+
+class ClairvoyantRank(Document):
+    user_id = IntField(verbose_name=u"用户id")

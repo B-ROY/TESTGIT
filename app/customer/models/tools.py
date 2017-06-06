@@ -219,6 +219,21 @@ class SendToolsRecord(Document):
             send_record.save()
 
 
+# 领取道具活动
+class ToolsActivity(Document):
+
+    Delete_STATUS = (
+        (0, u"删除"),
+        (1, u"未删除"),
+    )
+
+    tools_data = StringField(max_length=512, verbose_name=u"道具,字典 字符串 格式")
+    create_time = DateTimeField(verbose_name=u"创建时间", default=datetime.datetime.now())
+    delete_status = IntField(verbose_name=u"是否删除", choices=Delete_STATUS)
+    start_time = DateTimeField(verbose_name=u"起始时间(包含在内)")
+    end_time = DateTimeField(verbose_name=u"结束时间(包含在内)")
+
+
 
 
 

@@ -818,7 +818,6 @@ class GetNewAnchorList(BaseHandler):
         Param('page_count', True, str, "10", "10", u'page_count')
     ], description=u"新人驾到")
     def get(self):
-        import time
 
         from app.customer.models.rank import NewAnchorRank
         page = self.arg_int('page')
@@ -843,12 +842,11 @@ class GetNewAnchorList(BaseHandler):
                 }
             else:
                 # 测试
-                vip = Vip.objects.filter(id="5928e5ee2040e4079fff2322").first()
+                # vip = Vip.objects.filter(id="5928e5ee2040e4079fff2322").first()
                 dic = {
                     "audioroom": convert_audioroom(audioroom),
                     "user": convert_user(user),
-                    "personal_tags": personal_tags,
-                    "vip": convert_vip(vip)
+                    "personal_tags": personal_tags
                 }
             data.append(dic)
         self.write({"status": "success", "data": data, })

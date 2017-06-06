@@ -88,7 +88,8 @@ class Can_Receive(BaseHandler):
         """
 
         # 如果有活动:
-        #====
+        # tools_activity = ToolsActivity.objects.filter(delete_status=1).order_by("-create_time").first()
+        # if tools_activity:
         if user_id:
             now = datetime.datetime.now()
             create_time = now
@@ -114,7 +115,7 @@ class Receive_Tools(BaseHandler):
         user_id = int(self.current_user_id)
         user = self.current_user
         now = datetime.datetime.now()
-        receive_data = {'592912402040e443ffe9a0be': '1', '592912402040e443ffe9a0bf': '1'}
+        receive_data = {'0': '1', '1': '1', '2': '2'}
 
         tools = []
 
@@ -125,14 +126,17 @@ class Receive_Tools(BaseHandler):
         if record:
             return self.write({"status": "failed", "error_message": "已经领取道具", })
 
+        # tools_activity = ToolsActivity.objects.filter(delete_status=1).order_by("-create_time").first()
+        # receive_data = eval(tools_activity.tools_data)
+
 
         for key, value in receive_data.items():
-            # user_tools = UserTools.objects.filter(time_type=0, user_id=user_id, tools_id=key, get_type=0).first()
-            # if user_tools:
-            #     return self.write({"status": "failed", "error_message": "已经领取道具", })
+
+            tools = Tools.objects.filter(tools_type=int(key)).first()  # 道具
+
             user_tools = UserTools()
             user_tools.user_id = user_id
-            user_tools.tools_id = key
+            user_tools.tools_id = str(tools.id)
             user_tools.tools_count = int(value)
             user_tools.time_type = 0
             user_tools.get_type = 0
@@ -142,7 +146,7 @@ class Receive_Tools(BaseHandler):
 
             tools_record = UserToolsRecord()
             tools_record.user_id = user_id
-            tools_record.tools_id = key
+            tools_record.tools_id = str(tools.id)
             tools_record.tools_count = 1
             tools_record.time_type = 0
             tools_record.oper_type = 4
