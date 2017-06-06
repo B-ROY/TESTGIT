@@ -1155,13 +1155,19 @@ class UpdateUserInfo(BaseHandler):
         user = self.current_user
 
         is_change = False
+        is_nickname_change = False
+        is_desc_change = False
+        is_image_change = False
+        is_cover_change = False
 
         if self.has_arg("desc") and user.desc != self.arg("desc"):
             if len(self.arg("desc")) > 32:
                 return self.write({'status': "fail",
                                    'param': 'desc',
                                    'error': "Desc length needs to be less than 32"})
-            user.desc = self.arg("desc")
+            if self.arg("desc") != user.desc:
+                is_desc_change = True
+                user.desc = self.arg("desc")
 
             is_change = True
 
@@ -1171,7 +1177,10 @@ class UpdateUserInfo(BaseHandler):
 
         if self.has_arg("logo"):
             # user.image = self.arg("logo")
-            user.image = User.convert_http_to_https(self.arg("logo"))
+            logo = User.convert_http_to_https(self.arg("logo"))
+            if logo != user.image:
+                is_image_change = True
+                user.image = User.convert_http_to_https(self.arg("logo"))
             is_change = True
 
         if self.has_arg("nickname"):
@@ -1179,7 +1188,10 @@ class UpdateUserInfo(BaseHandler):
                 return self.write({'status': "fail",
                                    'param': 'nickname',
                                    'error': "Nickname length needs to be less than 16"})
-            user.nickname = self.arg("nickname")
+            if self.arg("nickname")!=user.nickname:
+                is_nickname_change = True
+                user.nickname = self.arg("nickname")
+
             is_change = True
 
         if self.has_arg("area"):
@@ -1213,10 +1225,22 @@ class UpdateUserInfo(BaseHandler):
             user.emotional = emotional
             is_change = True
         if self.has_arg("cover"):
-            user.cover = self.arg("cover")
+            cover = User.convert_http_to_https(self.arg("cover"))
+            if cover != user.cover and self.arg("cover") != user.cover:
+                user.cover = self.arg("cover")
+                is_cover_change = True
             is_change = True
         if is_change:
             user.save()
+
+        if is_nickname_change:
+            MessageSender.send_text_check(user.nickname, user.id, 1, self.user_ip)
+        if is_desc_change:
+            MessageSender.send_text_check(user.desc, user.id, 3, self.user_ip)
+        if is_image_change:
+            MessageSender.send_picture_detect(user.image, user.id, 2)
+        if is_cover_change:
+            MessageSender.send_picture_detect(user.cover, user.id, 1)
 
         self.write({'status': "success"})
 

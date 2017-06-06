@@ -1,7 +1,5 @@
 # coding=utf-8
 
-from api.util.shumeitools.shumeitools import *
-
 from api.document.doc_tools import *
 from api.view.base import *
 from app.customer.models.report import *

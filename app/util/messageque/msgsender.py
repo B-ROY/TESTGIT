@@ -209,3 +209,40 @@ class MessageSender:
         elif result.get("status_code") == 400:
             logging.error("send porn_check message to mq error")
             return 400
+
+    @classmethod
+    def send_picture_detect(cls, pic_url, user_id, pic_channel):
+        body={
+            "pic_url": pic_url,
+            "user_id": user_id,
+            "pic_channel": pic_channel
+        }
+        path = "/audit/pic_check"
+        data = RequestApi.post_body_request_http(path=path, body=json.dumps(body), headers={}, host=cls.Host)
+        print data
+        result = json.loads(data)
+        print result.get("status_code")
+        if result.get("status_code") == 200:
+            return 200
+        elif result.get("status_code") == 400:
+            logging.error("send pic_check message to mq error")
+            return 400
+
+    @classmethod
+    def send_text_check(cls, text, user_id, text_channel, ip):
+        body = {
+            "text": text,
+            "user_id": user_id,
+            "text_channel": text_channel,
+            "ip": ip
+        }
+        path = "/audit/text_check"
+        data = RequestApi.post_body_request_http(path=path, body=json.dumps(body), headers={}, host=cls.Host)
+        print data
+        result = json.loads(data)
+        print result.get("status_code")
+        if result.get("status_code") == 200:
+            return 200
+        elif result.get("status_code") == 400:
+            logging.error("send text_check message to mq error")
+            return 400
