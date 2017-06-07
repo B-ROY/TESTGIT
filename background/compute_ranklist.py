@@ -186,11 +186,13 @@ def compute_3_rank_list_delta():
 
 
 def compute_total_ranklist_first():
-    wealth_users = User.objects.filter(is_block=0).order_by("-wealth_value")[0:30]
-    charm_users = User.objects.filter(is_block=0).order_by("-charm_value")[0:30]
+    wealth_users = User.objects.filter(is_block__ne=1).order_by("-wealth_value")[0:30]
+    charm_users = User.objects.filter(is_block__ne=1).order_by("-charm_value")[0:30]
 
     CharmRank.drop_collection()
     WealthRank.drop_collection()
+
+    print wealth_users.count()
 
     for i in range(0, wealth_users.count()):
         wealth_rank = WealthRank(user=wealth_users[i], wealth=wealth_users[i].wealth_value*10, rank=i+1, change_status=0)
@@ -202,21 +204,71 @@ def compute_total_ranklist_first():
 
 
 def compute_total_ranklist_delta():
-    wealth_users = User.objects.all().orderby("wealth_value")[0:30]
-    charm_users = User.objects.all().orderby("charm_value")[0:30]
+    wealth_users = User.objects.filter(is_block__ne=1).order_by("-wealth_value")[0:30]
+    charm_users = User.objects.filter(is_block__ne=1).order_by("-charm_value")[0:30]
 
-    charm_ranks = CharmRank.objects.all()
     wealth_ranks = WealthRank.objects.all()
+    charm_ranks = CharmRank.objects.all()
 
-    # todo 测试服完成之后测试该方法
+    wealth_dict={}
+    charm_dict = {}
+
+    for rank in wealth_ranks:
+        if rank.user in wealth_users:
+            wealth_dict[rank.user.id] = rank
+        else:
+            rank.delete()
+    for i,user in enumerate(wealth_users):
+        if user.id in wealth_dict:
+            rank = wealth_dict[user.id]
+            if rank.rank > i + 1:
+                rank.change_status = 1
+            elif rank.rank == i + 1:
+                rank.change_status = 0
+            else:
+                rank.change_status = 2
+            rank.rank = i + 1
+            rank.wealth = rank.user.wealth_value
+        else:
+            rank = WealthRank()
+            rank.user = user
+            rank.change_status = 1
+            rank.wealth = user.wealth_value
+            rank.rank = i + 1
+            wealth_dict[rank.user.id] = rank
+
+    for rank in charm_ranks:
+        if rank.user in charm_users:
+            charm_dict[rank.user.id] = rank
+        else:
+            rank.delete()
+    for i, user in enumerate(charm_users):
+        if user.id in charm_dict:
+            rank = charm_dict[user.id]
+            if rank.rank > i+1:
+                rank.change_status = 1
+            elif rank.rank == i+1:
+                rank.change_status =0
+            else:
+                rank.change_status =2
+            rank.rank = i+1
+            rank.charm = rank.user.charm_value
+        else:
+            rank = CharmRank()
+            rank.user = user
+            rank.change_status = 1
+            rank.charm = user.charm_value
+            rank.rank = i+1
+            charm_dict[rank.user.id] = rank
 
 
-
-
-
+    for key in charm_dict:
+        charm_dict[key].save()
+    for key in wealth_dict:
+        wealth_dict[key].save()
 
 if __name__ == '__main__':
-    compute_total_ranklist_first()
+    compute_total_ranklist_delta()
 
 
 

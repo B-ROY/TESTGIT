@@ -21,7 +21,7 @@ class CharmRank(Document):
 
     @classmethod
     def get_rank_list(self, interval, count):
-        charm_rank_list = CharmRank.objects.filter(rank__lte=count)
+        charm_rank_list = CharmRank.objects.filter(rank__lte=count).order_by("rank")
 
         return charm_rank_list
 
@@ -41,7 +41,7 @@ class WealthRank(Document):
 
     @classmethod
     def get_rank_list(self, interval, count):
-        wealth_rank_list = WealthRank.objects.filter(rank__lte=count)
+        wealth_rank_list = WealthRank.objects.filter(rank__lte=count).order_by("rank")
 
         return wealth_rank_list
 
