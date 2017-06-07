@@ -24,7 +24,7 @@ class Tools(Document):
     icon_url = StringField(max_length=256, verbose_name=u'icon图片')
     gray_icon_url = StringField(max_length=256, verbose_name=u'icon灰色图片')
     price = IntField(verbose_name=u'道具价格', default=0)
-    tools_type = IntField(verbose_name=u"道具类型", choices=TOOLS_TYPE)
+    tools_type = IntField(verbose_name=u"道具类型")
 
     class Meta:
         app_label = "customer"

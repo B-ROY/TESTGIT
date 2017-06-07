@@ -72,7 +72,8 @@ class Can_Receive(BaseHandler):
     @api_define("can_receive_tools", "/tools/can_receive_tools",
                 [], description=u"是否可领取")
     def get(self):
-        user_id = int(self.current_user_id)
+        current_user_id = self.current_user_id
+
         can_receive = 0  # 0:不可领取   1:可领取
 
         """
@@ -90,7 +91,8 @@ class Can_Receive(BaseHandler):
         # 如果有活动:
         # tools_activity = ToolsActivity.objects.filter(delete_status=1).order_by("-create_time").first()
         # if tools_activity:
-        if user_id:
+        if current_user_id:
+            user_id = int(current_user_id)
             now = datetime.datetime.now()
             create_time = now
             starttime = create_time.strftime("%Y-%m-%d 00:00:00")
@@ -115,9 +117,9 @@ class Receive_Tools(BaseHandler):
         user_id = int(self.current_user_id)
         user = self.current_user
         now = datetime.datetime.now()
-        receive_data = {'0': '1', '1': '1', '2': '1'}
+        receive_data = {'592912402040e443ffe9a0be': '1', '592912402040e443ffe9a0bf': '1', '592912402040e443ffe9a0c0': '1'}
 
-        tools = []
+        tools_list = []
 
         create_time = now
         starttime = create_time.strftime("%Y-%m-%d 00:00:00")
@@ -132,7 +134,7 @@ class Receive_Tools(BaseHandler):
 
         for key, value in receive_data.items():
 
-            tools = Tools.objects.filter(tools_type=int(key)).first()  # 道具
+            tools = Tools.objects.filter(id=key).first()  # 道具
 
             user_tools = UserTools()
             user_tools.user_id = user_id
@@ -161,6 +163,6 @@ class Receive_Tools(BaseHandler):
                 "count": int(value)
             }
 
-            tools.append(dic)
+            tools_list.append(dic)
 
-        self.write({"status": "success", "tools": tools})
+        self.write({"status": "success", "tools": tools_list})
