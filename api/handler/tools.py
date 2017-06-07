@@ -115,7 +115,7 @@ class Receive_Tools(BaseHandler):
         user_id = int(self.current_user_id)
         user = self.current_user
         now = datetime.datetime.now()
-        receive_data = {'0': '1', '1': '1', '2': '2'}
+        receive_data = {'0': '1', '1': '1', '2': '1'}
 
         tools = []
 
@@ -154,7 +154,7 @@ class Receive_Tools(BaseHandler):
             tools_record.save()
 
             # 组装数据
-            temp_tool = Tools.objects.filter(id=key).first()
+            temp_tool = Tools.objects.filter(id=str(tools.id)).first()
             tool_info = convert_tools(temp_tool)
             dic = {
                 "tool": tool_info,
