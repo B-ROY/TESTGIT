@@ -149,7 +149,6 @@ class UserTools(Document):
             time_type = 1
             tools = UserTools.objects.filter(tools_id=tools_id, user_id=user_id).first()
             if tools.tools_count > 1:
-                print tools.tools_count, "+========================="
                 tools.tools_count -= 1
                 tools.save()
             else:

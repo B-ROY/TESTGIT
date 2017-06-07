@@ -83,11 +83,6 @@ class UserVip(Document):
 
         try:
             # 用户账号余额
-            # account.last_diamond = account.diamond
-            # account.diamond -= vip.price
-            # account.update_time = datetime.datetime.now()
-            # account.save()
-
             account.diamond_trade_out(price=vip.price, desc=u"购买会员, 会员id=%s" %
                                                               (str(vip.id)), trade_type=TradeDiamondRecord.TradeTypeVIP)
 
@@ -102,7 +97,10 @@ class UserVip(Document):
                 user_vip.vip_id = vip_id
 
             user_vip.create_time = now
-            end_time = now + datetime.timedelta(days=31)
+            if now.month == 6:
+                end_time = now + datetime.timedelta(days=61)
+            else:
+                end_time = now + datetime.timedelta(days=31)
             user_vip.end_time = end_time
             user_vip.save()
 

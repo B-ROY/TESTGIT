@@ -52,7 +52,7 @@ class GetActivity(BaseHandler):
     @api_define("get activity", "/activity/get_activity",
                 [], description=u"活动图")
     def get(self):
-        activity = Activity.objects.filter(status_type=0).order_by("-create_time").first()
+        activity = Activity.objects.filter(status_type=1).order_by("-create_time").first()
 
         data = {
             "activity": convert_activity(activity)
