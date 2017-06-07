@@ -115,9 +115,9 @@ class UserVip(Document):
             tool_str = vip.tools_data
             tool_dic = eval(tool_str)
             for key, value in tool_dic.items():
-                tools = Tools.objects.filter(id=key).first()  # 道具
+                tools = Tools.objects.filter(tools_type=int(key)).first()  # 道具
 
-                if key == "592912402040e443ffe9a0c0":  # 千里眼
+                if int(key) == 2:  # 千里眼
 
                     user_tools = UserTools.objects.filter(user_id=user_id, time_type=1, tools_id=str(tools.id)).first()
                     record_time_type = 1

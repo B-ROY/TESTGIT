@@ -117,7 +117,7 @@ class Receive_Tools(BaseHandler):
         user_id = int(self.current_user_id)
         user = self.current_user
         now = datetime.datetime.now()
-        receive_data = {'592912402040e443ffe9a0be': '1', '592912402040e443ffe9a0bf': '1', '592912402040e443ffe9a0c0': '1'}
+        receive_data = {'0': '1', '1': '1', '2': '1'}
 
         tools_list = []
 
@@ -134,7 +134,7 @@ class Receive_Tools(BaseHandler):
 
         for key, value in receive_data.items():
 
-            tools = Tools.objects.filter(id=key).first()  # 道具
+            tools = Tools.objects.filter(tools_type=int(key)).first()  # 道具
 
             user_tools = UserTools()
             user_tools.user_id = user_id
