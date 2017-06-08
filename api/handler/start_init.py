@@ -68,6 +68,8 @@ class Initial(BaseHandler):
                                    "增加漂流瓶，遇见神秘的ta" \
                                    "增加公告轮播，提供更多最新消息"
 
+        share_url = "http://www.qqzwq.cn/share/"
+        invite_url = "http://www.qqzwq.cn/invite/liaopa_invite.html"
 
         self.write({
             'status': "success",
@@ -76,4 +78,6 @@ class Initial(BaseHandler):
             "switch": switches,
             "version_info": version_info,
             "report_interval": UserHeartBeat.REPORT_INTERVAL,
+            "share_url": share_url,
+            "invite_url": invite_url
         })
