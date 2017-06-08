@@ -166,3 +166,20 @@ class Receive_Tools(BaseHandler):
             tools_list.append(dic)
 
         self.write({"status": "success", "tools": tools_list})
+
+
+@handler_define
+class UserClairvoyantCount(BaseHandler):
+    @api_define("receive tools", r'/tools/clairvoyant_count', [], description="用户道具个数(千里眼)")
+
+    def get(self):
+        current_user_id = self.current_user_id
+        tool = Tools.objects.filter(tools_type=2).first()
+        if not current_user_id:
+            self.write({"status": "success", "tool": convert_tools(tool), "count": 0})
+        else:
+            user_id = int(self.current_user_id)
+            count = UserTools.objects.filter(user_id=user_id, tools_id=str(tool.id)).sum("tools_count")
+            self.write({"status": "success", "tool": convert_tools(tool), "count": count})
+
+

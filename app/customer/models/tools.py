@@ -25,6 +25,8 @@ class Tools(Document):
     gray_icon_url = StringField(max_length=256, verbose_name=u'icon灰色图片')
     price = IntField(verbose_name=u'道具价格', default=0)
     tools_type = IntField(verbose_name=u"道具类型")
+    is_valid = IntField(verbose_name=u'是否有效', default = 1) #1有效，0 无效
+    desc = StringField(verbose_name=u'描述', max_length=256, default="")
 
     class Meta:
         app_label = "customer"
@@ -39,6 +41,8 @@ class Tools(Document):
             "gray_icon_url": self.convert_http_to_https(self.gray_icon_url),
             "price": self.price,
             "tools_type": self.tools_type,
+            "is_valid": self.is_valid,
+            "desc": self.desc
         }
 
     def convert_http_to_https(self, url):
@@ -79,6 +83,13 @@ class UserTools(Document):
         message = "success"
         now = datetime.datetime.now()
 
+        # 判断道具是否为下架道具
+        if tools.is_valid == 0:
+            status = -1
+            message = "此道具已下架,不可再购买"
+            return status, message
+
+
         if account.diamond < tools.price:
             status = -1
             message = "您的账户余额不足"
@@ -86,14 +97,8 @@ class UserTools(Document):
         try:
 
             # 用户账号余额
-            # account.last_diamond = account.diamond
-            # account.diamond -= tools.price
-            # account.update_time = datetime.datetime.now()
-            # account.save()
-
             account.diamond_trade_out(price=tools.price, desc=u"购买道具, 道具id=%s" %
                                                                    (str(tools.id)), trade_type=TradeDiamondRecord.TradeTypeTools)
-
 
             user_tools = UserTools.objects.filter(user_id=user_id, tools_id=str(tools_id), time_type=1).first()
             if user_tools:

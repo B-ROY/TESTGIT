@@ -23,9 +23,9 @@ def init_vip():
 
     vip2 = Vip()
     dic2 = {
-        "master_key": "5",
-        "bottle": "5",
-        "clairvoyant": "15"
+        "2": "5",
+        "3": "5",
+        "4": "15"
     }
     vip2.name = u"超级会员"
     vip2.icon_url = ""
