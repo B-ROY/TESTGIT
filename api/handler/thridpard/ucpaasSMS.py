@@ -45,6 +45,8 @@ class UcpaasSMS:
 
     __HOST = "https://yun.tim.qq.com/v5/tlssmssvr/sendsms?sdkappid=%s&random=%s"
 
+    __HOST__VOICE = "https://yun.tim.qq.com/v5/tlsvoicesvr/sendvoice?sdkappid=%s&random=%s"
+
     __app_id = 1400028789
     __app_key = '41d0c4112b17dc11a8311a1ec2fd8437'
     __accountToken = "cb6ad643943e90beaaf564b7ee517965"
@@ -65,6 +67,7 @@ class UcpaasSMS:
         random_str = str(random.randint(0,1000000))
         timestamp = int(time.time())
         sig = self.get_sig(random_str, timestamp, telnumber)
+
         url = self.__HOST % (self.__app_id, random_str)
 
         body={}
@@ -80,8 +83,33 @@ class UcpaasSMS:
         body["sig"] = sig
         body["time"] = str(timestamp)
         req = urllib2.Request(url, json.dumps(body))
-        print json.dumps(body)
         res_data = urllib2.urlopen(req).read()
+
+        print res_data
+        return res_data
+
+    def send_VOICESMS(self, telnumber, code):
+
+        random_str = str(random.randint(0, 1000000))
+        timestamp = int(time.time())
+        sig = self.get_sig(random_str, timestamp, telnumber)
+
+        url = self.__HOST__VOICE % (self.__app_id, random_str)
+
+        body = {}
+
+        tel_single = {}
+        tel_single["nationcode"] = "86"
+        tel_single["mobile"] = telnumber
+
+        body["tel"] = tel_single
+        body["msg"] = str(code)
+        body["times"] = 3
+        body["sig"] = sig
+        body["time"] = str(timestamp)
+        req = urllib2.Request(url, json.dumps(body))
+        res_data = urllib2.urlopen(req).read()
+
         print res_data
         return res_data
 
@@ -155,42 +183,43 @@ class UcpaasSMS:
         smscode_cache.disconnect_all()
         return regCache
 
-    def sendRegiesterCode(self, toTelNumber, method=0):
+    def sendRegiesterCode(self, toTelNumber, method=0, sms_type=0):# 0为文字 1为语音
         smscode_cache = pylibmc.Client(memcache_settings["user_cache"], binary=True,
                                        behaviors={"tcp_nodelay": True, "ketama": True})
 
-        result = self.getCacheData(toTelNumber)
-        if result == None:
-            self.__CODE = self.__genCode()
-            # TODO 这里是为了苹果测试
-            if toTelNumber == "13811768998" or toTelNumber == "13552475673" or toTelNumber == "18600023711":
-                self.__CODE = "1234"
-            # TODO: for hacker
-            if toTelNumber == "15655513846":
-                return
-            param = [self.__CODE, "1"]
-            # templateId="25690"
-            if method == 0:
-                # templateId="31623"
-                templateId = 21648
-            elif method == 1 or method == 2:
-                # templateId="35411"
-                templateId = 21647
-            elif method == 3:
-                # templateId="35412"
-                templateId = 21646
-            elif method == 4:
-                # templateId="35711"
-                templateId = 21645
-            reg = []
-            reg.append(self.__CODE)
+
+        self.__CODE = self.__genCode()
+        # TODO 这里是为了苹果测试
+        if toTelNumber == "13811768998" or toTelNumber == "13552475673" or toTelNumber == "18600023711":
+            self.__CODE = "1234"
+        # TODO: for hacker
+        if toTelNumber == "15655513846":
+            return
+        param = [self.__CODE, "1"]
+        # templateId="25690"
+        if method == 0:
+            # templateId="31623"
+            templateId = 21648
+        elif method == 1 or method == 2:
+            # templateId="35411"
+            templateId = 21647
+        elif method == 3:
+            # templateId="35412"
+            templateId = 21646
+        elif method == 4:
+            # templateId="35711"
+            templateId = 21645
+        reg = []
+        reg.append(self.__CODE)
+        if sms_type == 0:
             reg.append(self.send_SMS(toTelNumber, templateId, param))
-            reult = self.__analyzing(reg, toTelNumber)
-            print reult
-            smscode_cache.add(toTelNumber, reult)
-            return reult
+        else:
+            reg.append(self.send_VOICESMS(toTelNumber, self.__CODE))
+        reult = self.__analyzing(reg, toTelNumber)
+        print reult
+        smscode_cache.set(toTelNumber, reult)
         smscode_cache.disconnect_all()
-        return result
+        return reult
 
     def sendForgetPassCode(self, toTelNumber):
         self.__CODE = self.__genCode()

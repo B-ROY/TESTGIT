@@ -216,6 +216,7 @@ class GiftRecord(Document):
     from_id = StringField(max_length=32,verbose_name=u"送礼人")
     to_id = StringField(max_length=32, verbose_name=u"收礼人")
     room_id = StringField(max_length=32, verbose_name=u"送礼物房间id")
+    create_time = DateTimeField(verbose_name=u"送礼时间")
 
     @classmethod
     def create(cls, gift_id, gift_name, gift_logo, gift_price, gift_count, from_id, to_id,room_id=""):
@@ -228,7 +229,7 @@ class GiftRecord(Document):
         gift_record.from_id = from_id
         gift_record.to_id = to_id
         gift_record.room_id = room_id
-
+        gift_record.create_time = datetime.datetime.now()
         gift_record.save()
 
     @classmethod

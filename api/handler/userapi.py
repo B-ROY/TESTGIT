@@ -276,6 +276,7 @@ class Login(ThridPardLogin):
         Param('sms_code',False,str,"","",u'短信验证码'),
         Param('createdate',False,str,"","",u'申请验证码时间'),
         Param('platform', True, str, "ios", "ios", u'可选:ios,android,h5'),
+        Param('phone',False, str, "", "", u'电话号码')
     ], description=u"登录接口",protocal="https")
     def get(self):
         #获取参数
@@ -737,10 +738,12 @@ class PhoneResetPassword(BaseHandler):
 class SmsCode(ThridPardLogin):
     @api_define("",r'/live/sms/login',[
         Param('phone', False, str,"","18600023711",u'手机号'),
-        Param('method', True, str, "0", "0", u"获取方式(0为注册,1为找回密码,2为修改密码,3为绑定手机号,4为提现登录)")
+        Param('method', True, str, "0", "0", u"获取方式(0为注册,1为找回密码,2为修改密码,3为绑定手机号,4为提现登录)"),
+        Param('sms_type', False, int, 1, 1, u"验证码类型（0为短信，1为语音)")
     ],description=u"获取验证码接口",protocal="https")
     def get(self):
         method = self.arg_int("method", 0)
+        sms_type = self.arg_int("sms_type", 0)
         if method == 0:
             phone = self.arg('phone')
             status, user_phone = PhonePassword.create_phone(phone=phone)
@@ -783,7 +786,8 @@ class SmsCode(ThridPardLogin):
         usms = UcpaasSMS()
         reg = {}
         result = {}
-        reg = usms.sendRegiesterCode(phone, method)
+        reg = usms.sendRegiesterCode(phone, method, sms_type)
+
 
         if reg['respCode'] != 0:
             return self.write({"status": "fail", "error": u"获取验证码失败", "message_code": 3, })
@@ -1324,7 +1328,7 @@ class GetSign(BaseHandler):
         # url = image.generate_res_url_v2(bucket, userid, file_id)
         auth = tencentyun.Auth(secret_id, secret_key)
         sign = auth.get_app_sign_v2(bucket, file_id, expired)
-        ret = {'sign': sign}
+        ret = {'status':'success', 'sign': sign, 'bucket':bucket}
         self.write(ret)
 
 

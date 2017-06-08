@@ -191,13 +191,14 @@ class MessageSender:
 
 
     @classmethod
-    def send_porn_check(cls, file_id, pic_url, room_id, user_id, join_id):
+    def send_porn_check(cls, file_id, pic_url, room_id, user_id, join_id, room_user_id):
         body = {
             "file_id": file_id,
             "pic_url": pic_url,
             "room_id": room_id,
             "user_id": user_id,
-            "join_id": join_id
+            "join_id": join_id,
+            "room_user_id": room_user_id
         }
         path = "/audit/porn_check"
         data = RequestApi.post_body_request_http(path=path, body=json.dumps(body), headers={}, host=cls.Host)

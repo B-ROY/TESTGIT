@@ -28,7 +28,7 @@ def shumei_image_detect(pic_url, timeout,user_id,channel,sex,phone):
         channel_desc = "HEAD_IMGE"
     elif channel == 3:
         channel_desc = "CHAT_IMG"
-    data = {"img": pic_url, "tokenId": str(user_id), "channel": "HEAD_IMAGE"}
+    data = {"img": pic_url, "tokenId": str(user_id), "channel": channel_desc}
     playload = {"accessKey": ACCESS_KEY, "type": PIC_TYPE, "data": data, "sex":sex, "age":0, "phone":phone}
     body = json.dumps(playload)
     shumei_url = "http://api.fengkongcloud.com/v2/saas/anti_fraud/img"

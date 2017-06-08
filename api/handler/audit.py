@@ -14,7 +14,7 @@ class PornCheck(BaseHandler):
                     Param("file_id", True, str, "", "", description=u"图片id"),
                     Param("pic_url", True, str, "", "", description=u"图片url"),
                     Param("room_id", False, str, "", "", description=u"当前房间id"),
-                    Param("user_id", True, str, "", "", description=u"用户id(图片拥有者)"),
+                    Param("user_id", True, str, "", "", description=u"主播id)"),
                     Param("join_id", False, str, "", "", description=u"房间加入者")
 
                 ],
@@ -25,11 +25,14 @@ class PornCheck(BaseHandler):
         file_id = self.arg("file_id")
         pic_url = self.arg("pic_url")
         room_id = self.arg("room_id")
-        user_id = self.arg("user_id")
+        room_user_id = self.arg("user_id")
         join_id = self.arg("join_id")
 
+        user_id = self.current_user_id
+
+
         #PornCheckItem.create_item(file_id=file_id, pic_url=pic_url,room_id=room_id,user_id=user_id,join_id=join_id)
-        MessageSender.send_porn_check(file_id=file_id, pic_url=pic_url,room_id=room_id, user_id=user_id, join_id=join_id)
+        MessageSender.send_porn_check(file_id=file_id, pic_url=pic_url,room_id=room_id, user_id=user_id, join_id=join_id, room_user_id=room_user_id)
         return self.write({
             "status": "success",
         })
