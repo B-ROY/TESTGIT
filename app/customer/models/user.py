@@ -1078,7 +1078,22 @@ class RegisterInfo():
 
 
 
+class UserAppealRecord(Document):
+    user = GenericReferenceField("User", verbose_name=u"用户")
+    reason = StringField(verbose_name=u"申诉理由")
+    phone = StringField(verbose_name=u"手机号码")
+    create_time = DateTimeField(verbose_name=u"申诉时间")
 
+    feedback = StringField(verbose_name=u"运营反馈")
+    feedback_time = DateTimeField(verbose_name=u"运营")
+    
+    @classmethod
+    def create_user_appeal_record(cls, user, reason, phone):
+        _obj = cls()
+        _obj.user = user
+        _obj.reason = reason
+        _obj.phone = phone
+        _obj.save()
 
 
 

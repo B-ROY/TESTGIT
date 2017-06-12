@@ -25,6 +25,7 @@ from app.customer.models.tools import *
 from app.customer.models.vip import *
 from app.customer.models.block_user_device import *
 from app.customer.models.rank import *
+from app.customer.models.user import UserAppeal
 
 
 
@@ -320,13 +321,13 @@ class Login(ThridPardLogin):
 
         if user.is_blocked:
             logging.error("login error: blocked user")
-            return self.write({"status":"fail","error":"您已被封号！请遵守用户协议！","errcode":"2001"})
+            return self.write({"status":"fail","error":"您已被封号！请遵守用户协议！","errcode":"2001", "_uid":user.id})
 
         # 判断封设备
         guid = self.arg("guid")
         block_dev = BlockUserDev.objects.filter(status__ne=3, devno=guid).first()
         if block_dev:
-            return self.write({"status": "fail", "error": "您已被封设备！请遵守用户协议！","errcode":"2002"})
+            return self.write({"status": "fail", "error": "您已被封设备！请遵守用户协议！","errcode":"2002", "_uid":user.id})
 
 
         #convert user info
@@ -1875,6 +1876,28 @@ class OnlineChargeCount(BaseHandler):
             "online_count": online_count,
             "charge_count": charge_count
         })
+
+#Post 需要测试负载均衡
+@handler_define
+class UserAppeal(BaseHandler):
+    @api_define("user appeal ", "/live/user/appeal", [
+        Param("user_id", True, int, 0, 1, description=u"用户id"),
+        Param("reason", True, str, "", "", description=u"申诉理由"),
+        Param("phone", True, str, "", "", description=u"手机号码")
+
+    ])
+    def post(self):
+        user_id = self.arg_int("user_id")
+        reason = self.arg("reason")
+        phone = self.arg("phone")
+
+        user = User.objects.get(id=user_id)
+        UserAppealRecord.create_record(user, reason, phone)
+
+
+
+
+
 
 
 

@@ -228,7 +228,7 @@ def compute_total_ranklist_delta():
             else:
                 rank.change_status = 2
             rank.rank = i + 1
-            rank.wealth = rank.user.wealth_value
+            rank.wealth = rank.user.wealth_value * 10
         else:
             rank = WealthRank()
             rank.user = user
