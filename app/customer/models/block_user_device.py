@@ -64,7 +64,7 @@ class BlockUserRecord(Document):
 
     @classmethod
     def get_block_list(cls, last_day):
-        return cls.objects.filter(block_date__lt=last_day)[0:7]
+        return cls.objects.filter(block_date__lt=last_day).order_by("-block_date")[0:10]
 
     @classmethod
     def write_record_daily(cls):
