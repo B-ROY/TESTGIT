@@ -1887,7 +1887,7 @@ class UserAppeal(BaseHandler):
         Param("phone", False, str, "", "", description=u"手机号码")
 
     ], description=u"申诉接口")
-    def post(self):
+    def get(self):
         user_id = self.arg_int("user_id")
         reason = self.arg("reason", "")
         phone = self.arg("phone", "")

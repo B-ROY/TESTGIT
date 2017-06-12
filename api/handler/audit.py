@@ -317,12 +317,22 @@ class BlockList(BaseHandler):
                 str_users = record.block_user_id
             else:
                 str_users = record.block_user_id + "," + record.block_user_dev
+
+            record_date_1 = record.block_date.strftime(u"%m月%d日")
+            title = record_date_1 + u"违规公告"
+
+            record_date_2 = (record.block_date-datetime.timedelta(days=1)).strftime(u"%m月%d日")
+            content = record_date_2 + u"违规（包括且不限于色情、欺诈、拉人）封停账号如下：" + str_users + "\n\n"\
+                        + record.block_date.strftime(u"%Y年%m月%d日")
+
+
             dic = {
                 "date": record.block_date.strftime("%Y-%m-%d"),
-                "users": str_users
+                "title": title,
+                "content": content
             }
             data.append(dic)
-        a = datetime.datetime.now()
+
         self.write({
             "status": "success",
             "data": data
