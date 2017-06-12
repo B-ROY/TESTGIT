@@ -233,7 +233,7 @@ def compute_total_ranklist_delta():
             rank = WealthRank()
             rank.user = user
             rank.change_status = 1
-            rank.wealth = user.wealth_value
+            rank.wealth = user.wealth_value * 10
             rank.rank = i + 1
             wealth_dict[rank.user.id] = rank
 
