@@ -5,6 +5,7 @@ from api.view.base import *
 from app.customer.models.report import *
 from app.util.messageque.msgsender import MessageSender
 from app.util.shumeitools.shumeitools import *
+from app.customer.models.block_user_device import BlockUserRecord
 
 
 @handler_define
@@ -164,10 +165,6 @@ class TextCheck(BaseHandler):
         })
 
 
-
-
-
-
 """
 @handler_define
 class PictureCheck(BaseHandler):
@@ -294,3 +291,42 @@ class MessageTextCheck(BaseHandler):
 
         pass
 """
+
+@handler_define
+class BlockList(BaseHandler):
+    @api_define("block list", "/audit/block_list", [
+                    Param("last_day", False, str, "2017-06-10", "2017-06-20", "最后一条记录时间，默认当天,格式年-月-日")
+                ],
+                description=u"封号列表"
+                )
+    def get(self):
+
+        last_day = self.arg("last_day", "")
+        if last_day:
+            last_day = datetime.datetime.strptime(last_day, '%Y-%m-%d')
+        else:
+            last_day = datetime.datetime.today()
+
+        block_list = BlockUserRecord.get_block_list(last_day)
+        data = []
+
+        for record in block_list:
+            if not record.block_user_id:
+                str_users = record.block_user_dev
+            elif not record.block_user_dev:
+                str_users = record.block_user_id
+            else:
+                str_users = record.block_user_id + "," + record.block_user_dev
+            dic = {
+                "date": record.block_date.strftime("%Y-%m-%d"),
+                "users": str_users
+            }
+            data.append(dic)
+        a = datetime.datetime.now()
+        self.write({
+            "status": "success",
+            "data": data
+        })
+
+
+
