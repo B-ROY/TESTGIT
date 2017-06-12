@@ -1892,7 +1892,7 @@ class UserAppeal(BaseHandler):
         phone = self.arg("phone")
 
         user = User.objects.get(id=user_id)
-        UserAppealRecord.create_record(user, reason, phone)
+        UserAppealRecord.create_user_appeal_record(user, reason, phone)
 
 
 
