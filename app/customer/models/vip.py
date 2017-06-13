@@ -30,6 +30,7 @@ class Vip(Document):
     pic_chat = IntField(verbose_name=u"聊天图片功能", choices=STATUS, default=1)
     video_chat = IntField(verbose_name=u"聊天视频功能", choices=STATUS, default=1)
     price = IntField(verbose_name=u"会员价格(分)")
+    original_price = IntField(verbose_name=u"原价 会员价格(分)")
     worth = IntField(verbose_name=u"价值(分)")
 
     def normal_info(self):
@@ -43,7 +44,8 @@ class Vip(Document):
             "pic_chat": self.pic_chat,
             "video_chat": self.video_chat,
             "price": self.price,
-            "worth": self.worth
+            "worth": self.worth,
+            "original_price": self.original_price,
         }
 
     @classmethod

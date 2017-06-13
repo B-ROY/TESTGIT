@@ -1032,7 +1032,7 @@ class UserHomepageV1(BaseHandler):
         dic["user"]["picture_count"] = PictureInfo.objects.filter(user_id=home_id, status=0).count()
         dic["picture"] = data_pic
 
-        user_vip = UserVip.objects.filter(user_id=user_id).first()
+        user_vip = UserVip.objects.filter(user_id=home_id).first()
         if user_vip:
             vip = Vip.objects.filter(id=user_vip.vip_id).first()
             dic["vip"] = convert_vip(vip)

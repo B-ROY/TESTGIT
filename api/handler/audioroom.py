@@ -829,6 +829,7 @@ class GetNewAnchorList(BaseHandler):
             user = User.objects.filter(id=anchor.user_id).first()
             if user.id == 1 or user.id == 2:
                 continue
+
             audioroom = AudioRoomRecord.objects.get(id=user.audio_room_id)
             personal_tags = UserTags.get_usertags(user_id=user.id)
             user_vip = UserVip.objects.filter(user_id=user.id).first()

@@ -40,6 +40,10 @@ class Adv(Document):
     image = StringField(max_length=256, verbose_name=u'广告图片')
     title = StringField(max_length=50, verbose_name=u'广告标题')
     seq = IntField(verbose_name=u'排序', default=0)
+    share_img = StringField(max_length=256, verbose_name=u'分享缩略图地址')
+    share_title = StringField(max_length=64, verbose_name=u'分享标题')
+    share_desc = StringField(max_length=256, verbose_name=u'分享描述')
+
 
     class Meta:
         app_label = "customer"
@@ -53,6 +57,9 @@ class Adv(Document):
             "image": self.image,
             "seq": self.seq,
             "title": self.title,
+            "share_img": Adv.convert_http_to_https(self.share_img),
+            "share_title": self.share_title,
+            "share_desc": self.share_desc,
         }
 
     @classmethod
@@ -90,6 +97,15 @@ class Adv(Document):
         except Exception, e:
             logging.error("update Gift error:{0}".format(e))
         return ''
+
+    @classmethod
+    def convert_http_to_https(cls, url):
+        if not url:
+            return ""
+        if "https" in url:
+            return url
+        else:
+            return url.replace("http", "https")
 
 
 
