@@ -322,8 +322,7 @@ class BlockList(BaseHandler):
             title = record_date_1 + u"违规公告"
 
             record_date_2 = (record.block_date-datetime.timedelta(days=1)).strftime(u"%m月%d日")
-            content = record_date_2 + u"违规（包括且不限于色情、欺诈、拉人）封停账号如下：" + str_users + "\n\n"\
-                        + record.block_date.strftime(u"%Y年%m月%d日")
+            content = record_date_2 + u"违规（包括且不限于色情、欺诈、拉人）封停账号如下：" + str_users
 
 
             dic = {
