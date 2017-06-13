@@ -79,7 +79,7 @@ class Buy_Vip(BaseHandler):
 
         vip_id = self.arg("vip_id", "")
         if vip_id == "":
-            self.write({"status": "failed", "error_message": "请选择会员种类", })
+            return self.write({"status": "failed", "error_message": "请选择会员种类", })
 
         status, message = UserVip.buy_vip(user_id, vip_id)
 
@@ -114,9 +114,9 @@ class Buy_Vip(BaseHandler):
                 'vip_icon': vip_icon,
                 'vip_detail_pic': VipIntroPic.convert_http_to_https(vip_pic.pic_url)
             }
-            self.write({"status": "success", "data": data})
+            return self.write({"status": "success", "data": data})
         else:
-            self.write({"status": "failed", "error_message": message})
+            return self.write({"status": "failed", "error_message": message})
 
 
     @handler_define

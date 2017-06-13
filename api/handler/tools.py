@@ -22,14 +22,14 @@ class Buy_Tools(BaseHandler):
 
         tools_id = self.arg("tools_id", "")
         if tools_id == "":
-            self.write({"status": "failed", "error_message": "请选择道具", })
+            return self.write({"status": "failed", "error_message": "请选择道具", })
 
         status, message = UserTools.buy_tools(user_id, tools_id)
 
         if status == 200:
-            self.write({"status": "success"})
+            return self.write({"status": "success"})
         else:
-            self.write({"status": "failed", "error_message": message})
+            return self.write({"status": "failed", "error_message": message})
 
 
 @handler_define
@@ -176,10 +176,10 @@ class UserClairvoyantCount(BaseHandler):
         current_user_id = self.current_user_id
         tool = Tools.objects.filter(tools_type=2).first()
         if not current_user_id:
-            self.write({"status": "success", "tool": convert_tools(tool), "count": 0})
+            return self.write({"status": "success", "tool": convert_tools(tool), "count": 0})
         else:
             user_id = int(self.current_user_id)
             count = UserTools.objects.filter(user_id=user_id, tools_id=str(tool.id)).sum("tools_count")
-            self.write({"status": "success", "tool": convert_tools(tool), "count": count})
+            return self.write({"status": "success", "tool": convert_tools(tool), "count": count})
 
 
