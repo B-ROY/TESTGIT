@@ -1784,7 +1784,6 @@ class UserHeartBeatReport(BaseHandler):
     @api_define("user hearbeat", r"/live/user/heartbeat",[
         Param("user_id", False, str, 0, 0, description=u"当前用户uid")
     ], description=u"用户上报心跳")
-    @login_required
     def get(self):
         user_id = self.current_user_id
         if self.has_arg("user_id"):# androi多进程导致token可能是上一个登录的人的token
