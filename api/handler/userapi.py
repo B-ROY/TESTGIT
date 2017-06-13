@@ -579,13 +579,13 @@ class PhoneLogIn(BaseHandler):
 
             if user.is_blocked:
                 logging.error("phone login error: blocked user")
-                return self.write({"status": "fail", "error": "您已被封号！请遵守用户协议！", "errcode": "2001"})
+                return self.write({"status": "fail", "error": "您已被封号！请遵守用户协议！", "errcode": "2001", "_uid":user.id})
 
             # 判断封设备
             guid = self.arg("guid")
             block_dev = BlockUserDev.objects.filter(status__ne=3, devno=guid).first()
             if block_dev:
-                return self.write({"status": "fail", "error": "您已被封设备！请遵守用户协议！","errcode":"2002"})
+                return self.write({"status": "fail", "error": "您已被封设备！请遵守用户协议！","errcode":"2002", "_uid":user.id})
 
             # convert user info
             data = {}
