@@ -30,7 +30,7 @@ class RecommendList(BaseHandler):
                 hot_ids.append(user.id)
 
         for heartbeat in heartbeats:
-            if heartbeat.user.charm_value > 1000 and heartbeat.user.disturb_mode != 1 \
+            if heartbeat.user.charm_value > 2500 and heartbeat.user.disturb_mode != 1 \
                     and heartbeat.user.id not in hot_ids :
                 hots.append(heartbeat.user)
 
