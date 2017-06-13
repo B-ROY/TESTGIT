@@ -53,12 +53,13 @@ class GetActivity(BaseHandler):
                 [], description=u"活动图")
     def get(self):
         activity = Activity.objects.filter(status_type=1).order_by("-create_time").first()
-
-        data = {
-            "activity": convert_activity(activity)
-        }
-        self.write({"status": "success",
-                    "data": data})
+        if activity:
+            data = {
+                "activity": convert_activity(activity)
+            }
+            return self.write({"status": "success","data": data})
+        else:
+            return self.write({"status": "success"})
 
 
 
