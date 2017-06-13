@@ -1834,7 +1834,11 @@ class RichUserList(BaseHandler):
         tools_count = UserTools.objects.filter(tools_id=str(tool.id), user_id=user_id).count()
         if tools_count == 0:
             account = Account.objects.filter(user=user).first()
-            account.diamond_trade_out(price=tool.price, desc=u"千里眼消耗金额", trade_type=TradeDiamondRecord.TradeTypeClairvoyant)
+            try:
+                account.diamond_trade_out(price=tool.price, desc=u"千里眼消耗金额", trade_type=TradeDiamondRecord.TradeTypeClairvoyant)
+            except ApiException, e:
+                return self.write({"status": "success", "error": "余额不足"})
+
         else:
             # 用户减少一个道具,  消耗道具记录
             UserTools.reduce_tools(user_id, str(tool.id))
