@@ -62,7 +62,10 @@ def clairvoyant_rank():
         user = account.user
         user_beat = UserHeartBeat.objects.filter(user=user, last_report_time__gte=pre_time)
         if user_beat:
-            if len(user_list) == 5:
+            if user.is_video_auth == 1:
+                continue
+
+            if len(user_list) == 6:
                 break
             else:
                 user_list.append(user.id)

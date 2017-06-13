@@ -1843,11 +1843,22 @@ class RichUserList(BaseHandler):
             # 用户减少一个道具,  消耗道具记录
             UserTools.reduce_tools(user_id, str(tool.id))
 
-        ranks = ClairvoyantRank.objects.all()
+        temp_ranks = ClairvoyantRank.objects.all()
+
+        user_ids = []
+        for r in temp_ranks:
+            user_ids.append(r.user_id)
+
+        # 判断本人是否在列表中
+        if user_id in user_ids:
+            user_ids.remove(user_id)
+        else:
+            user_ids = user_ids[:5]
+
+
         data = []
-        if ranks:
-            for rank in ranks:
-                userid = rank.user_id
+        if user_ids:
+            for userid in user_ids:
                 user = User.objects.filter(id=userid).first()
                 user_vip = UserVip.objects.filter(user_id=userid).first()
                 if not user_vip:

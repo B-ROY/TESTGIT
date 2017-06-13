@@ -95,13 +95,23 @@ class ApplyList(BaseHandler):
                 record = FriendStatusRecord.objects.filter(oper_user_id=user_id, to_user_id=r.oper_user_id, friend_status=2)
                 if not record:
                     user = User.objects.filter(id=r.oper_user_id).first()
-                    date_time = r.create_time.strftime('%Y-%m-%d %H:%M:%S')
-                    dic = {
-                        "record_id": str(r.id),
-                        "user": convert_user(user),
-                        "status": r.friend_status,
-                        "date_time": date_time
-                    }
+                    friended = Friend.objects.filter(user_id=user_id, friend_id=user.id, friend_status=2).first()
+                    if friended:
+                        date_time = friended.update_time.strftime('%Y-%m-%d %H:%M:%S')
+                        dic = {
+                            "record_id": str(r.id),
+                            "user": convert_user(user),
+                            "status": 2,
+                            "date_time": date_time
+                        }
+                    else:
+                        date_time = r.create_time.strftime('%Y-%m-%d %H:%M:%S')
+                        dic = {
+                            "record_id": str(r.id),
+                            "user": convert_user(user),
+                            "status": r.friend_status,
+                            "date_time": date_time
+                        }
                     data.append(dic)
 
 
