@@ -1396,8 +1396,8 @@ class ReportIOSLog(BaseHandler):
 class CreateFeedback(BaseHandler):
     @api_define("create feedback", r'/live/feedback',[
         Param("desc", True, str, "", "", u'反馈描述'),
-        Param("phone", False, str, "", "", u'反馈手机号码'),
-        Param("qq", False, str, "", "", u'反馈人的QQ号码')
+        Param("feedbackphone", False, str, "", "", u'反馈手机号码'),
+        Param("feedbackqq", False, str, "", "", u'反馈人的QQ号码')
         #Param("mobile_type", True, str, "", "", u'手机类型'),
     ], description=u"创建用户反馈")
     @login_required
@@ -1405,8 +1405,8 @@ class CreateFeedback(BaseHandler):
         user_id = self.current_user_id
         desc = self.arg("desc", "")
         ua = self.request.headers.get('User-Agent')
-        phone_number = self.arg("phone", "")
-        qq_number = self.arg("qq", "")
+        phone_number = self.arg("feedbackphone", "")
+        qq_number = self.arg("feedbackqq", "")
         created_at = datetime.datetime.now()
         status = FeedbackInfo.check_feedback(user_id=user_id, created_at=created_at)
         if status:
