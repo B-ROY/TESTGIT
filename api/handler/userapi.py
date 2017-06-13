@@ -1313,7 +1313,7 @@ class GetSign(BaseHandler):
         import time
 
         # TODO: heydoshow 加入了token，导致样式需要验证才能通过，所以暂时先修改为hdlive
-        bucket = 'hdlive'
+        bucket = 'pornverify'
         secret_id = 'AKIDgknyBYkNKnpONeweTRwK9t6Nn0jn78yG'
         secret_key = 'fBCXVJK1PpWPtYizb7vIGVMIJFm90GBa'
         conf.set_app_info(
