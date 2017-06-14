@@ -257,7 +257,7 @@ class User(Document):
 
         except User.DoesNotExist:
             if image and source != cls.SOURCE_PHONE:
-                image = User.convert_http_to_https(cls.upload_logo(image))
+                image = User.convert_http_to_https(cls.upload_logo(image,gender))
 
             is_new = True
 
@@ -370,7 +370,7 @@ class User(Document):
 
         except User.DoesNotExist:
             if image and source != cls.SOURCE_PHONE:
-                image = User.convert_http_to_https(cls.upload_logo(image))
+                image = User.convert_http_to_https(cls.upload_logo(image,gender))
 
             if source == cls.SOURCE_PHONE:
                 complete_info = 1
@@ -476,7 +476,7 @@ class User(Document):
         return is_new, user
 
     @classmethod
-    def upload_logo(cls, headimgurl):
+    def upload_logo(cls, headimgurl, gender):
         import urllib2
 
         img = urllib2.urlopen(headimgurl)
@@ -486,7 +486,8 @@ class User(Document):
             data = UploadImage.push_binary_to_qclude(idata)
             return data.get("data", {}).get('download_url', '')
         else:
-            return "https://hdlive-10048692.image.myqcloud.com/5c8ff8bdc5a3645edcd8d4f9313f29e7"
+            return "https://hdlive-10048692.image.myqcloud.com/head_1497412888" if gender == 1 \
+                else "https://hdlive-10048692.image.myqcloud.com/head_1497413140"
 
     def upload_client_id(self, cid, platform, osver, app_name):
         try:
@@ -590,9 +591,9 @@ class User(Document):
             nickname = user.sid
         if not img:
             if gender == 1:
-                img = "https://hdlive-10048692.image.myqcloud.com/activity_1489642292"
+                img = "https://hdlive-10048692.image.myqcloud.com/head_1497412888"
             else:
-                img = "https://hdlive-10048692.image.myqcloud.com/activity_1489642259"
+                img = "https://hdlive-10048692.image.myqcloud.com/head_1497413107"
         if not birth_date or birth_date == "null":
             birth_date = "1995-01-01"
 
@@ -807,17 +808,29 @@ class UserDefaultImg(Document):
     picture_url = StringField(verbose_name=u"password", max_length=255)
     gender = IntField(verbose_name=u"性别")
     #todo 先写成常量
+    '''
+    "https://hdlive-10048692.image.myqcloud.com/activity_1493191693",
+    "https://hdlive-10048692.image.myqcloud.com/activity_1493192160",
+    "https://hdlive-10048692.image.myqcloud.com/activity_1493192253",
+    "https://hdlive-10048692.image.myqcloud.com/activity_1493192294",
+    "https://hdlive-10048692.image.myqcloud.com/activity_1493192331",
+    "https://hdlive-10048692.image.myqcloud.com/activity_1493192404",
+    "https://hdlive-10048692.image.myqcloud.com/activity_1493192428",
+    "https://hdlive-10048692.image.myqcloud.com/activity_1493192477",
+    "https://hdlive-10048692.image.myqcloud.com/activity_1493192498",
+    "https://hdlive-10048692.image.myqcloud.com/activity_1493192518",
+    '''
     Picture_info = [
-        "https://hdlive-10048692.image.myqcloud.com/activity_1493191693",
-        "https://hdlive-10048692.image.myqcloud.com/activity_1493192160",
-        "https://hdlive-10048692.image.myqcloud.com/activity_1493192253",
-        "https://hdlive-10048692.image.myqcloud.com/activity_1493192294",
-        "https://hdlive-10048692.image.myqcloud.com/activity_1493192331",
-        "https://hdlive-10048692.image.myqcloud.com/activity_1493192404",
-        "https://hdlive-10048692.image.myqcloud.com/activity_1493192428",
-        "https://hdlive-10048692.image.myqcloud.com/activity_1493192477",
-        "https://hdlive-10048692.image.myqcloud.com/activity_1493192498",
-        "https://hdlive-10048692.image.myqcloud.com/activity_1493192518",
+        "https://hdlive-10048692.image.myqcloud.com/head_1497411985",
+        "https://hdlive-10048692.image.myqcloud.com/head_1497412054",
+        "https://hdlive-10048692.image.myqcloud.com/head_1497412888",
+        "https://hdlive-10048692.image.myqcloud.com/head_1497412931",
+        "https://hdlive-10048692.image.myqcloud.com/head_1497412994",
+        "https://hdlive-10048692.image.myqcloud.com/head_1497413045",
+        "https://hdlive-10048692.image.myqcloud.com/head_1497413074",
+        "https://hdlive-10048692.image.myqcloud.com/head_1497413107",
+        "https://hdlive-10048692.image.myqcloud.com/head_1497413140",
+        "https://hdlive-10048692.image.myqcloud.com/head_1497413150"
     ]
     User_gender=[1, 1, 1, 1, 1, 2, 2, 2, 2, 2]
     class Meta:

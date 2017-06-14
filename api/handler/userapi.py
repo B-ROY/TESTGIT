@@ -26,6 +26,7 @@ from app.customer.models.vip import *
 from app.customer.models.block_user_device import *
 from app.customer.models.rank import *
 from app.customer.models.user import UserAppealRecord
+from app.redismodel.onlinecount import OnlineCount
 
 
 
@@ -36,15 +37,20 @@ class ThridPardLogin(BaseHandler):
         if source == User.SOURCE_PHONE:
             userinfo={}
             userinfo["nickname"] = RegisterInfo.make_nickname()
+            gender = userinfo.get("sex", 1)
+            if gender == 1:
+                img_url = "https://hdlive-10048692.image.myqcloud.com/head_1497413045"
+            else:
+                img_url = "https://hdlive-10048692.image.myqcloud.com/head_1497413074"
             is_new,user= User.create_user(
                 openid=openid,
                 source=source,
                 nickname=userinfo.get("nickname")[0:18],
-                gender=userinfo.get("sex", 1),
+                gender=gender,
                 phone=phone,
                 ip=self.user_ip,
                 image=userinfo.get("headimgurl",
-                                   "https://hdlive-10048692.image.myqcloud.com/5c8ff8bdc5a3645edcd8d4f9313f29e7"),
+                                   img_url),
                 channel=channel,
                 guid=guid
             )
@@ -72,17 +78,21 @@ class ThridPardLogin(BaseHandler):
     def create_user2(self, openid, access_token, phone, userinfo, source, channel, site_openid=''):
         #获取改用户的guid
         guid = self.arg("guid")
-
+        gender = userinfo.get("sex", 1)
+        if gender == 1:
+            img_url = "https://hdlive-10048692.image.myqcloud.com/head_1497413045"
+        else:
+            img_url = "https://hdlive-10048692.image.myqcloud.com/head_1497413074"
         #创建新用户
         # openid, source, nickname, platform=0, image="", channel=""
         is_new, user = User.create_user2(
             openid=openid,
             source=source,
             nickname=userinfo.get("nickname")[0:18],
-            gender=userinfo.get("sex", 1),
+            gender=gender,
             phone=phone,
             ip=self.user_ip,
-            image=userinfo.get("headimgurl", "https://hdlive-10048692.image.myqcloud.com/5c8ff8bdc5a3645edcd8d4f9313f29e7"),
+            image=userinfo.get("headimgurl", img_url),
             channel=channel,
             guid = guid
         )
@@ -1416,6 +1426,9 @@ class CreateFeedback(BaseHandler):
             feedback_id = FeedbackInfo.create_feedback(user_id=user_id, created_at=created_at, ua=ua, status=0,
                                                        desc=desc,phone_number=phone_number,qq_number=qq_number)
             if feedback_id:
+                desc = u"<html><p>" + u"尊敬的%s，感谢您的建议，您的建议就是我们进步的动力" % self.current_user.nickname + u"</p></html>"
+
+                MessageSender.send_system_message(user_id, desc)
                 self.write({"status": "success", "feedback_id": feedback_id, })
             else:
                 self.write({"status": "failed", "error_message": "创建反馈失败", })
@@ -1481,12 +1494,9 @@ class IMOnlineOfflineCallback(BaseHandler):
         user_id = int(user_info.get("To_Account", 0))
         action = user_info.get("Action")
         if user_id:  # 正式服id从2500开始 测试服id从1开始
-            audio_status = AudioRoomRecord.get_room_status(user_id=user_id)
             user = User.objects.get(id=user_id)
-            if audio_status == 1 and user.is_block == 0:
-                status = OnlineUser.update_online_user(user_id=user_id, action="Login")
-            else:
-                status = OnlineUser.update_online_user(user_id=user_id, action=action)
+
+            status = OnlineUser.update_online_user(user_id=user_id, action=action)
             if status:
                 self.write({"status": "success"})
             else:
@@ -1883,8 +1893,32 @@ class OnlineChargeCount(BaseHandler):
     @api_define("online charge count", "/live/user/online_charge_count",
                 [], description=u"聊友在线人数,土豪充值人数")
     def get(self):
-        online_count = random.randint(500, 1000)
-        charge_count = random.randint(200, 500)
+
+        count = OnlineCount.objects.all().first()
+        if not count:
+            count = OnlineCount()
+            online_count = random.randint(500, 1000)
+            charge_count = random.randint(200, 500)
+            count.online_count = online_count
+            count.charge_count = charge_count
+            count.update_time = datetime.datetime.now()
+            count.save()
+        else:
+            now = datetime.datetime.now()
+            if count.update_time + datetime.timedelta(minutes=1) > now:
+                online_count = count.online_count
+                charge_count = count.charge_count
+
+            else:
+                online_delta = random.randint(-20, 20)
+                charge_delta = random.randint(-10, 10)
+
+                count.update(inc__online_count=online_delta)
+                count.update(inc__charge_count=charge_delta)
+                online_count = count.online_count
+                charge_count = count.charge_count
+                count.update(set__update_time=now)
+
         return self.write({
             "status": "success",
             "online_count": online_count,

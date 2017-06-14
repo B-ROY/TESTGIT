@@ -55,19 +55,20 @@ class OnlineUser(Document):
     def update_online_user(cls, user_id, action):
         try:
             user = User.objects.filter(id=user_id).first()
-            online_user = OnlineUser.objects.get(user=user)
+            online_user = OnlineUser.objects.filter(user=user).first()
             if not online_user:
+                desc = u"<html><p>" + u"恭喜您注册成功，快去体验我们给您带来的最新交友方式吧！！" + u"</p></html>"
+                MessageSender.send_system_message(user_id, desc)
                 return OnlineUser.create_online_user(user_id=user_id)
             if action == "Login":
                 status = 1
             else:
                 status = 0
-            online_user.status = status
-            online_user.update_time = datetime.datetime.now()
-            online_user.save()
+            online_user.update(set__status=status, set__update_time=datetime.datetime.now())
             return True
         except OnlineUser.DoesNotExist:
             return OnlineUser.create_online_user(user_id=user_id)
+
 
     @classmethod
     def get_list(cls):

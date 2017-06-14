@@ -681,24 +681,11 @@ class UpdateListenUrlV1(BaseHandler):
     ], description=u'更新listen_url v1')
     def get(self):
         user_id = self.current_user_id
-        # listen_url = self.arg("listen_url")
         listen_url = User.convert_http_to_https(self.arg("listen_url"))
         url_duration = self.arg_int('url_duration')
         result = AudioRoomRecord.update_listen_url(user_id, listen_url, url_duration)
+
         if result:
-            user = self.current_user
-            if user.gender == 2 and user.bottle_switch == 1:
-                to_list = []
-                online_users = OnlineUser.get_list()
-                for online_user in online_users:
-                    if online_user.user.bottle_switch == 1 and online_user.user.gender == 1:
-                        to_list.append(online_user.user.sid)
-
-                if to_list:
-                    random_int = int(time.mktime(datetime.datetime.now().timetuple()))
-                    bottle_result = QCloudIM.voice_in_bottle(user=user, to_list=to_list, random_int=random_int, listen_url=listen_url, url_duration=url_duration)
-                    print bottle_result
-
             self.write({'status': 'success', })
         else:
             self.write({'status': 'failed', })
