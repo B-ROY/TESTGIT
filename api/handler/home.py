@@ -17,21 +17,21 @@ class RecommendList(BaseHandler):
         #audiorooms = AudioRoomRecord.get_online_users_v1(query_time=datetime.datetime.now(), page=1, page_count=9, gender=2, is_video=0)
         #videorooms = AudioRoomRecord.get_online_users_v1(query_time=datetime.datetime.now(), page=1, page_count=27, gender=2, is_video=1)
         now_time = int(time.time())
-        five_min_ago = now_time - 300
-        heartbeats = UserHeartBeat.objects.filter(last_report_time__gte=five_min_ago)
+        pre_time = now_time - 120
+        heartbeats = UserHeartBeat.objects.filter(last_report_time__gte=pre_time)
         hots=[]
         anchors = Anchor.objects.all()
         hot_ids = []
         for anchor in anchors:
             user = User.objects.get(id=anchor.sid)
             user_heart = UserHeartBeat.objects.get(user=user)
-            if user_heart.last_report_time > five_min_ago:
+            if user_heart.last_report_time > pre_time and user.disturb_mode != 1:
                 hots.append(user)
                 hot_ids.append(user.id)
 
         for heartbeat in heartbeats:
             if heartbeat.user.charm_value > 2500 and heartbeat.user.disturb_mode != 1 \
-                    and heartbeat.user.id not in hot_ids :
+                    and heartbeat.user.id not in hot_ids:
                 hots.append(heartbeat.user)
 
         if not hots:
