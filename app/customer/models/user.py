@@ -1106,6 +1106,7 @@ class UserAppealRecord(Document):
         _obj.user = user
         _obj.reason = reason
         _obj.phone = phone
+        _obj.create_time = datetime.datetime.now()
         _obj.save()
 
 
