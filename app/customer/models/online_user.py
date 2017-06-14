@@ -57,7 +57,7 @@ class OnlineUser(Document):
             user = User.objects.filter(id=user_id).first()
             online_user = OnlineUser.objects.filter(user=user).first()
             if not online_user:
-                desc = u"<html><p>" + u"恭喜您注册成功，快去体验我们给您带来的最新交友方式吧！！" + u"</p></html>"
+                desc = u"<html><body>" + u"恭喜您注册成功，快去体验我们给您带来的最新交友方式吧！！" + u"</body></html>"
                 MessageSender.send_system_message(user_id, desc)
                 return OnlineUser.create_online_user(user_id=user_id)
             if action == "Login":

@@ -678,7 +678,7 @@ class WithdrawRequest(Document):
             ticket_account = TicketAccount.objects.get(user=User.objects.get(id=user_id))
             ticket_account.money_requesting += request_money
             ticket_account.save()
-            desc = "<html><p>亲爱的用户您好，提现申请已成功提交，请等待工作人员审核（1-2工作日）<br></p></html>"
+            desc = u"<html><body>亲爱的用户您好，提现申请已成功提交，请等待工作人员审核（1-2工作日）</body></html>"
             MessageSender.send_system_message(user_id, desc)
             return True
         except Exception,e:

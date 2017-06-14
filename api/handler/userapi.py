@@ -331,13 +331,13 @@ class Login(ThridPardLogin):
 
         if user.is_blocked:
             logging.error("login error: blocked user")
-            return self.write({"status":"fail","error":"您已被封号！请遵守用户协议！","errcode":"2001", "_uid":user.id})
+            return self.write({"status":"fail", "error":"经系统检测，您的账号存在违规行为，已经被服务器暂时封停；如您存在疑问请点击下方申诉或联系客服QQ：3270745762","errcode":"2001", "_uid":user.id})
 
         # 判断封设备
         guid = self.arg("guid")
         block_dev = BlockUserDev.objects.filter(status__ne=3, devno=guid).first()
         if block_dev:
-            return self.write({"status": "fail", "error": "您已被封设备！请遵守用户协议！","errcode":"2002", "_uid":user.id})
+            return self.write({"status": "fail", "error": "经系统检测，您的账号存在违规行为，设备已经被服务器暂时封停；如您存在疑问请点击下方申诉或联系客服QQ：3270745762","errcode":"2002", "_uid":user.id})
 
 
         #convert user info
@@ -589,13 +589,13 @@ class PhoneLogIn(BaseHandler):
 
             if user.is_blocked:
                 logging.error("phone login error: blocked user")
-                return self.write({"status": "fail", "error": "您已被封号！请遵守用户协议！", "errcode": "2001", "_uid":user.id})
+                return self.write({"status": "fail", "error": "经系统检测，您的账号存在违规行为，已经被服务器暂时封停；如您存在疑问请点击下方申诉或联系客服QQ：3270745762", "errcode": "2001", "_uid":user.id})
 
             # 判断封设备
             guid = self.arg("guid")
             block_dev = BlockUserDev.objects.filter(status__ne=3, devno=guid).first()
             if block_dev:
-                return self.write({"status": "fail", "error": "您已被封设备！请遵守用户协议！","errcode":"2002", "_uid":user.id})
+                return self.write({"status": "fail", "error": "经系统检测，您的账号存在违规行为，设备已经被服务器暂时封停；如您存在疑问请点击下方申诉或联系客服QQ：3270745762","errcode":"2002", "_uid":user.id})
 
             # convert user info
             data = {}
@@ -1426,7 +1426,7 @@ class CreateFeedback(BaseHandler):
             feedback_id = FeedbackInfo.create_feedback(user_id=user_id, created_at=created_at, ua=ua, status=0,
                                                        desc=desc,phone_number=phone_number,qq_number=qq_number)
             if feedback_id:
-                desc = u"<html><p>" + u"尊敬的%s，感谢您的建议，您的建议就是我们进步的动力" % self.current_user.nickname + u"</p></html>"
+                desc = u"<html><body>" + u"尊敬的%s，感谢您的建议，您的建议就是我们进步的动力" % self.current_user.nickname + u"</body></html>"
 
                 MessageSender.send_system_message(user_id, desc)
                 self.write({"status": "success", "feedback_id": feedback_id, })
