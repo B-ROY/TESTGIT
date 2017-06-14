@@ -28,7 +28,7 @@ class MyVip(BaseHandler):
         allow_buy = 1  # 0: 不允许购买  1:允许
         endtime_str = ""  # 会员会显示截止日期
         vip_pic = VipIntroPic.objects.filter(pic_status=1).first()  # vip会员介绍说明图
-        vips = Vip.objects.all().order_by("vip_type")
+        vips = Vip.objects.filter(is_valid=1).order_by("vip_type")
         vip_list = []  # 会员列表
         vip_name = ""  # 会员名称
         vip_icon = ""  # 会员icon
@@ -126,7 +126,7 @@ class Buy_Vip(BaseHandler):
         def get(self):
             vip_adv = VipAdv.objects.filter(adv_status=1).first()
             data = {}
-            vips = Vip.objects.all().order_by("vip_type")
+            vips = Vip.objects.filter(is_valid=1).order_by("vip_type")
             vip_list = []  # 会员列表
             for v in vips:
                 vip_list.append(convert_vip(v))

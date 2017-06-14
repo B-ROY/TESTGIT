@@ -21,9 +21,10 @@ class Vip(Document):
         (1, u"开启"),
     )
 
+
     name = StringField(max_length=64, verbose_name=u"会员名称")
     icon_url = StringField(max_length=256, verbose_name=u'icon图片')
-    vip_type = IntField(verbose_name=u"会员等级", choices=VIP_TYPE)
+    vip_type = IntField(verbose_name=u"会员等级")
     days = IntField(verbose_name=u"会员天数")
     vip_flag = IntField(verbose_name=u"尊贵标识", choices=STATUS, default=1)
     tools_data = StringField(max_length=512, verbose_name=u"道具增值服务,字典 字符串 格式")
@@ -32,6 +33,7 @@ class Vip(Document):
     price = IntField(verbose_name=u"会员价格(分)")
     original_price = IntField(verbose_name=u"原价 会员价格(分)")
     worth = IntField(verbose_name=u"价值(分)")
+    is_valid = IntField(verbose_name=u"是否有效")  # 0:删除   1:未删除
 
     def normal_info(self):
         return {
@@ -124,7 +126,7 @@ class UserVip(Document):
                     user_tools = UserTools.objects.filter(user_id=user_id, time_type=1, tools_id=str(tools.id)).first()
                     record_time_type = 1
                     if user_tools:
-                        user_tools.tools_count = int(value)
+                        user_tools.tools_count += int(value)
                         user_tools.save()
                     else:
                         user_tools = UserTools()
@@ -140,7 +142,7 @@ class UserVip(Document):
                     user_tools = UserTools.objects.filter(user_id=user_id, time_type=0, get_type=1, tools_id=str(tools.id)).first()
                     record_time_type = 0
                     if user_tools:
-                        user_tools.tools_count = int(value)
+                        user_tools.tools_count += int(value)
                         user_tools.save()
                     else:
                         user_tools = UserTools()
