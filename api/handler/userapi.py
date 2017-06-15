@@ -908,8 +908,6 @@ class Logout(BaseHandler):
     @login_required
     def get(self):
         user = self.current_user
-        if user.last_guid and user.last_guid!=self.arg("guid",""):
-            return self.write({"status":"success"})
 
         user.cid = ""
         user.save()
