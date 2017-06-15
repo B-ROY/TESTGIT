@@ -1945,7 +1945,11 @@ class UserAppeal(BaseHandler):
 
 
 
-
+@handler_define
+class AliAuthRedirect(BaseHandler):
+    @api_define("ali auth redirect", "/live/user/aliAuth",[], description=u"支付包授权回调")
+    def post(self):
+        pass
 
 
 
