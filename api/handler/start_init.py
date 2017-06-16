@@ -55,11 +55,11 @@ class Initial(BaseHandler):
         else:
             switches["review"] = 1
 
-        if platform.upper() == 'ANDROID' and ua_version < "2.1.2":
+        if platform.upper() == 'ANDROID' and ua_version < "2.1.6":
             if channel == "chatpa" or channel == "600009":
                 channel = "600000"
-            version_info["upgrade_type"] = 1
-            version_info["version_code"] = 213
+            version_info["upgrade_type"] = 2
+            version_info["version_code"] = 300
             downloads_url = "http://heydo-10048692.file.myqcloud.com/android_apk/chatpa2.1.2_" + channel + ".apk"
 
             print downloads_url

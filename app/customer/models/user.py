@@ -967,7 +967,7 @@ class RealNameVerify(Document):
                 status=0,
             )
             verify.save()
-            desc = u"<html><body>亲爱的播主您好，认证申请已成功提交，请等待工作人员审核（1-2工作日）</body></html>"
+            desc = u"<html><p>亲爱的播主您好，认证申请已成功提交，请等待工作人员审核（1-2工作日）</p></html>"
             MessageSender.send_system_message(str(user_id), desc)
             return True
         except Exception,e:
@@ -1021,7 +1021,7 @@ class VideoManagerVerify(Document):
             user = User.objects.get(id=int(user_id))
             user.is_video_auth = 0
             user.save()
-            desc = u"<html><body>亲爱的用户您好，认证申请已成功提交，请等待工作人员审核（1-2工作日）</body></html>"
+            desc = u"<html><p>亲爱的用户您好，认证申请已成功提交，请等待工作人员审核（1-2工作日）</p></html>"
             MessageSender.send_system_message(user.sid, desc)
             return True
         except Exception, e:

@@ -89,7 +89,7 @@ class ReportMessageUpload(BaseHandler):
                                           text=message, pic_url=pic_url,
                                           file_id=file_id, report_type=report_type)
 
-        desc = u"<html><body>" + u"%s您好，您的举报我们会及时处理，请静候佳音" % self.current_user.nickname + u"</body></html>"
+        desc = u"<html><p>" + u"%s您好，您的举报我们会及时处理，请静候佳音" % self.current_user.nickname + u"</p></html>"
 
         MessageSender.send_system_message(user_id, desc)
 
