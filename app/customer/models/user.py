@@ -239,7 +239,6 @@ class User(Document):
             "charm_value": self.charm_value,
             "bottle_switch": self.bottle_switch,
             "disturb_mode": self.disturb_mode,
-            "online_status": self.online_status,
             "current_score": self.current_score,
             "cover": self.cover
         }
