@@ -91,10 +91,9 @@ class CutLog(object):
                     ori_log.platform = uas[2]
                     ori_log.os = uas[3]
                     ori_log.phone_name = uas[4]
-                    if uas[2] == "Android":
-                        ori_log.channel = uas[5]
-                    else:
-                        ori_log.channel = "appstore"
+
+                    ori_log.channel = uas[5]
+
                 except Exception, e:
                     error_num += 1
                     ori_log.app_name = ""
