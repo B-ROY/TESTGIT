@@ -1,11 +1,12 @@
 # coding=utf-8
 import base64
 import json
-import random
+
 from api.convert.convert_user import *
 from api.document.doc_tools import *
 from api.handler.thridpard.qq import QQAPI
-from api.handler.thridpard.ucpaasSMS import UcpaasSMS
+from api.handler.thridpard.sms_code.ucpaasSMS import UcpaasSMS
+from api.handler.thridpard.sms_code.tencentSMS import TencentSMS
 from api.handler.thridpard.weibo import WeiBoAPI
 from api.handler.thridpard.weixin import WexinAPI
 from api.util.tencenttools.signature import gen_signature
@@ -14,20 +15,17 @@ from api.view.base import *
 # from app.customer.models.rank import *
 # from app.customer.models.account import *
 from app.customer.models.adv import Adv
+from app.customer.models.block_user_device import *
 from app.customer.models.feedback import *
 from app.customer.models.message import *
 from app.customer.models.online_user import *
 from app.customer.models.personal_tags import *
-from app.customer.models.share import *
-from app.picture.models.picture import *
-from app.util.messageque.msgsender import MessageSender
-from app.customer.models.tools import *
-from app.customer.models.vip import *
-from app.customer.models.block_user_device import *
 from app.customer.models.rank import *
+from app.customer.models.share import *
 from app.customer.models.user import UserAppealRecord
+from app.customer.models.vip import *
+from app.picture.models.picture import *
 from app.redismodel.onlinecount import OnlineCount
-
 
 
 class ThridPardLogin(BaseHandler):
@@ -793,17 +791,18 @@ class SmsCode(ThridPardLogin):
 
         else:
             return self.write({"status": "fail", "error": u"获取验证码失败", "message_code": 3, })
-
-        usms = UcpaasSMS()
+        if sms_type == 0:
+            usms = UcpaasSMS()
+        else:
+            usms = TencentSMS()
         reg = {}
         result = {}
         reg = usms.sendRegiesterCode(phone, method, sms_type)
 
-
-        if reg['respCode'] != 0:
+        if reg['is_success'] != 1:
             return self.write({"status": "fail", "error": u"获取验证码失败", "message_code": 3, })
 
-        if reg['respCode'] == 0:
+        if reg['is_success'] == 1:
             result['status'] = "success"
             result['openId'] = reg['openId']
             result['user_key'] = reg['user_key']

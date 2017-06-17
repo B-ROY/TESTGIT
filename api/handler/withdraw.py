@@ -1,15 +1,12 @@
 # coding=utf-8
 
-from api.document.doc_tools import *
-from api.view.base import *
-
 from api.convert.convert_user import *
-import time
-
-from app.customer.models.user import *
-from app.customer.models.account import *
-from api.handler.thridpard.ucpaasSMS import UcpaasSMS
+from api.document.doc_tools import *
+from api.handler.thridpard.sms_code.ucpaasSMS import UcpaasSMS
 from api.handler.thridpard.weixin import WexinAPI
+from api.view.base import *
+from app.customer.models.account import *
+
 
 @handler_define
 class WithdrawLogin(BaseHandler):
@@ -30,6 +27,7 @@ class WithdrawLogin(BaseHandler):
 
         ucpass = UcpaasSMS()
         result = ucpass.getCacheData(phone)
+        ucpass.delSmsCodeCache(phone)
 
         if result != None:
             createDate = result['createDate']
@@ -40,9 +38,6 @@ class WithdrawLogin(BaseHandler):
                 return self.write({"status": "fail", "error": "验证码错误，请输入正确的验证码", "message_code": 2, })
         else:
             return self.write({"status": "fail", "error": "验证码失效", "message_code": 2, })
-
-        ucpass = UcpaasSMS()
-        ucpass.delSmsCodeCache(phone)
 
         user = User.objects.filter(phone=phone).order_by("created_at").first()
 

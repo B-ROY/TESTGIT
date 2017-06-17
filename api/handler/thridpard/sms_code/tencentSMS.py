@@ -41,7 +41,7 @@ def urlOpen(req,data=None):
     return data
 
 
-class UcpaasSMS:
+class TencentSMS:
 
     __HOST = "https://yun.tim.qq.com/v5/tlssmssvr/sendsms?sdkappid=%s&random=%s"
 
@@ -130,8 +130,8 @@ class UcpaasSMS:
         head = '{"Alg":"HS256","Accid":"%s","Cnumber":"%s","Expiretime":"%s"}' % \
                (openId, phoneNumber, create_time)
         # print("head:",head)
-        body = '{"Accid":"%s","AccToken":"%s","Cnumber":"%s","Cpwd":"%s","Expiretime":"%s"}' % \
-               (self.__app_id, self.__accountToken, phoneNumber, openId, create_time)
+        body = '{"AccToken":"%s","Cnumber":"%s","Cpwd":"%s","Expiretime":"%s"}' % \
+               (self.__accountToken, phoneNumber, openId, create_time)
         # print("body:",body)
 
         body_bytes = hmac.new(self.__accountToken.encode('utf-8'), body.encode('utf-8'), hashlib.sha256)
@@ -149,6 +149,10 @@ class UcpaasSMS:
             print result
             data = json.loads(result[1])
             resl['respCode'] = data['result']
+            if resl['respCode'] == 0:
+                resl["is_success"] = 1
+            else:
+                resl["is_success"] = 0
             resl['createDate'] = int(time.time())
             resl['finishDate'] = str(resl['createDate'] + 180)
             resl['openId'] = base64.b64encode(phone)
@@ -219,6 +223,7 @@ class UcpaasSMS:
         print reult
         smscode_cache.set(toTelNumber, reult)
         smscode_cache.disconnect_all()
+
         return reult
 
     def sendForgetPassCode(self, toTelNumber):
@@ -234,7 +239,7 @@ class UcpaasSMS:
 
 
 def main():
-    test = UcpaasSMS()
+    test = TencentSMS()
     resl = test.sendRegiesterCode("18600023711")
     print resl
     if resl['respCode'] != '000000':
@@ -243,7 +248,7 @@ def main():
     if isinstance(resl, dict):
         for r in resl.iteritems():
             print r
-    test1 = UcpaasSMS()
+    test1 = TencentSMS()
     data={'openId': u'9485d24ab5a3f51fa392805c14b268bc', 'smsCode': 'FJNG', 'respCode': u'000000', 'user_key': 'eyJBbGciOiJIUzI1NiIsIkFjY2lkIjoiOTQ4NWQyNGFiNWEzZjUxZmEzOTI4MDVjMTRiMjY4YmMiLCJDbnVtYmVyIjoiMTg2MDAwMjM3MTEiLCJFeHBpcmV0aW1lIjoiMjAxNjA3MDIxMTU5NDYifQ==.PGRZcKQtwMpwKHtRjYASUCNqb79tnYUJiirM5YCQw/k=', 'createDate': u'20160702115946', 'phone': '18600023711', 'finishDate': '20160702116126'}
     curr_time = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
         #说明验证码失效
