@@ -22,11 +22,15 @@ class FeedbackInfo(Document):
 
     user_id = IntField(verbose_name=u'用户id', required=True)
     created_at = DateTimeField(verbose_name=u'创建时间', default=None)
-    status = IntField(verbose_name=u'状态', default=0, choices=STATUS)
     user_agent = StringField(verbose_name=u'ua', max_length=256, default='')
     desc = StringField(verbose_name=u'问题描述', max_length=65535, default='')
     phone_number=StringField(verbose_name=u'电话号码',max_length=16, default='')
     qq_number=StringField(verbose_name=u'qq号码', max_length=32, default='')
+    status = IntField(verbose_name=u"处理状态", default=0)  # 0：未处理 1：已处理 2:忽略
+    update_time = DateTimeField(verbose_name=u"处理时间")
+    operator = StringField(verbose_name=u"操作人")
+    operaterecord = StringField(verbose_name=u"操作记录")
+    is_answer = IntField(verbose_name=u'是否回复', default=0)  # 0:没回复 1：回复
 
     class Meta:
         app_label = "customer"
@@ -34,16 +38,16 @@ class FeedbackInfo(Document):
         verbose_name_plural = verbose_name
 
     @classmethod
-    def create_feedback(cls, user_id, created_at, ua='', status=0, desc='', phone_number='',qq_number=''):
+    def create_feedback(cls, user_id, created_at, ua='', desc='', phone_number='',qq_number=''):
         try:
             feedback = FeedbackInfo(
                 user_id=user_id,
                 created_at=created_at,
-                status=status,
+                status=0,
                 user_agent=ua,
                 desc=desc,
                 phone_number=phone_number,
-                qq_number=qq_number
+                qq_number=qq_number,
             )
             feedback.save()
         except Exception,e:

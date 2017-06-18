@@ -58,6 +58,10 @@ class ReportRecord(Document):
     file_id = StringField(verbose_name=u"文件ID")
     user_id = StringField(verbose_name=u"举报人ID")
     report_id = StringField(verbose_name=u"被举报人ID")
+    status = IntField(verbose_name=u"处理状态", default=0)  # 0：未处理 1：已处理 2:忽略
+    update_time = DateTimeField(verbose_name=u"处理时间")
+    operator = StringField(verbose_name=u"操作人")
+    operaterecord = StringField(verbose_name=u"操作记录")
 
     @classmethod
     def create_report_record(cls, label, report_type, text, pic_url, file_id, user_id, report_id):
@@ -70,6 +74,7 @@ class ReportRecord(Document):
         obj_.file_id = file_id
         obj_.user_id =user_id
         obj_.report_type = report_type
+        obj_.status = 0
         obj_.save()
 
 
