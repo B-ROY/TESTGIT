@@ -81,10 +81,10 @@ def load_settings(settings, debug=False, **kwargs):
         },
         'redis_settings': {
             "MQUEUE_BACKEND": {
-                "servers": '10.66.109.88',
+                "servers": '127.0.0.1',
                 "port": 6379,
                 "db": 0,
-                "password": "crs-k10y0188:SuWQin#7yiH86np",
+                "password": "biweibiren",
             },
         },
 

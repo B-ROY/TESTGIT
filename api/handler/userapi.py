@@ -1420,7 +1420,7 @@ class CreateFeedback(BaseHandler):
             self.write({"status": "success", "error_message": "每天只能发送一次", })
 
         else:
-            feedback_id = FeedbackInfo.create_feedback(user_id=user_id, created_at=created_at, ua=ua, status=0,
+            feedback_id = FeedbackInfo.create_feedback(user_id=user_id, created_at=created_at, ua=ua,
                                                        desc=desc,phone_number=phone_number,qq_number=qq_number)
             if feedback_id:
                 desc = u"<html><p>" + u"尊敬的%s，感谢您的建议，您的建议就是我们进步的动力" % self.current_user.nickname + u"</p></html>"

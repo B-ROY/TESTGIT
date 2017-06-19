@@ -10,6 +10,7 @@ from mongoengine import *
 from base.settings import CHATPAMONGO
 import random
 from app.util.messageque.msgsender import MessageSender
+from app_redis.user.models.user import UserRedis
 
 connect(CHATPAMONGO.db, host=CHATPAMONGO.host, port=CHATPAMONGO.port, username=CHATPAMONGO.username,password=CHATPAMONGO.password)
 
@@ -261,7 +262,6 @@ class User(Document):
             is_new = True
 
             user = User(
-                id=User.objects.all().count() + 1,
                 openid=openid,
                 complete_info=0,
                 is_block=0,
@@ -308,11 +308,8 @@ class User(Document):
                 current_score=-1,
                 last_guid=guid
             )
-
-            user_identity = LuckIDInfo.objects.filter(id_assign=0, id_type=0).order_by('id').first()
-            user_identity.id_assign = 1
-            user_identity.save()
-            user.identity = int(user_identity.user_id)
+            user.id = UserRedis.pop_user_id()
+            user.identity = UserRedis.pop_user_identity()
             user.save()
 
             # create account
