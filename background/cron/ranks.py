@@ -69,7 +69,8 @@ def clairvoyant_rank():
             if len(user_list) == 6:
                 break
             else:
-                user_list.append(user.id)
+                if user.gender == 1:
+                    user_list.append(user.id)
 
     ClairvoyantRank.drop_collection()
 
