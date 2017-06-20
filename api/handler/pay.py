@@ -144,7 +144,7 @@ class AliPayHandler(BaseHandler):
         good_name = self.arg('good_name',self.arg("amount"))
         trade_type = self.arg_int('trade_type')
         ua = self.request.headers.get('User-Agent')
-        print ua, amount
+
 
         #创建本地订单
         account = Account.objects.get(user=user)
@@ -158,7 +158,6 @@ class AliPayHandler(BaseHandler):
 
         #支付宝支付
         if trade_type == 0:
-            print "alipay going"
             pay = AliPayDoPay(
                 out_trade_no=str(order.id),
                 subject=good_name,
@@ -209,7 +208,6 @@ class AliPayNoticeHandler(BaseHandler):
         Param('amount', True, int, "str", "100", u'支付金额'),
     ], description=u"支付宝成功通知接口",)
     def post(self):
-        print "body is " + self.request.body
 
         arguments = self.request.arguments
 
@@ -234,7 +232,6 @@ class AliPayNoticeHandler(BaseHandler):
             return self.write("failed")
 
         dic = dict(params)
-        print dic
         success = AlipayFillNotice.create_order(dic)
 
         if success:
@@ -508,3 +505,24 @@ class PayRulesV2(BaseHandler):
             "applepay_rules": applepay_rule_list
         }})
 
+
+@handler_define
+class OderCheck(BaseHandler):
+    @api_define("order check", r'/live/pay/order_check',
+                [
+                    Param("order_id", True, str, "","", description=u"订单id")
+                ], description=u"检查订单是否支付成功")
+    @login_required
+    def get(self):
+        order_id = self.arg("order_id")
+        try:
+            order = TradeBalanceOrder.objects.get(id=order_id)
+            user_id = self.current_user_id
+            if order.user.id == user_id and order.status == 1:
+                is_success = True
+            else:
+                is_success = False
+            return self.write({"status":"success", "order_status":1 if is_success else 0})
+        except Exception, e:
+            logging.error("check order error " + str(e))
+            return self.write({"status": "success", "order_status": 0})

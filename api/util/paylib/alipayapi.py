@@ -99,9 +99,7 @@ class AliPayBase(object):
         private_key = rsa.PrivateKey.load_pkcs1(AliPayConfig.PRIVATE_KEY.encode())
         sign = rsa.sign(content, private_key, 'SHA-256')
 
-        print sign
         ssn = base64.b64encode(sign)
-        print ssn
         return ssn
 
     def verify_sign_base(self, message, sign):
@@ -118,11 +116,7 @@ class AliPayBase(object):
 
         digest.update(message)
 
-        result = signer.verify(digest, base64.b64decode(sign))
-
-        print "verify result is " + str(result)
-
-        return result
+        return signer.verify(digest, base64.b64decode(sign))
 
     def create_request_data(self):
         raise NotImplementedError
@@ -201,7 +195,6 @@ class AliPayDoPay(AliPayBase):
         data = {
             "pay_params": content
         }
-        print "data is is is " + str(data)
         return data
 
 
@@ -275,4 +268,3 @@ class AliPayBatchTrans(AliPayBase):
     def batch_trans(self):
         data = self.post_data()
         return data
-
