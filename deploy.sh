@@ -1,21 +1,24 @@
 #!/bin/bash
 if [ ! -d "/mydata/downloads" ];then
- mkdir /mydata/downloads
+ mkdir -p /mydata/downloads
 fi
 echo '[start install g++!]'
-yum install gcc-c++.x86_64
+yum -y install gcc-c++.x86_64
 
-yum install gcc
-yum install gcc-c++
-yum install openssl-devel
-yum install readline-devel
-yum install mysql-devel
+yum -y install wget
+yum -y install gcc
+yum -y install gcc-c++
+yum -y install openssl-devel
+yum -y install readline-devel
+yum -y install mysql-devel
+
+
 
 echo '[start install pcre!]'
 cd /mydata/downloads/
-wget -O pcre-8.32.tar.gz http://sourceforge.net/projects/pcre/files/pcre/8.32/pcre-8.32.tar.gz/download
-tar zxvf pcre-8.32.tar.gz
-cd pcre-8.32
+wget -O pcre-8.38.tar.gz http://sourceforge.net/projects/pcre/files/pcre/8.38/pcre-8.38.tar.gz/download --no-check-certificate
+tar zxvf pcre-8.38.tar.gz
+cd pcre-8.38
 ./configure
 make
 make install
@@ -26,8 +29,8 @@ ldconfig
 
 echo '[start install zlib!]'
 cd /mydata/downloads/
-wget http://prdownloads.sourceforge.net/libpng/zlib-1.2.7.tar.gz?download
-tar zxvf zlib-1.2.7.tar.gz?download
+wget https://prdownloads.sourceforge.net/libpng/zlib-1.2.7.tar.gz --no-check-certificate
+tar zxvf zlib-1.2.7.tar.gz
 cd  zlib-1.2.7
 ./configure --prefix=/usr/local
 make 
@@ -35,38 +38,36 @@ make install
 
 
 
-
 cd /mydata/downloads/ 
-wget http://www.lua.org/ftp/lua-5.1.2.tar.gz
+wget http://www.lua.org/ftp/lua-5.1.2.tar.gz --no-check-certificate
 tar zxvf lua-5.1.2.tar.gz
 cd lua-5.1.2
 make linux
 make install
 
 cd /mydata/downloads/ 
-wget http://luajit.org/download/LuaJIT-2.0.0.tar.gz
-tar zxvf LuaJIT-2.0.0.tar.gz
-cd LuaJIT-2.0.0
+wget http://luajit.org/download/LuaJIT-2.1.0-beta2.tar.gz
+tar zxvf LuaJIT-2.1.0-beta2.tar.gz
+cd LuaJIT-2.1.0-beta2
 make
 make install
 
 cd /mydata/downloads/ 
-wget https://codeload.github.com/simpl/ngx_devel_kit/tar.gz/v0.2.17rc2
-tar zxvf v0.2.17rc2
+wget https://codeload.github.com/simpl/ngx_devel_kit/tar.gz/v0.2.19
+tar zxvf v0.2.19
 
 cd /mydata/downloads/ 
-wget https://codeload.github.com/openresty/lua-nginx-module/tar.gz/v0.7.8
-tar zxvf v0.7.8
+wget https://codeload.github.com/openresty/lua-nginx-module/tar.gz/v0.10.2
+tar zxvf v0.10.2
 
 export LUAJIT_LIB=/usr/local/lib 
-export LUAJIT_INC=/usr/local/include/luajit-2.0
+export LUAJIT_INC=/usr/local/include/luajit
 
 #vim .bash_profile 
 
 num=$( cat /root/.bash_profile|grep -c LUAJIT_LIB ) 
 if [ $num = 0 ];then 
    echo "OK-O-O-O write hosts"
-   read i
    echo 'export LUAJIT_LIB=/usr/local/lib'>> /root/.bash_profile
    echo 'export LUAJIT_INC=/usr/local/include/luajit-2.0'>> /root/.bash_profile
 fi 
@@ -75,12 +76,12 @@ fi
 #ssl http://manual.seafile.com/deploy/https_with_nginx.html
 #openssl genrsa -out privkey.pem 2048
 #openssl req -new -x509 -key privkey.pem -out cacert.pem -days 1095openssl req -new -x509 -key privkey.pem -out cacert.pem -days 1095
-echo '[start install nginx-1.0.4!]'
+echo '[start install nginx-1.11.6!]'
 cd /mydata/downloads/
-wget http://nginx.org/download/nginx-1.0.4.tar.gz
-tar zxvf nginx-1.0.4.tar.gz
-cd nginx-1.0.4
-./configure --prefix=/mydata/nginx --add-module=/mydata/downloads/ngx_devel_kit-0.2.17rc2 --add-module=/mydata/downloads/lua-nginx-module-0.7.8   --with-pcre=/mydata/downloads/pcre-8.32  --with-http_stub_status_module --with-http_ssl_module
+wget http://nginx.org/download/nginx-1.11.6.tar.gz
+tar zxvf nginx-1.11.6.tar.gz
+cd nginx-1.11.6
+./configure --prefix=/mydata/nginx --add-module=/mydata/downloads/ngx_devel_kit-0.2.19 --add-module=/mydata/downloads/lua-nginx-module-0.10.2   --with-pcre=/mydata/downloads/pcre-8.38  --with-http_stub_status_module --with-http_ssl_module
 make
 make install
 
@@ -104,22 +105,31 @@ tar zxvf setuptools-0.6c11.tar.gz
 cd setuptools-0.6c11
 /mydata/python2.7/bin/python setup.py install
 
+
+cd /mydata/downloads/
+wget http://pypi.python.org/packages/source/d/distribute/distribute-0.6.28.tar.gz
+cd distribute-0.6.28
+tar xzvf distribute-0.6.28.tar.gz
+cd distribute-0.6.28
+/mydata/python2.7/bin/python setup.py install
+
+
 cd /mydata/downloads/
 wget  --no-check-certificate https://codeload.github.com/farcepest/MySQLdb1/zip/utf8mb4
 unzip utf8mb4
 cd MySQLdb1-utf8mb4/
-python setup.py install
+/mydata/python2.7/bin/python setup.py install
 
 cd /mydata/downloads/
 wget https://pypi.python.org/packages/source/r/rsa/rsa-3.4.tar.gz#md5=9e78250000664a0be51966951d06cc17 --no-check-certificate
 tar zxf rsa-3.4.tar.gz
 cd rsa-3.4
-python setup install
+/mydata/python2.7/bin/python setup.py install
 
 echo "[install supervisord]"
 cd /mydata/downloads/
 wget https://github.com/Supervisor/supervisor/archive/3.0a10.tar.gz --no-check-certificate
-tar zxvf 3.0a10
+tar zxvf 3.0a10.tar.gz
 cd supervisor-3.0a10
 /mydata/python2.7/bin/python setup.py install
 
@@ -138,14 +148,6 @@ cd supervisor-3.0a10
 # make
 # make install
 
-echo "make libevent"
-cd /mydata/downloads/
-wget https://github.com/downloads/libevent/libevent/libevent-2.0.20-stable.tar.gz
-tar zxf libevent-2.0.20-stable.tar.gz
-cd libevent-2.0.20-stable
-./configure 
-make 
-make install
 
 echo "make libmemcached"
 cd /mydata/downloads/
@@ -162,9 +164,8 @@ sudo ldconfig
 # add /usr/local/lib/
 
 echo "/usr/local/lib/" >> /etc/ld.so.conf
-ldconfig
+ldconfig /etc/ld.so.conf
 
-/etc/ld.so.conf
 echo "pylibmc"
 cd /mydata/downloads/
 wget https://pypi.python.org/packages/23/f4/3904b7171e61a83eafee0ed3b1b8efe4d3c6ddc05f7ebdff1831cf0e15f1/pylibmc-1.5.1.tar.gz#md5=9077704e34afc8b6c7b0b686ae9579de --no-check-certificate
@@ -172,56 +173,24 @@ tar zxf pylibmc-1.5.1.tar.gz
 cd pylibmc-1.5.1
 /mydata/python2.7/bin/python setup.py install
 
-
-echo "make logs dir"
-mkdir -p /mydata/logs/nginx/access
-mkdir -p /mydata/logs/nginx/error
-mkdir -p /mydata/logs/nginx/statis
-mkdir -p /mydata/logs/tornado
-mkdir -p /mydata/run
-
-ln -s /mydata/python/live_video/api/conf/nginx/lua /mydata/nginx/conf/lua
-ln -s /mydata/python/live_video/api/conf/nginx/nginx.conf /mydata/nginx/conf/nginx.conf
-ln -s /mydata/python/live_video/api/conf/nginx/live.video.api.com /mydata/nginx/conf/live.video.api.com
-
-echo "start nginx"
-ldconfig
-/mydata/nginx/sbin/nginx -c /mydata/nginx/conf/nginx.conf
+cd /mydata/downloads
+echo '[start install libressl!]'
+wget https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-2.5.0.tar.gz --no-check-certificate
+tar zxvf libressl-2.5.0.tar.gz
+cd libressl-2.5.0
+./config --prefix=/usr/local
+make
+make install
 
 
-yum install crontabs
 
-#################################################
-#Edit crontab file
-num=$( cat /var/spool/cron/root|grep -c logrotate-nginx ) 
-if [ $num = 0 ];then 
-   echo "OK-O-O-O write hosts"
-   read i
-   echo '0 0 * * * /mydata/python/live_video/api/bin/logrotate-nginx.sh > /dev/null 2>&1'>>/var/spool/cron/root
-   echo '5 0 * * * /mydata/python/live_video/api/bin/logrotate.sh > /dev/null 2>&1'>>/var/spool/cron/root
-   echo '#Delete old more than 7 days log files'>>/var/spool/cron/root
-   echo '22 2 * * * find /mydata/logs/ -mtime +7 -type f -name "*log*" -exec rm -rf {} \;'>>/var/spool/cron/root
-fi 
+#用于网络优化 暂时瓶颈不在这里 且安装出现问题 暂不安装
+echo "make libevent"
+cd /mydata/downloads/
+wget https://github.com/downloads/libevent/libevent/libevent-2.0.20-stable.tar.gz --no-check-certificate
+tar zxf libevent-2.0.20-stable.tar.gz
+cd libevent-2.0.20-stable
+./configure
+make
+make install
 
-wget https://pypi.python.org/packages/source/r/rsa/rsa-3.4.tar.gz#md5=9e78250000664a0be51966951d06cc17 --no-check-certificate
-tar zxf rsa-3.4.tar.gz
-cd rsa-3.4
-python setup.py install
-
-#register service
-chmod +x /mydata/python/live_video/api/main.py
-chmod +x /mydata/python/live_video/api/bin/*
-
-cp /mydata/python/live_video/api/bin/init.d/tornado /etc/init.d/
-cp /mydata/python/live_video/api/bin/init.d/nginx /etc/init.d/
-
-chkconfig --add nginx
-chkconfig nginx on
-chkconfig --add tornado
-chkconfig tornado on
-
-
- #/usr/local/bin/python /usr/local/bin/supervisord -c /etc/supervisord.conf
- # /usr/bin/memcached -d -U 11211 -p 11211 -u nobody -m 200 -c 10000 -P /var/run/memcached/memcached.11211.pid
- # create database livevideo_platform  CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci; 
- # vim /usr/share/mysql/charsets/Index.xml utf8-> utf8mb4
