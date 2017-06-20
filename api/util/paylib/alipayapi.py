@@ -11,6 +11,10 @@ import hashlib
 import json
 import datetime
 import rsa
+from Crypto.Signature import PKCS1_v1_5
+from Crypto.Hash import SHA256
+from Crypto.PublicKey import RSA
+
 
 __author__ = 'biwei'
 
@@ -70,30 +74,11 @@ class AliPayConfig(object):
     KEY = 'lbgghw3lqek0byiy820v0sjpnplgj1j3'
     ALI_SERVICE_PATH = "https://openapi.alipay.com/gateway.do"
     PRIVATE_KEY = '''-----BEGIN RSA PRIVATE KEY-----
-    MIIEpAIBAAKCAQEAqRhWL/5MOzQeXto01XI4PcEOx/oRXg3uinV5OAJkYkfzjrhXPHiraF1e
-    MPSXdWz7A2Yj0j4H3yKp7WywWHd481/PwRRRViPYtg1+LZK+SXkBmpqvDwFSSUJPm++ccp31
-    6SJM8vh0B2MVMfynogVFTsgthVMBbRNX2DFzhb4LGOhYBmlQyr15in/p0Zz37C9frYEANk28
-    AqG0Bg3PvokjaRYujBNVU9ybXTXtAH3P5ScSnstzfrJELn0CbmYBNvU2PrNjWhGzCvffYvZl
-    jxeV0CDGuY+Ae5UdIsljgekLVf6vwHuGvuXdGAk3Xf6j1Z+t+NmPlVFZS7RSpibyEx15kQID
-    AQABAoIBAEcV6w2sCyIMbAQWGYXtyYT0hyE8mFaA5togPoB0SP0kIFjMWCgc1no+Xh2YhZ+g
-    2/l20/JLj4WXjfY47f2S5C70BWO3BeZ/lVgbXgMMoKBElY8IHjXhqVUQ4mS8m3l3vGxwtgai
-    uixs0/k6rMIpExTmhHR7C6tuKUzCpT0BQqsKOw9Vs3KEROHb+TbytjuTkNz8CHJcslk+QeEz
-    D8zv+YAfaC6XJbAHjesylDcSmqZTEuYu3Yz6D1wh0SOgjQHTsWEoF6HUPlo4hO+kZWj4zrUF
-    mjQRxNBaU6oGEbF+1Wmni3IRLIOH6JSLG3VkQ9SYbPpetTGUyv6OtcA+XUgOjU0CgYEA1db3
-    ZwbMVymDxvhFhWphJ2t/pKahFuOJ32mg99HqJnb13ZeSYjezqjEhCO7Q4FEt/QoSU+mi/YWL
-    DQpTEu3pXAVVb2u80pUclP46xqPQzobgGUi/eIaCuNKYhWlvtC5BPNtPX4nX9NEVYkx9JMOb
-    ucZguDmuxPkvlpuA2idE2VMCgYEAym7+hQMCJzy/fMt/VedutsVKewdx83YweKxS9zNhcatS
-    uMOF9JOTn1TxTJsOrfNF2f/JP0mdB4xAEDsgquWzVhYB0RZVi0vSSQtvXw18sVvjpTOsJaJm
-    n1T1yIPAvW0aqe861DJPLn3VRXek/52AoHE2rY972Hcv2b0iklQL8QsCgYAKZ8RwIfeNgjqk
-    Uu5nGI8TsPpsE6OhDn9l/KjVhkRjjMRX/QkleFpovK1D1wMY9zpKptPPe33v4jCq+MakFCmX
-    bajjlWI1bKnWVuY0N3XPt7mvBB9F+aCgdTkIQZLeTi5cl6BYp68jfQBbYFlaZNJTerk7AGiG
-    hIDvRtfAiwqewKBgQCbPgGcWdFF6/Vhq+HMLD6gla5nqS7/KW1Ercq2XsXk2SEIJpHNHXvBX
-    e/q8qKQThcMdneMPFTbW/gpOl70EFG2vAvKoBkcSRpMACP5visZDMIIiBcFiYSvvgT7L+cYn
-    dor5hW0c5x7p+5tZrK3gL8Ky6fF9FpiiAy/K6eelivOPwKBgQDO8TleGnCvQN3RGBUOtIAAs
-    Fo47ebMg+6i1eMZsomw0o7BwI+p59h5vf2GzbyPWdOAXDTaq2gpXiIwIJsubQ2F34CUdbhrU
-    DiloAJaTxFJhWKzkM+AFvSRJud+MYwWV7aJjG6t1SFVnGCquBvbEJJr8OUPSJaIGEH1KjEiV
-    Kb3Pw==
+    MIIEpAIBAAKCAQEAqRhWL/5MOzQeXto01XI4PcEOx/oRXg3uinV5OAJkYkfzjrhXPHiraF1eMPSXdWz7A2Yj0j4H3yKp7WywWHd481/PwRRRViPYtg1+LZK+SXkBmpqvDwFSSUJPm++ccp316SJM8vh0B2MVMfynogVFTsgthVMBbRNX2DFzhb4LGOhYBmlQyr15in/p0Zz37C9frYEANk28AqG0Bg3PvokjaRYujBNVU9ybXTXtAH3P5ScSnstzfrJELn0CbmYBNvU2PrNjWhGzCvffYvZljxeV0CDGuY+Ae5UdIsljgekLVf6vwHuGvuXdGAk3Xf6j1Z+t+NmPlVFZS7RSpibyEx15kQIDAQABAoIBAEcV6w2sCyIMbAQWGYXtyYT0hyE8mFaA5togPoB0SP0kIFjMWCgc1no+Xh2YhZ+g2/l20/JLj4WXjfY47f2S5C70BWO3BeZ/lVgbXgMMoKBElY8IHjXhqVUQ4mS8m3l3vGxwtgaiuixs0/k6rMIpExTmhHR7C6tuKUzCpT0BQqsKOw9Vs3KEROHb+TbytjuTkNz8CHJcslk+QeEzD8zv+YAfaC6XJbAHjesylDcSmqZTEuYu3Yz6D1wh0SOgjQHTsWEoF6HUPlo4hO+kZWj4zrUFmjQRxNBaU6oGEbF+1Wmni3IRLIOH6JSLG3VkQ9SYbPpetTGUyv6OtcA+XUgOjU0CgYEA1db3ZwbMVymDxvhFhWphJ2t/pKahFuOJ32mg99HqJnb13ZeSYjezqjEhCO7Q4FEt/QoSU+mi/YWLDQpTEu3pXAVVb2u80pUclP46xqPQzobgGUi/eIaCuNKYhWlvtC5BPNtPX4nX9NEVYkx9JMObucZguDmuxPkvlpuA2idE2VMCgYEAym7+hQMCJzy/fMt/VedutsVKewdx83YweKxS9zNhcatSuMOF9JOTn1TxTJsOrfNF2f/JP0mdB4xAEDsgquWzVhYB0RZVi0vSSQtvXw18sVvjpTOsJaJmn1T1yIPAvW0aqe861DJPLn3VRXek/52AoHE2rY972Hcv2b0iklQL8QsCgYAKZ8RwIfeNgjqkUu5nGI8TsPpsE6OhDn9l/KjVhkRjjMRX/QkleFpovK1D1wMY9zpKptPPe33v4jCq+MakFCmXzbajjlWI1bKnWVuY0N3XPt7mvBB9F+aCgdTkIQZLeTi5cl6BYp68jfQBbYFlaZNJTerk7AGiGhIDvRtfAiwqewKBgQCbPgGcWdFF6/Vhq+HMLD6gla5nqS7/KW1Ercq2XsXk2SEIJpHNHXvBXe/q8qKQThcMdneMPFTbW/gpOl70EFG2vAvKoBkcSRpMACP5visZDMIIiBcFiYSvvgT7L+cYndor5hW0c5x7p+5tZrK3gL8Ky6fF9FpiiAy/K6eelivOPwKBgQDO8TleGnCvQN3RGBUOtIAAsFo47ebMg+6i1eMZsomw0o7BwI+p59h5vf2GzbyPWdOAXDTaq2gpXiIwIJsubQ2F34CUdbhrUDiloAJaTxFJhWKzkM+AFvSRJud+MYwWV7aJjG6t1SFVnGCquBvbEJJr8OUPSJaIGEH1KjEiVKb3Pw==
     -----END RSA PRIVATE KEY-----'''
+    PUBLIC_KEY = '''-----BEGIN RSA PUBLIC KEY-----
+    MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA279tUbhFMVCcAulvMozeXoRm5x5FoJIe8Yk4+tZhNdvRElgYtiBQs67okY2NWnttj214DPvFHFTdLQnc216/9VewWDgRNrE+qE+XjHSkvivPtZIMK0NpxoGzkNUEsnCdlPVs2CUmUgG7X81MMtToy2NgLtxdUJPs8E9jSdBo13Zv9tmX/PzRwYl9aSSOFIxLSxU+T7E0l7s6u6KJZkvFL6EOj+0+HBIlMniYtTIni9uuPnKiye7rP4BcsU5svcaeVLR71RUKZUCfr8iaExgG+gXyqNxGY2fGXZ6Z6hTy26pgIPmVL3lhcBd8l68a1kXo0pZB5TCtu38G6vxmyvduMwIDAQAB
+    -----END RSA PUBLIC KEY-----'''
 
 
 
@@ -111,14 +96,33 @@ class AliPayBase(object):
         )
         content = '&'.join(['='.join(x) for x in sort_param])
 
-        print "content is " + str(content)
-
         private_key = rsa.PrivateKey.load_pkcs1(AliPayConfig.PRIVATE_KEY.encode())
         sign = rsa.sign(content, private_key, 'SHA-256')
+
         print sign
-        ssn = base64.urlsafe_b64encode(sign)
+        ssn = base64.b64encode(sign)
         print ssn
         return ssn
+
+    def verify_sign_base(self, message, sign):
+        # print str(params) + '&sign='+sign
+        # ssn = base64.b64decode(sign)
+        # public_key = rsa.PublicKey.load_pkcs1(AliPayConfig.PUBLIC_KEY.encode())
+        # result = rsa.verify(params, ssn, public_key)
+        # print result
+        public_key = RSA.importKey(AliPayConfig.PUBLIC_KEY)
+
+        signer = PKCS1_v1_5.new(public_key)
+
+        digest = SHA256.new()
+
+        digest.update(message)
+
+        result = signer.verify(digest, base64.b64decode(sign))
+
+        print "verify result is " + str(result)
+
+        return result
 
     def create_request_data(self):
         raise NotImplementedError
@@ -185,12 +189,14 @@ class AliPayDoPay(AliPayBase):
         _sign = self.get_sign(param_map=params)
         params["sign"] = _sign
 
+
         sort_param = sorted(
             [(key, unicode(value).encode('utf-8')) for key, value in params.iteritems()],
             key=lambda x: x[0]
         )
-        content = '&'.join(['='.join(x) for x in sort_param])
 
+        #content = '&'.join(['='.join(x) for x in sort_param])
+        content = urllib.urlencode(sort_param)
         # result
         data = {
             "pay_params": content
@@ -204,16 +210,14 @@ class AliPayVerifyNotice(AliPayBase):
     支付宝通知结果验证
     """
 
-    def __init__(self, notice_params):
+    def __init__(self, notice_params, sign):
         self.service = 'notify_verify'
         self.notice_params = notice_params
+        self.sign = sign
 
     def verify_sign(self):
-        server_sign = self.get_sign(
-            params_map=self.notice_params)
-        client_sign = self.notice_params.get("sign")
 
-        return server_sign == client_sign
+        return self.verify_sign_base(self.notice_params, self.sign)
 
     def create_request_data(self):
         params = {

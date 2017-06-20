@@ -341,27 +341,23 @@ class WeChatWithdrawNotice(Document):
 
 
 class AlipayFillNotice(Document):
-    out_trade_no = StringField(verbose_name=u"out_trade_no", max_length=32)
-    appid = StringField(verbose_name=u"appid", max_length=32)
-    bank_type = StringField(verbose_name=u"bank_type", max_length=32)
-    cash_fee = IntField(verbose_name=u"cash_fee")
-    fee_type = StringField(verbose_name=u"fee_type", max_length=32)
-    is_subscribe = StringField(verbose_name=u"is_subscribe", max_length=32)
-    mch_id = StringField(verbose_name=u"mch_id", max_length=32)
-    nonce_str = StringField(verbose_name=u"nonce_str", max_length=32)
-    device_info = StringField(verbose_name=u"device_info", max_length=32)
-    openid = StringField(verbose_name=u"openid", max_length=32)
-    result_code = StringField(verbose_name=u"result_code", max_length=32)
-    return_code = StringField(verbose_name=u"return_code", max_length=32)
-    sign = StringField(verbose_name=u"sign", max_length=32)
-    time_end = StringField(verbose_name=u"time_end", max_length=32)
-    total_fee = StringField(verbose_name=u"total_fee", max_length=32)
-    trade_type = StringField(verbose_name=u"trade_type", max_length=32)
-    transaction_id = StringField(verbose_name=u"transaction_id", max_length=32)
-    err_code_des = StringField(verbose_name=u"transaction_id", max_length=128)
-    attach = StringField(verbose_name=u"transaction_id", max_length=128)
-    coupon_fee = IntField(verbose_name=u"transaction_id")
-    created_at = DateTimeField(verbose_name=u"创建时间", default=datetime.datetime.now())
+
+    seller_email = StringField(verbose_name=u"卖家支付宝账号")
+    app_id = StringField(verbose_name=u"支付包id")
+    buyer_pay_amount = FloatField(verbose_name=u"买家付款金额， 单位（分）")
+    buyer_logon_id = StringField(verbose_name=u"买件支付宝账号")
+    gmt_create = StringField(verbose_name=u"交易创建时间")
+    out_trade_no = StringField(verbose_name=u"商户订单号")
+    trade_status = StringField(verbose_name=u"交易状态")
+    gmt_payment = StringField(verbose_name=u"卖家付款时间")
+    trade_no = StringField(verbose_name=u"支付包交易好")
+    seller_id = StringField(verbose_name=u"卖家支付宝用户号")
+    total_amount = FloatField(verbose_name=u"订单金额")
+    notify_time = StringField(verbose_name=u"通知时间")
+    notify_id = StringField(verbose_name=u"通知ID")
+    buyer_id = StringField(verbose_name=u"买家支付宝用户号")
+
+
 
     class Meta:
         app_label = "customer"
@@ -369,86 +365,35 @@ class AlipayFillNotice(Document):
         verbose_name_plural = verbose_name
 
     @classmethod
-    def create_order(cls, xml):
-        root = xml
-        wcn = WeChatFillNotice()
+    def create_order(cls, notice_dict):
+        acn = AlipayFillNotice()
+        acn.seller_email = notice_dict.get("seller_email")
+        acn.app_id = notice_dict.get("app_id")
+        acn.buyer_pay_amount = float(notice_dict.get("buyer_pay_amount"))
+        acn.buyer_logon_id = notice_dict.get("buyer_logon_id")
+        acn.gmt_create = notice_dict.get("gmt_create")
+        acn.out_trade_no = notice_dict.get("out_trade_no")
+        acn.trade_status = notice_dict.get("trade_status")
+        acn.gmt_payment = notice_dict.get("gmt_payment")
+        acn.trade_no = notice_dict.get("trade_no")
+        acn.seller_id = notice_dict.get("seller_id")
+        acn.total_amount = float(notice_dict.get("total_amount"))
+        acn.notify_time = notice_dict.get("notify_time")
+        acn.notify_id = notice_dict.get("notify_id")
+        acn.buyer_id = notice_dict.get("notify_id")
+        acn.save()
 
-        wcn.app_id = root.find('appid').text
-        wcn.out_trade_no = root.find('out_trade_no').text
-        wcn.created_at = datetime.datetime.now()
-        bank_type = root.find('bank_type')
-
-        if bank_type is not None:
-            wcn.bank_type = bank_type.text
-
-        cash_fee = root.find('cash_fee')
-        if cash_fee is not None:
-            wcn.cash_fee = root.find('cash_fee').text
-
-        fee_type = root.find('fee_type')
-        if fee_type is not None:
-            wcn.fee_type = fee_type.text
-
-        is_subscribe = root.find('is_subscribe')
-        if is_subscribe is not None:
-            wcn.is_subscribe = is_subscribe.text
-
-        wcn.mch_id = root.find('mch_id').text
-        wcn.nonce_str = root.find('nonce_str').text
-
-        device_info = root.find('device_info')
-        if device_info is not None:
-            wcn.device_info = device_info.text
-
-        result_code = root.find('result_code')
-        if result_code is not None:
-            wcn.result_code = result_code.text
-
-        openid = root.find('openid')
-        if openid is not None:
-            wcn.openid = openid.text
-
-        return_code = root.find('return_code')
-        if return_code is not None:
-            wcn.return_code = return_code.text
-
-        wcn.sign = root.find('sign').text
-
-        time_end = root.find('time_end')
-        if time_end is not None:
-            wcn.time_end = time_end.text
-
-        trade_type = root.find('trade_type')
-        if trade_type is not None:
-            wcn.trade_type = trade_type.text
-
-        transaction_id = root.find('transaction_id')
-        if transaction_id is not None:
-            wcn.transaction_id = transaction_id.text
-
-        err_code_des = root.find('err_code_des')
-        if err_code_des is not None:
-            wcn.err_code_des = err_code_des.text
-
-        attach = root.find('attach')
-        if attach is not None:
-            wcn.attach = root.find('attach').text
-
-        coupon_fee = root.find('coupon_fee')
-        if coupon_fee is not None:
-            wcn.coupon_fee = coupon_fee.text
-
-        return cls.fill_in(wcn)
+        return cls.fill_in(acn)
 
     @classmethod
     # @transaction.commit_on_success
-    def fill_in(cls, wcn):
+    def fill_in(cls, acn):
         print "transcation start"
-        success = Account.fill_in(wcn.out_trade_no)
+        success = Account.fill_in(acn.out_trade_no)
 
         if success:
             print u"success"
-            wcn.save()
+            acn.save()
         else:
             raise Exception("trade order error")
 

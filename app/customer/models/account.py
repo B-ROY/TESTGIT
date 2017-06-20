@@ -421,12 +421,10 @@ class TradeBalanceRule(Document):
         return {
             "money": self.money,
             "diamon": self.diamon,
-            "free_diamon": self.free_diamon,
             "desc": self.desc,
             "apple_product_id": self.apple_product_id,
             "platform": self.platform,
             "trade_type": self.trade_type,
-            "activity_desc": self.activity_desc,
         }
 
     @classmethod

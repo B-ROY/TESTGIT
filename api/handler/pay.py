@@ -209,41 +209,36 @@ class AliPayNoticeHandler(BaseHandler):
         Param('amount', True, int, "str", "100", u'支付金额'),
     ], description=u"支付宝成功通知接口",)
     def post(self):
+        print "body is " + self.request.body
 
-        arguments = copy.deepcopy(self.request.arguments)
-        params = [
-            dict(key=value[0]) for key, value in arguments.iteritems() if key != 'sign' or key != 'sign_type']
+        arguments = self.request.arguments
 
-        ali_notice = AliPayVerifyNotice(params)
+        sign = self.arg('sign')
+
+        params = []
+
+        for key, value in arguments.iteritems():
+            if key=='sign' or key == 'sign_type':
+                continue
+            value_ = urllib.unquote(value[0])
+            if key=='gnt_create' or key == 'gmt_payment' or key == 'notify_time':
+                value_ = value_.replace('+', " ")
+            params.append((key, value_))
+
+        params.sort(key=lambda x: x[0])
+        content = '&'.join(['='.join(x) for x in params])
+
+        ali_notice = AliPayVerifyNotice(content, sign)
 
         if not ali_notice.verify_sign():
-            return self.write("FAILED")
+            return self.write("failed")
 
-        if not ali_notice.verify_notify_id():
-            return self.write("FAILED")
+        dic = dict(params)
+        print dic
+        success = AlipayFillNotice.create_order(dic)
 
-        #数据库里的订单
-        out_trade_no = self.arg('out_trade_no')
-        #支付宝交易id
-        trade_no = self.arg('trade_no')
-        #交易状态
-        trade_status = self.arg('trade_status')
-        #支付金额
-        total_fee = self.arg('total_fee')
-        #购买者支付宝账号
-        buyer_id = self.arg('buyer_id')
-        #购买者email
-        buyer_email = self.arg('buyer_email')
-
-        if trade_status == "TRADE_SUCCESS":
-            order = TradeBalanceOrder.objects.get(id=out_trade_no)
-            order.status = TradeBalanceOrder.STATUS_FILL_IN_PAYED
-            order.filled_time = datetime.datetime.now()
-            order.order_id = trade_no
-            order.save()
-
-
-        self.write("success")
+        if success:
+            self.write("success")
 
 @handler_define
 class WePayNoticeHandler(BaseHandler):
@@ -308,7 +303,7 @@ class ApplePayVerifyHandler(BaseHandler):
         order_id = self.arg('order_id')
         reciept = self.arg('reciept' , "")
         user_id = self.current_user_id
-	if int(user_id) == 504:
+        if int(user_id) == 504:
             status = Account.fill_in(order_id=order_id)
             if status:
                 return self.write({"status": "success"})
@@ -339,7 +334,7 @@ class ApplePayVerifyHandler(BaseHandler):
         else:
             self.write({'status': 'fail', "erorr": "verify fail"})
 
-
+"""
 @handler_define
 class AliPayHandler(BaseHandler):
     @api_define("Pay Identity", r'/api/live/do/pay/identity', [
@@ -416,7 +411,7 @@ class AliPayHandler(BaseHandler):
         data.update(params)
         r = {'status': "success", "data": data, "ip":self.user_ip}
         self.write(r)
-
+"""
 
 @handler_define
 class PayRules(BaseHandler):
@@ -510,6 +505,6 @@ class PayRulesV2(BaseHandler):
         self.write({'status': "success", "data": {
             "alipay_rules": alipay_rule_list,
             "wepay_rules": wepay_rule_list,
-            "applepay_rulse": applepay_rule_list
+            "applepay_rules": applepay_rule_list
         }})
 
