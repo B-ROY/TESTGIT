@@ -420,7 +420,7 @@ class AudioRoomRecord(Document):
         """
         3分钟没有上报就自动关闭
         """
-        time = datetime.timedelta(0, 180)
+        time = datetime.timedelta(0, 120)
         objs = AudioRoomRecord.objects.filter(status=2, report_join__lt=datetime.datetime.now()-time).\
                    order_by('-created_at')[(page-1)*page_count:page*page_count]
         return objs

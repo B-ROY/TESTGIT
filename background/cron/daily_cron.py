@@ -22,6 +22,7 @@ import logging
 import datetime
 from app.customer.models.tools import *
 from app.customer.models.vip import *
+from app.customer.models.block_user_device import *
 
 def clear_send_tools():
     now = datetime.datetime.now()
@@ -88,5 +89,10 @@ def clear_send_tools():
     # 删除会员到期的
     UserVip.objects.filter(end_time__lte=yesterday_end).delete()
 
+
+def add_block_record():
+    BlockUserRecord.write_record_daily()
+
 if __name__ == "__main__":
     clear_send_tools()
+    add_block_record()

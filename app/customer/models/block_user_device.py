@@ -72,7 +72,7 @@ class BlockUserRecord(Document):
 
         yesterday = datetime.datetime.today() - datetime.timedelta(days=1)
 
-        block_record = BlockUserDev.objects.filter(block_start__gte=yesterday, block_start__lt=today, status__ne=3)
+        block_record = BlockUserDev.objects.filter(created_time__gte=yesterday, created_time__lt=today, status__ne=3)
         if block_record:
             block_user_daily_record = cls()
             block_user_daily_record.block_date = yesterday  # yesterday
@@ -88,42 +88,6 @@ class BlockUserRecord(Document):
             block_user_daily_record.block_user_id = id_record[0:-1]
             block_user_daily_record.block_user_dev = dev_record[0:-1]
             block_user_daily_record.save()
-
-    @classmethod
-    def write_record_all(cls):
-        today = datetime.datetime.today()
-
-        yesterday = datetime.datetime.today()-datetime.timedelta(days=1)
-
-        first_block_user_dev = BlockUserDev.objects.filter(status__ne=3).order_by("created_time").first()
-
-        first_day = first_block_user_dev.created_time
-
-        first_day = datetime.datetime(year=first_day.year, month=first_day.month, day=first_day.day)
-
-        d = first_day
-        while d < today+datetime.timedelta(days=1):
-            next_day = d + datetime.timedelta(days=1)
-            block_record = BlockUserDev.objects.filter(created_time__gte=d, created_time__lt=next_day, status__ne=3)
-
-            #block_record = BlockUserDev.objects.filter(block_start__gte=yesterday, block_start__lt=today, status__ne=3)
-            if block_record:
-                block_user_daily_record = cls()
-                block_user_daily_record.block_date = d#yesterday
-                id_record = ""
-                dev_record = ""
-                for record in block_record:
-                    block_user = User.objects.get(id=record.block_user)
-                    if record.block_type == 1:
-                        id_record += block_user.nickname + ","
-                    elif record.block_type == 2:
-                        dev_record += block_user.nickname + ","
-
-                block_user_daily_record.block_user_id = id_record[0:-1]
-                block_user_daily_record.block_user_dev = dev_record[0:-1]
-
-                block_user_daily_record.save()
-            d = next_day
 
 
 

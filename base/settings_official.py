@@ -218,7 +218,7 @@ def load_settings(settings, debug=False, **kwargs):
         'Agora_appCertificate': "ed1b88f080b644ebb24e60d18439c6ad",
         'RabbitQueue_name': "chatpa",
         'Weixin_pay_notifyurl': "http://api.v1.iwala.cn/api/live/wepay/notice",
-        'Alipay_notifyurl': "http://api.v1.iwala.cn/api/live/alipay/notice",
+        'Alipay_notifyurl': "https://api.v1.iwala.cn/api/live/alipay/notice",
         'Message_Tornado_host': "10.141.15.92:9000",
 
         # 腾讯云 签名工具配置
