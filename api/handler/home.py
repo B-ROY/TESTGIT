@@ -11,7 +11,7 @@ from app.customer.models.adv import Adv
 
 @handler_define
 class RecommendList(BaseHandler):
-    @api_define("get recommend list", r'/hotanchor/recommend/list', [], description=u"首页各栏目推荐列表")
+    @api_define("get recommend list", r'/home/recommend/list', [], description=u"首页各栏目推荐列表")
     def get(self):
 
         #audiorooms = AudioRoomRecord.get_online_users_v1(query_time=datetime.datetime.now(), page=1, page_count=9, gender=2, is_video=0)
