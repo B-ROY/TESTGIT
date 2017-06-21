@@ -218,9 +218,7 @@ class AliPayNoticeHandler(BaseHandler):
         for key, value in arguments.iteritems():
             if key=='sign' or key == 'sign_type':
                 continue
-            value_ = urllib.unquote(value[0])
-            if key=='gnt_create' or key == 'gmt_payment' or key == 'notify_time':
-                value_ = value_.replace('+', " ")
+            value_ = urllib.unquote_plus(value[0])
             params.append((key, value_))
 
         params.sort(key=lambda x: x[0])
@@ -499,11 +497,15 @@ class PayRulesV2(BaseHandler):
             elif rule.trade_type == 2:
                 applepay_rule_list.append(rule.normal_info())
 
+        # todo 做到redis中 CMS可调配
+        is_wechat_show = 1 #1: 显示 0:隐藏
+
         self.write({'status': "success", "data": {
             "alipay_rules": alipay_rule_list,
             "wepay_rules": wepay_rule_list,
             "applepay_rules": applepay_rule_list
-        }})
+        },
+            "is_wechat_show": is_wechat_show})
 
 
 @handler_define
@@ -518,7 +520,7 @@ class OderCheck(BaseHandler):
         try:
             order = TradeBalanceOrder.objects.get(id=order_id)
             user_id = self.current_user_id
-            if order.user.id == user_id and order.status == 1:
+            if order.user.id == int(user_id) and order.status == 1:
                 is_success = True
             else:
                 is_success = False
