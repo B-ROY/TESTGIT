@@ -89,20 +89,22 @@ class Can_Receive(BaseHandler):
         """
 
         # 如果有活动:
-        # tools_activity = ToolsActivity.objects.filter(delete_status=1).order_by("-create_time").first()
-        # if tools_activity:
-        if current_user_id:
-            user_id = int(current_user_id)
-            now = datetime.datetime.now()
-            create_time = now
-            starttime = create_time.strftime("%Y-%m-%d 00:00:00")
-            endtime = create_time.strftime('%Y-%m-%d 23:59:59')
-            # print "starttime", starttime
-            # print "endtime", endtime
-            record = UserToolsRecord.objects.filter(user_id=user_id, time_type=0, create_time__gte=starttime, create_time__lte=endtime, oper_type=4).first()
-            if not record:
-                # print "user_id......", user_id
-                can_receive = 1
+        temp_now = datetime.datetime.now()
+        now = temp_now.strftime('%Y-%m-%d 00:00:00')
+        tools_activity = ToolsActivity.objects.filter(delete_status=1, end_time__gte=now).first()
+        if tools_activity:
+            if current_user_id:
+                user_id = int(current_user_id)
+                now = datetime.datetime.now()
+                create_time = now
+                starttime = create_time.strftime("%Y-%m-%d 00:00:00")
+                endtime = create_time.strftime('%Y-%m-%d 23:59:59')
+                # print "starttime", starttime
+                # print "endtime", endtime
+                record = UserToolsRecord.objects.filter(user_id=user_id, time_type=0, create_time__gte=starttime, create_time__lte=endtime, oper_type=4).first()
+                if not record:
+                    # print "user_id......", user_id
+                    can_receive = 1
 
         self.write({"status": "success", "can_receive": can_receive})
 
@@ -117,7 +119,40 @@ class Receive_Tools(BaseHandler):
         user_id = int(self.current_user_id)
         user = self.current_user
         now = datetime.datetime.now()
-        receive_data = {'0': '1', '1': '1', '2': '1'}
+        now_str = now.strftime('%Y-%m-%d 23:59:59')
+        if user.is_video_auth == 1:
+            #  主播
+            verify = VideoManagerVerify.objects.filter(user_id=user_id).first()
+            if not verify:
+                return self.write({"status": "failed", "error_message": "认证主播", })
+            verify_time = verify.verify_time
+            temp_end_time = verify_time + datetime.timedelta(days=7)
+            endtime = temp_end_time.strftime('%Y-%m-%d 23:59:59')
+
+            # 6-22 之前认证的都属于老主播
+            compare_time = datetime.datetime(2017, 6, 21)
+
+            if verify_time < compare_time or datetime.datetime.strptime(endtime, "%Y-%m-%d %H:%M:%S") < now:
+                # 老主播
+                tools_activity = ToolsActivity.objects.filter(delete_status=1, role=2, end_time__lte=now_str).first()
+                if not tools_activity:
+                    return self.write({"status": "failed", "error_message": "活动已过期", })
+                receive_data = eval(tools_activity.tools_data)
+            else:
+                # 新主播
+                tools_activity = ToolsActivity.objects.filter(delete_status=1, role=1, end_time__lte=now_str).first()
+                if not tools_activity:
+                    return self.write({"status": "failed", "error_message": "活动已过期", })
+                receive_data = eval(tools_activity.tools_data)
+        else:
+            #  非主播
+            tools_activity = ToolsActivity.objects.filter(delete_status=1, role=3, end_time__lte=now_str).first()
+            if not tools_activity:
+                return self.write({"status": "failed", "error_message": "活动已过期", })
+            receive_data = eval(tools_activity.tools_data)
+
+        # ====================================================================================
+        # receive_data = {'0': '1', '1': '1', '2': '1'}
 
         tools_list = []
 

@@ -236,6 +236,7 @@ class ToolsActivity(Document):
     delete_status = IntField(verbose_name=u"是否删除", choices=Delete_STATUS)
     start_time = DateTimeField(verbose_name=u"起始时间(包含在内)")
     end_time = DateTimeField(verbose_name=u"结束时间(包含在内)")
+    role = IntField(verbose_name=u"人群")  #1: 新主播 2：老主播 3：用户
 
 
 
