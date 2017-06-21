@@ -14,6 +14,7 @@ import rsa
 from Crypto.Signature import PKCS1_v1_5
 from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
+from django.conf import settings
 
 
 __author__ = 'biwei'
@@ -144,7 +145,7 @@ class AliPayDoPay(AliPayBase):
     def __init__(self, out_trade_no, subject, total_fee, body='buy', payment_type=1, sign_type="RSA2"):
 
         self.method = "alipay.trade.app.pay"
-        self.notify_url = "http://123.207.175.223/api/live/alipay/notice"
+        self.notify_url = settings.Alipay_notifyurl
         self.out_trade_no = out_trade_no
         self.subject = subject
         self.payment_type = payment_type
