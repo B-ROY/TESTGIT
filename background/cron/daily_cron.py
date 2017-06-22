@@ -61,8 +61,8 @@ def clear_send_tools():
             for key, value in tool_dic.items():
                 tools = Tools.objects.filter(tools_type=int(key)).first()  # 道具
 
-                if int(key) == 2:  # 千里眼
-                    continue
+                # if int(key) == 2:  # 千里眼
+                #     continue
 
                 # 限时的
                 user_tools = UserTools()

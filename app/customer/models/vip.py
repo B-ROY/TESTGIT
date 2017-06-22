@@ -133,8 +133,8 @@ class UserVip(Document):
                         user_tools.user_id = user_id
                         user_tools.tools_id = str(tools.id)
                         user_tools.tools_count = int(value)
-                        user_tools.time_type = 1  # 永久
-                        user_tools.get_type = 2  # 会员购买
+                        user_tools.time_type = 0  # 永久
+                        user_tools.get_type = 1  # 会员发放
                         user_tools.invalid_time = None
                         user_tools.save()
                 else:
