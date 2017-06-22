@@ -158,19 +158,20 @@ class ISFriend(BaseHandler):
     @api_define("is friend", r'/friend/is_friend', [
         Param("friend_id", True, str, "", "", u"friend_id"),
     ], description="判断是否是好友")
-
-    @login_required
     def get(self):
-        user_id = int(self.current_user_id)
-        friend_id = self.arg("friend_id", "")
-        is_friend = 0
-        # 判断是否已经成为好友
-        friend = Friend.objects.filter(user_id=user_id, friend_id=friend_id, friend_status=2).first()
+        try:
+            user_id = int(self.current_user_id)
+            friend_id = self.arg("friend_id", "")
+            is_friend = 0
+            # 判断是否已经成为好友
+            friend = Friend.objects.filter(user_id=user_id, friend_id=friend_id, friend_status=2).first()
 
-        if friend:
-            is_friend = 1
+            if friend:
+                is_friend = 1
 
-        self.write({"status": "success", "is_friend": is_friend, })
+            self.write({"status": "success", "is_friend": is_friend, })
+        except Exception, e:
+            self.write({"status": "failed"})
 
 
 @handler_define

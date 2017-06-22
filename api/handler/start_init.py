@@ -55,21 +55,21 @@ class Initial(BaseHandler):
         else:
             switches["review"] = 1
 
-        if platform.upper() == 'ANDROID' and ua_version < "2.1.6":
+        if platform.upper() == 'ANDROID' and ua_version < "2.2.1":
             if channel == "chatpa" or channel == "600009":
                 channel = "600000"
-            version_info["upgrade_type"] = 2
+            version_info["upgrade_type"] = 1
             version_info["version_code"] = 300
-            downloads_url = "http://heydo-10048692.file.myqcloud.com/android_apk/chatpa2.1.2_" + channel + ".apk"
-
-            print downloads_url
+            downloads_url = "http://heydo-10048692.file.myqcloud.com/android_apk/chatpa2.2.1_" + channel + ".apk"
             version_info["download_url"] = downloads_url
-            version_info["desc"] = "亲爱的女神、男神：您好！为了给大家提供更好的服务，我们将现有版本升级，新版特性：" \
-                                   "增加漂流瓶，遇见神秘的ta" \
-                                   "增加公告轮播，提供更多最新消息"
+            version_info["desc"] = "亲爱的女神、男神：您好！为了给大家提供更好的服务，我们将现有版本升级，新版特性：\n" \
+                                   "\n" \
+                                   "优化了视频显示效果；\n" \
+                                   "VIP功能上线，享受更多特权。\n" \
+                                   "增加支付宝支付"
 
         share_url = "http://www.qqzwq.cn/share/"
-        invite_url = "http://www.qqzwq.cn/invite/liaopa_invite.html"
+        invite_url = "http://www.qqhqf.cn/invite/liaopa_invite.html"
 
         self.write({
             'status': "success",
