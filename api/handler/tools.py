@@ -134,19 +134,19 @@ class Receive_Tools(BaseHandler):
 
             if verify_time < compare_time or datetime.datetime.strptime(endtime, "%Y-%m-%d %H:%M:%S") < now:
                 # 老主播
-                tools_activity = ToolsActivity.objects.filter(delete_status=1, role=2, end_time__lte=now_str).first()
+                tools_activity = ToolsActivity.objects.filter(delete_status=1, role=2, end_time__gte=now_str).first()
                 if not tools_activity:
                     return self.write({"status": "failed", "error_message": "活动已过期", })
                 receive_data = eval(tools_activity.tools_data)
             else:
                 # 新主播
-                tools_activity = ToolsActivity.objects.filter(delete_status=1, role=1, end_time__lte=now_str).first()
+                tools_activity = ToolsActivity.objects.filter(delete_status=1, role=1, end_time__gte=now_str).first()
                 if not tools_activity:
                     return self.write({"status": "failed", "error_message": "活动已过期", })
                 receive_data = eval(tools_activity.tools_data)
         else:
             #  非主播
-            tools_activity = ToolsActivity.objects.filter(delete_status=1, role=3, end_time__lte=now_str).first()
+            tools_activity = ToolsActivity.objects.filter(delete_status=1, role=3, end_time__gte=now_str).first()
             if not tools_activity:
                 return self.write({"status": "failed", "error_message": "活动已过期", })
             receive_data = eval(tools_activity.tools_data)
