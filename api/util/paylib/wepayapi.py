@@ -192,7 +192,37 @@ class WePayDoPay(WePayBase):
         else:
             return False
 
+class WePayOrderQuery(WePayBase):
 
+    SUCCESS, FAIL = "SUCCESS", "FAIL"
+
+    def __init__(self, out_trade_no):
+        self.url = "https://api.mch.weixin.qq.com/pay/orderquery"
+        self.out_trade_no = out_trade_no
+        self.nonce_str = self.random_str()
+
+    def create_xml(self):
+        """生成接口参数xml"""
+        param_map = {
+            'appid': WePayConfig.APPID,
+            'mch_id': WePayConfig.MCHID,
+            'nonce_str': self.nonce_str,
+            'out_trade_no': self.out_trade_no,
+        }
+
+        param_map['sign'] = self.get_sign(param_map)
+        self.xml = self.dict_to_xml(param_map)
+        return self.xml
+
+    def post_xml(self, second=30):
+        try:
+            data = urllib2.urlopen(
+                self.url, self.create_xml(),
+                timeout=second).read()
+            print "order query result is " + data
+        except Exception:
+            raise apiexception.WePayException(-999)
+        return self.xml_to_dict(data)
 
 
 class WePayNotice(WePayBase):

@@ -112,18 +112,7 @@ def load_settings(settings, debug=False, **kwargs):
         #    'localhost'
         #],
         'DATABASES': {
-            'default': {
-                'ENGINE': 'django.db.backends.mysql',
-                'NAME': 'livevideo_platform',  # Or path to database file if using sqlite3.
-                'USER': 'root',  # Not used with sqlite3.
-                'PASSWORD': '2RKE#zyeq1',  # Not used with sqlite3.
-                'HOST': '10.66.109.98',  # Set to sempty string for localhost. Not used with sqlite3.
-                'PORT': '',  # Set to empty string for default. Not used with sqlite3.
-                'OPTIONS': {
-                    'init_command': 'SET storage_engine=INNODB ; set SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;',
-                    'charset':'utf8mb4',
-                },
-            }
+
         },
 
         'DISABLE_TRANSACTION_MANAGEMENT' : False,

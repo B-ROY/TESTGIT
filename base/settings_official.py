@@ -112,18 +112,6 @@ def load_settings(settings, debug=False, **kwargs):
         #    'localhost'
         #],
         'DATABASES': {
-            'default': {
-                'ENGINE': 'django.db.backends.mysql',
-                'NAME': 'livevideo_platform',  # Or path to database file if using sqlite3.
-                'USER': 'root',  # Not used with sqlite3.
-                'PASSWORD': '2RKE#zyeq1',  # Not used with sqlite3.
-                'HOST': '10.66.109.98',  # Set to sempty string for localhost. Not used with sqlite3.
-                'PORT': '',  # Set to empty string for default. Not used with sqlite3.
-                'OPTIONS': {
-                    'init_command': 'SET storage_engine=INNODB ; set SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;',
-                    'charset':'utf8mb4',
-                },
-            }
         },
 
         'DISABLE_TRANSACTION_MANAGEMENT' : False,
@@ -217,7 +205,7 @@ def load_settings(settings, debug=False, **kwargs):
         'Agora_AppId': "0927d1c4bb914c658b4a1a8ba7a88a96",
         'Agora_appCertificate': "ed1b88f080b644ebb24e60d18439c6ad",
         'RabbitQueue_name': "chatpa",
-        'Weixin_pay_notifyurl': "http://api.v1.iwala.cn/api/live/wepay/notice",
+        'Weixin_pay_notifyurl': "https://api.v1.iwala.cn/api/live/wepay/notice",
         'Alipay_notifyurl': "https://api.v1.iwala.cn/api/live/alipay/notice",
         'Message_Tornado_host': "10.141.15.92:9000",
 
