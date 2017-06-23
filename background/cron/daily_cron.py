@@ -87,7 +87,15 @@ def clear_send_tools():
     print "tools send success..."
 
     # 删除会员到期的
-    UserVip.objects.filter(end_time__lte=yesterday_end).delete()
+    user_vips = UserVip.objects.filter(end_time__lte=yesterday_end)
+    if user_vips:
+        for user_vip in user_vips:
+            user_id = user_vip.user_id
+            user = User.objects.filter(id=user_id).first()
+            if user:
+                user.is_vip = 3
+                user.save()
+            user_vip.delete()
 
 
 def add_block_record():

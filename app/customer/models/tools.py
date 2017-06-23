@@ -64,6 +64,7 @@ class UserTools(Document):
         (0, u"收到"),  # 限时一天的道具 (避免多次点击"领取")
         (1, u"会员自动发放"),  # 限时一天的道具
         (2, u"购买"),
+        (3, u"后台添加"),
     )
 
     user_id = IntField(verbose_name=u'用户id', required=True)
@@ -184,6 +185,8 @@ class UserToolsRecord(Document):
         (2, u"购买道具"),
         (3, u"会员发放道具"),
         (4, u"领取道具"),
+        (5, u"后台添加"),
+
     )
 
     user_id = IntField(verbose_name=u'用户id', required=True)
@@ -192,6 +195,7 @@ class UserToolsRecord(Document):
     time_type = IntField(verbose_name=u"道具时限类型", choices=TIME_TYPE)
     oper_type = IntField(verbose_name=u"操作形式", choices=OPER_TYPE)
     create_time = DateTimeField(verbose_name=u"创建时间")
+
 
 
 # 道具赠送 记录表

@@ -82,6 +82,8 @@ class User(Document):
     complete_info = IntField(verbose_name=u'是否完善过个人信息', choices=COMPLETE_INFO)
     user_type = IntField(verbose_name=u'用户类型', choices=ROBOT)
     guid = StringField(verbose_name=u'用户设备号')
+    is_valid = IntField(verbose_name=u'是否不入库',default=2)#不入库 2，入库
+    is_vip = IntField(verbose_name=u'是否是vip',default=3)#  1高级 2 超级 3非会员
 
     # 个人资料
     nickname = StringField(verbose_name=u"用户昵称", max_length=32)
@@ -241,7 +243,10 @@ class User(Document):
             "bottle_switch": self.bottle_switch,
             "disturb_mode": self.disturb_mode,
             "current_score": self.current_score,
-            "cover": self.cover
+            "cover": self.cover,
+            "is_valid": self.is_valid,
+            "is_vip": self.is_vip,
+
         }
 
     @classmethod
@@ -306,7 +311,9 @@ class User(Document):
                 disturb_mode=0,
                 online_status=1,
                 current_score=-1,
-                last_guid=guid
+                last_guid=guid,
+                is_vip=3
+
             )
             user.id = UserRedis.pop_user_id()
             user.identity = UserRedis.pop_user_identity()

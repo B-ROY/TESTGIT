@@ -88,7 +88,7 @@ class UserVip(Document):
         try:
             # 用户账号余额
             account.diamond_trade_out(price=vip.price, desc=u"购买会员, 会员id=%s" %
-                                                              (str(vip.id)), trade_type=TradeDiamondRecord.TradeTypeVIP)
+                                                            (str(vip.id)), trade_type=TradeDiamondRecord.TradeTypeVIP)
 
             # 用户会员
             user_vip = UserVip.objects.filter(user_id=user_id).first()
@@ -108,6 +108,11 @@ class UserVip(Document):
             user_vip.end_time = end_time
             user_vip.save()
 
+            # 更新user表
+            user.is_vip = vip.vip_typ
+            user.save()
+
+
             # 购买会员记录
             vip_record = UserVipRecord()
             vip_record.user_id = user_id
@@ -120,40 +125,22 @@ class UserVip(Document):
             tool_dic = eval(tool_str)
             for key, value in tool_dic.items():
                 tools = Tools.objects.filter(tools_type=int(key)).first()  # 道具
-
-                if int(key) == 2:  # 千里眼
-
-                    user_tools = UserTools.objects.filter(user_id=user_id, time_type=1, tools_id=str(tools.id)).first()
-                    record_time_type = 1
-                    if user_tools:
-                        user_tools.tools_count += int(value)
-                        user_tools.save()
-                    else:
-                        user_tools = UserTools()
-                        user_tools.user_id = user_id
-                        user_tools.tools_id = str(tools.id)
-                        user_tools.tools_count = int(value)
-                        user_tools.time_type = 0  # 永久
-                        user_tools.get_type = 1  # 会员发放
-                        user_tools.invalid_time = None
-                        user_tools.save()
+                # 限时的 (累加  当然每天会被清掉,每天是可以累加的)
+                user_tools = UserTools.objects.filter(user_id=user_id, time_type=0, get_type=1, tools_id=str(tools.id)).first()
+                record_time_type = 0
+                if user_tools:
+                    user_tools.tools_count += int(value)
+                    user_tools.save()
                 else:
-                    # 限时的 (累加  当然每天会被清掉,每天是可以累加的)
-                    user_tools = UserTools.objects.filter(user_id=user_id, time_type=0, get_type=1, tools_id=str(tools.id)).first()
-                    record_time_type = 0
-                    if user_tools:
-                        user_tools.tools_count += int(value)
-                        user_tools.save()
-                    else:
-                        user_tools = UserTools()
-                        user_tools.user_id = user_id
-                        user_tools.tools_id = str(tools.id)
-                        user_tools.tools_count = int(value)
-                        user_tools.time_type = 0  # 限时
-                        user_tools.get_type = 1  # 会员自动发放
-                        invalid_time = now + datetime.timedelta(days=1)
-                        user_tools.invalid_time = invalid_time
-                        user_tools.save()
+                    user_tools = UserTools()
+                    user_tools.user_id = user_id
+                    user_tools.tools_id = str(tools.id)
+                    user_tools.tools_count = int(value)
+                    user_tools.time_type = 0  # 限时
+                    user_tools.get_type = 1  # 会员自动发放
+                    invalid_time = now + datetime.timedelta(days=1)
+                    user_tools.invalid_time = invalid_time
+                    user_tools.save()
 
                 tools_record = UserToolsRecord()
                 tools_record.user_id = user_id
@@ -175,6 +162,7 @@ class UserVipRecord(Document):
     user_id = IntField(verbose_name=u'用户id', required=True)
     vip_id = StringField(verbose_name=u"会员id", required=True)
     create_time = DateTimeField(verbose_name=u"创建时间", default=datetime.datetime.now())
+    opttype = IntField(verbose_name=u'添加方式')#1:后台添加
 
 
 class VipIntroPic(Document):
