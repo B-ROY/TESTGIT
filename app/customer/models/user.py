@@ -951,6 +951,7 @@ class RealNameVerify(Document):
     verify_time = DateTimeField(verbose_name=u"上传时间", default=datetime.datetime.now())
     feedback_reason = StringField(verbose_name=u"审核反馈", max_length=256)
     status = IntField(verbose_name=u"审核状态", choices=VERIFY_STATUS)
+    is_valid = IntField(verbose_name=u"是否移除",default=1)#1.不移除 2.移除
 
     class Meta:
         app_label = "customer"
@@ -969,6 +970,7 @@ class RealNameVerify(Document):
                 picture_three=picture_three,
                 verify_time=datetime.datetime.now(),
                 status=0,
+                is_valid=1
             )
             verify.save()
             desc = u"<html><p>亲爱的播主您好，认证申请已成功提交，请等待工作人员审核（1-2工作日）</p></html>"
@@ -1002,6 +1004,7 @@ class VideoManagerVerify(Document):
     verify_time = DateTimeField(verbose_name=u"确认时间", default=datetime.datetime.now())
     feedback_reason = StringField(verbose_name=u"认证审核反馈", max_length=256)
     status = IntField(verbose_name=u"认证状态", choices=VERIFY_STATUS)
+    is_valid = IntField(verbose_name=u"是否忽略", default=1)#1不忽略 2，忽略
 
     class Meta:
         app_label = "customer"
@@ -1020,6 +1023,7 @@ class VideoManagerVerify(Document):
                 feedback_reason=feedback_reason,
                 create_time=datetime.datetime.now(),
                 status=status,
+                is_valid=1,
             )
             verify.save()
             user = User.objects.get(id=int(user_id))

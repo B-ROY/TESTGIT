@@ -8,7 +8,7 @@ from app_redis.user.models.user import UserRedis
 def gen_luck_number():
     count = LuckIDInfo.objects.all().count()
     identity_list = []
-    for n in range(3050010, 3200000):
+    for n in range(3065000, 3500000):
         strNum = str(n)
         result = checkLuckNumber(strNum)
         print result
