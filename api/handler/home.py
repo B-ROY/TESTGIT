@@ -30,12 +30,12 @@ class RecommendList(BaseHandler):
                 hot_ids.append(user.id)
 
         for heartbeat in heartbeats:
-            if heartbeat.user.charm_value > 2500 and heartbeat.user.disturb_mode != 1 \
-                    and heartbeat.user.id not in hot_ids:
+            if heartbeat.user.charm_value > 3500 and heartbeat.user.disturb_mode != 1 \
+                    and heartbeat.user.id not in hot_ids and heartbeat.user.is_video_auth == 1:
                 hots.append(heartbeat.user)
 
         if not hots:
-            hots = User.objects.all().order_by("-charm_value")[0:4]
+            hots = User.objects.filter(is_video_auth=1).order_by("-charm_value")[0:4]
 
         audio_list = []
         video_list = []
