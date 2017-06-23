@@ -10,6 +10,7 @@ from app.customer.models.online_user import *
 from django.db import models
 from base.settings import CHATPAMONGO
 from app.customer.models import user
+from app_redis.room.room import RoomRedis
 
 
 connect(CHATPAMONGO.db, host=CHATPAMONGO.host, port=CHATPAMONGO.port, username=CHATPAMONGO.username,
@@ -148,7 +149,7 @@ class AudioRoomRecord(Document):
             roomrecord.report_join = start_time
             roomrecord.status = status
             roomrecord.save()
-
+            RoomRedis.create_room_record(room_id, user_id, join_id)
         except Exception,e:
             logging.error("start room record error:{0}".format(e))
             return False
@@ -228,7 +229,7 @@ class AudioRoomRecord(Document):
             data['spend'] = roomrecord.gift_value
             data['spend_exp'] = roomrecord.gift_value
             data['new_id'] = new_id
-
+            RoomRedis.close_room(room_id)
         except Exception,e:
             logging.error("finish room record error:{0}".format(e))
             return False

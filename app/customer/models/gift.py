@@ -10,6 +10,7 @@ from base.settings import CHATPAMONGO
 from django.conf import settings
 from mongoengine import *
 from app.util.messageque.msgsender import MessageSender
+from app_redis.room.room import RoomRedis
 
 
 connect(CHATPAMONGO.db, host=CHATPAMONGO.host, port=CHATPAMONGO.port, username=CHATPAMONGO.username,
@@ -262,17 +263,24 @@ class GiftManager(object):
     @classmethod
     def audio_check(cls, room_id):
         try:
-            now_time = datetime.datetime.now()
-            desc = u"语音聊天id=%s" % room_id
-            user_bill = TradeDiamondRecord.objects.filter(desc=desc).order_by("-created_time")
-            if not user_bill:
-                return True, 1
+            count = RoomRedis.room_paybill(room_id)
+            if count == 0:
+                return False, 0
             else:
-                total_seconds = int((now_time - user_bill.first().created_time).total_seconds())
-                if total_seconds >= 55:
-                    return True, (total_seconds + 5) / 60
-                else:
-                    return False, 0
+                return True, count
+
+            # now_time = datetime.datetime.now()
+            # desc = u"语音聊天id=%s" % room_id
+            # user_bill = TradeDiamondRecord.objects.filter(desc=desc).order_by("-created_time")
+            # if not user_bill:
+            #     return True, 1
+            # else:
+            #     total_seconds = int((now_time - user_bill.first().created_time).total_seconds())
+            #     if total_seconds >= 55:
+            #         return True, (total_seconds + 5) / 60
+            #     else:
+            #         return False, 0
+
         except Exception, e:
             logging.error("audio check error:{0}".format(e))
             return False, 0
