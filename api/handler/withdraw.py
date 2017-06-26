@@ -41,6 +41,9 @@ class WithdrawLogin(BaseHandler):
 
         user = User.objects.filter(phone=phone).order_by("created_at").first()
 
+        if not user:
+            return self.write({"status": "fail", "error": "未绑定手机号", "message_code": 4})
+
         invite_list = UserInviteCode.get_invite_list(invite_id=user.id)
 
         friend_revenue = 0
