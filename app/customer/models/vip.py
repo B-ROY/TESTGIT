@@ -109,7 +109,7 @@ class UserVip(Document):
             user_vip.save()
 
             # 更新user表
-            user.is_vip = vip.vip_typ
+            user.is_vip = vip.vip_type
             user.save()
 
 
