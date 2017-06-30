@@ -800,8 +800,8 @@ class WithdrawRequest(Document):
         month = cur.month
         year = cur.year
         today = datetime.datetime(year=year,month=month,day=cur.day)
-        tomorrow = datetime.datetime(year=year,month=month,day=cur.day+1)
-
+        one_day = datetime.timedelta(days=1)
+        tomorrow = today + one_day
         withdraws = WithdrawRequest.objects.filter(user_id=user_id, status=2, fillin_time__gte=today,fillin_time__lte=tomorrow).values_list("request_money")
 
         sum = 0

@@ -37,7 +37,7 @@ def new_anchors():
     for verify in verify_list:
         user = User.objects.filter(id=verify.user_id).first()
         user_beat = UserHeartBeat.objects.filter(user=user, last_report_time__gte=pre_time)
-        if user_beat:
+        if user_beat and user.gender == 2:
             if user not in user_list:
                 user_list.append(user)
 

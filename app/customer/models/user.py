@@ -961,6 +961,9 @@ class RealNameVerify(Document):
     @classmethod
     def create_real_name_verify(cls, user_id, real_name, identity_code, picture_one, picture_two, picture_three):
         try:
+            pre_verify = cls.objects.filter(user_id=user_id, status__ne=2).first()
+            if pre_verify:
+                return False
             verify = RealNameVerify(
                 user_id=user_id,
                 real_name=real_name,

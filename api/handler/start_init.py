@@ -41,7 +41,7 @@ class Initial(BaseHandler):
         }
         app_name = ua.split(";")[0]
         uas = ua.split(";")
-        if uas[2] == "iPhone" or uas[2] == "iPad":
+        if app_name == "liaoai_teyue" or app_name == "liaoai_lizhen":
             channel = None
         else:
             channel = uas[5]
@@ -73,20 +73,22 @@ class Initial(BaseHandler):
             version_info["download_url"] = downloads_url
             version_info["desc"] = "亲爱的女神、男神：您好！为了给大家提供更好的服务，我们将现有版本升级，新版特性：\n" \
                                    "\n" \
-                                   "优化了视频显示效果；\n" \
-                                   "VIP功能上线，享受更多特权。\n" \
-                                   "增加支付宝支付"
+                                   "1.优化视频拨打逻辑；\n" \
+                                   "2.优化UI界面体验；\n" \
+                                   "3.修复若干BUG；"
 
         audit_info = ChannelAuditInfo.get_audit_info(channel)
+
 
         if audit_info and ua_version >= audit_info.version:
             switches["review"] = 0
         else:
             switches["review"] = 1
 
-
         if switches['review'] == 0:
-            version_info["upgrade_type"] = 1
+            version_info['version'] = '2.2.1'
+            version_info["upgrade_type"] = 0
+            version_info['download_url'] = ''
 
 
         share_url = "http://www.qqzwq.cn/share/"

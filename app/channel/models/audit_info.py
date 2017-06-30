@@ -29,5 +29,5 @@ class ChannelAuditInfo(Document):
 
     @classmethod
     def get_audit_info(cls, channel):
-        return cls.objects.filter(channel_id=channel)
+        return cls.objects.filter(channel_id=channel, audit_switch=1).first()
 
