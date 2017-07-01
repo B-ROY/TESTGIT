@@ -4,10 +4,11 @@ import os,sys
 import time
 
 import pylibmc
-import datetime
+
 
 from http_request import RequestApi
 from django.conf import settings
+import logging
 
 code_cache = pylibmc.Client(settings.memcache_settings["user_cache"], binary=True,behaviors={"tcp_nodelay": True, "ketama": True})
 
@@ -47,22 +48,25 @@ class WexinAPI(object):
         if cache is not None:
             openid = cache["open_id"]
         else:
-            params = {
-                #"appid":"wx43f595ba15a12166", # 爱哇啦
-                #"secret":"af2bba025ccdb410050d25b0628b2396", # 爱哇啦
-                "appid":"wx5d62865ec8234f14", # 爱聊娱乐
-                "secret":"a1e20b172074e6c64c8d8c93e9260f77", # 爱聊娱乐
-                "code":code,
-                "grant_type":"authorization_code",
-            }
+            try:
+                params = {
+                    #"appid":"wx43f595ba15a12166", # 爱哇啦
+                    #"secret":"af2bba025ccdb410050d25b0628b2396", # 爱哇啦
+                    "appid":"wx5d62865ec8234f14", # 爱聊娱乐
+                    "secret":"a1e20b172074e6c64c8d8c93e9260f77", # 爱聊娱乐
+                    "code":code,
+                    "grant_type":"authorization_code",
+                }
 
-            result = RequestApi.get_json('/sns/oauth2/access_token', params, headers={}, host='api.weixin.qq.com')
-            print result
-	    openid = result["openid"]
-            cache={}
-            cache["open_id"] = openid
-            print openid
-            code_cache.add(code, cache)
+                result = RequestApi.get_json('/sns/oauth2/access_token', params, headers={}, host='api.weixin.qq.com')
+                print result
+                openid = result["openid"]
+                cache={}
+                cache["open_id"] = openid
+                code_cache.add(code, cache)
+            except Exception, e:
+                logging.error(result)
+                raise e
 
         # {
         # "access_token":"ACCESS_TOKEN",

@@ -91,8 +91,8 @@ class Initial(BaseHandler):
             version_info['download_url'] = ''
 
 
-        share_url = "http://www.qqzwq.cn/share/"
-        invite_url = "http://www.qqhqf.cn/invite/liaopa_invite.html"
+        share_url = "http://www.iwala.cn/shar/"
+        invite_url = "http://www.iwala.cn/invitte/liaopa_invite_.html"
 
         self.write({
             'status': "success",
