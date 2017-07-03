@@ -258,7 +258,7 @@ class ThridPardLogin(BaseHandler):
         if access_token == "" or openid == "":
             raise Exception("access_token or openid null!")
 
-        self.create_user(openid=openid, access_token=access_token, phone="", userinfo=None,
+        return self.create_user(openid=openid, access_token=access_token, phone="", userinfo=None,
                          source=User.SOURCE_FACEBOOK, channel=channel, site_openid=openid)
 
     def twitter_login(self):
@@ -272,11 +272,12 @@ class ThridPardLogin(BaseHandler):
         else:
             channel = uas[5]
         # print access_token,openid
-
+        print access_token
+        print openid
         if access_token == "" or openid == "":
             raise Exception("access_token or openid null!")
 
-        self.create_user(openid=openid, access_token=access_token, phone="", userinfo=None,
+        return self.create_user(openid=openid, access_token=access_token, phone="", userinfo=None,
                          source=User.SOURCE_TWITTER, channel=channel, site_openid=openid)
 
     def test_login(self,username,source="100"):
