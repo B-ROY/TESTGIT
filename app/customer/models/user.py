@@ -23,6 +23,8 @@ class User(Document):
         (3, u'QQ'),
         (4, u"手机"),
         (5, u"友盟微信"),
+        (6, u"facebook登录"),
+        (7, u"twitter登录"),
         (100, u"测试登录"),
         ("100", u"测试登录")
     ]
@@ -32,6 +34,8 @@ class User(Document):
     SOURCE_QQ = 3
     SOURCE_PHONE = 4
     SOURCE_YOUMENG_WEIXIN = 5
+    SOURCE_FACEBOOK = 6
+    SOURCE_TWITTER = 7
 
     PLATFORM = [
         (0, u'Android'),

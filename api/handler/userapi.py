@@ -32,7 +32,7 @@ class ThridPardLogin(BaseHandler):
     def create_user(self, openid, access_token, phone, userinfo, source, channel, site_openid=''):
         #获取改用户的guid
         guid = self.arg("guid")
-        if source == User.SOURCE_PHONE:
+        if source == User.SOURCE_PHONE or source==User.SOURCE_FACEBOOK or User.SOURCE_TWITTER:
             userinfo={}
             userinfo["nickname"] = RegisterInfo.make_nickname()
             gender = userinfo.get("sex", 1)
@@ -243,6 +243,41 @@ class ThridPardLogin(BaseHandler):
             return self.create_user(openid=openid, access_token=access_token,phone=phone,userinfo=None,
                                 source=User.SOURCE_PHONE, channel=channel, site_openid=openid)
 
+    def facebook_login(self):
+        access_token = self.arg("user_key", "")
+        openid = self.arg("openid", "")
+        ua = self.request.headers.get('User-Agent')
+        uas = ua.split(";")
+        app_name = uas[0]
+        if app_name == "liaoai_teyue" or app_name == "liaoai_lizhen":
+            channel = "AppStore"
+        else:
+            channel = uas[5]
+        # print access_token,openid
+
+        if access_token == "" or openid == "":
+            raise Exception("access_token or openid null!")
+
+        self.create_user(openid=openid, access_token=access_token, phone="", userinfo=None,
+                         source=User.SOURCE_FACEBOOK, channel=channel, site_openid=openid)
+
+    def twitter_login(self):
+        access_token = self.arg("user_key", "")
+        openid = self.arg("openid", "")
+        ua = self.request.headers.get('User-Agent')
+        uas = ua.split(";")
+        app_name = uas[0]
+        if app_name == "liaoai_teyue" or app_name == "liaoai_lizhen":
+            channel = "AppStore"
+        else:
+            channel = uas[5]
+        # print access_token,openid
+
+        if access_token == "" or openid == "":
+            raise Exception("access_token or openid null!")
+
+        self.create_user(openid=openid, access_token=access_token, phone="", userinfo=None,
+                         source=User.SOURCE_TWITTER, channel=channel, site_openid=openid)
 
     def test_login(self,username,source="100"):
         #创建新用户
@@ -280,7 +315,7 @@ class Login(ThridPardLogin):
     @api_define("Login", r'/live/login', [
         Param('user_key', True, str, "", "123456790", u'code,access_token'),
         Param('openid', True, str, "", "123456790", u'用户唯一标识,[支付宝用户id，微信用户id，微博用户id]'),
-        Param('source', True, str, "", "100", u'用户来源[微信:1,微博:2,QQ:3，手机:4,友盟微信:5，测试:100]'),
+        Param('source', True, str, "", "100", u'用户来源[微信:1,微博:2,QQ:3，手机:4,友盟微信:5，facebook:6, twitter:7, 测试:100]'),
         Param('nickname', False, str, "", "testuser3", u'用户名'),
         Param('sms_code',False,str,"","",u'短信验证码'),
         Param('createdate',False,str,"","",u'申请验证码时间'),
@@ -320,6 +355,20 @@ class Login(ThridPardLogin):
             except Exception,e:
                 logging.error("phone login error:%s" % str(e))
                 return self.write({"status": "fail", "error": "%s:%s" % (e, e.message)})
+        elif source == User.SOURCE_FACEBOOK:
+            try:
+                is_new, user = self.facebook_login()
+            except Exception, e:
+                logging.error("facebook login error:%s" % str(e))
+                return self.write({"status": "fail", "error": "%s:%s" % (e,e.message)})
+            pass
+        elif source == User.SOURCE_TWITTER:
+            try:
+                is_new, user = self.twitter_login()
+            except Exception, e:
+                logging.error("titter login error:%s" % str(e))
+                return self.write({"status": "fail", "error": "%s:%s" % (e,e.message)})
+            pass
         elif source == 100:
             is_new, user = self.test_login("test100","100")
         elif source == 101:
