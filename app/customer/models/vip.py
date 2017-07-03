@@ -155,7 +155,7 @@ class UserVip(Document):
         except Exception,e:
             status = -1
             message = e.message
-            print "error:", e.message
+            logging.error(" buy_vip error:{0}".format(e))
             return status, message
 
 class UserVipRecord(Document):
