@@ -1,6 +1,7 @@
 # coding=utf-8
 
 import datetime
+from app.customer.models.tools import *
 
 # now = datetime.datetime.now()
 # date = now.strftime('%Y年%m月%d日')
@@ -29,10 +30,16 @@ dic1 = {
 # )
 # print TOOLS_TYPE[2][0]
 
-now = datetime.datetime.now()
-yesterday = now - datetime.timedelta(days=1)
-yesterday_start = yesterday.strftime("%Y-%m-%d 00:00:00")
-yesterday_end = yesterday.strftime("%Y-%m-%d 23:59:59")
+# now = datetime.datetime.now()
+# yesterday = now - datetime.timedelta(days=1)
+# yesterday_start = yesterday.strftime("%Y-%m-%d 00:00:00")
+# yesterday_end = yesterday.strftime("%Y-%m-%d 23:59:59")
+#
+# print yesterday_start
+# print yesterday_end
 
-print yesterday_start
-print yesterday_end
+activity = ToolsActivity()
+
+
+
+
