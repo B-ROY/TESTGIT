@@ -1121,6 +1121,14 @@ class UserAppealRecord(Document):
         _obj.save()
 
 
+# 猜你喜欢 推荐
+class RecommendUser(Document):
+    user_id = IntField(verbose_name=u"用户id")
+    create_time = DateTimeField(verbose_name=u"创建时间", default=datetime.datetime.now())
+    is_valid = IntField(verbose_name=u"是否删除", default=1)  # 1未删除 2，删除
+
+
+
 
 
 
