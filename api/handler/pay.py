@@ -298,12 +298,14 @@ class ApplePayVerifyHandler(BaseHandler):
         order_id = self.arg('order_id')
         reciept = self.arg('reciept' , "")
         user_id = self.current_user_id
+        """
         if int(user_id) == 504:
             status = Account.fill_in(order_id=order_id)
             if status:
                 return self.write({"status": "success"})
             else:
                 return self.write({"status": "fail", "error": "need receipt"})
+        """
 
         av = AppleVerify.create_verify(order_id,reciept)
         if av == -1:
@@ -328,6 +330,40 @@ class ApplePayVerifyHandler(BaseHandler):
             self.write({'status': 'success'})
         else:
             self.write({'status': 'fail', "erorr": "verify fail"})
+
+@handler_define
+class GooglePayVerifyHandler(BaseHandler):
+    @api_define("Google Pay Verify", r"/api/live/googlepay/verify",
+                [
+                    Param("order_id", True, str, "", "", description=u"本地订单号"),
+                    Param("package_name", True, str, "", "", description=u"应用包名"),
+                    Param("sku", True, str, "", "", description=u"product_id"),
+                    Param("google_order_id", True, str, "", "", description=u"google订单号"),
+                    Param("purchase_token", True, str, "", "", description=u"purchase_token(查询订单使用)")
+                ], description=u"支付宝验证接口")
+    def get(self):
+        order_id = self.arg("order_id")
+        package_name = self.arg("package_name")
+        sku = self.arg("sku")
+        google_order_id = self.arg("google_order_id")
+        purchase_token = self.arg("purchase_token")
+
+        #验证订单是否已购买
+        google_notice = GooglePayNotice(package_name=package_name, product_id=sku, purchase_token=purchase_token)
+        result = google_notice.validate()
+        if result:
+            notice_dict = {
+                "out_trade_no": order_id,
+
+            }
+
+
+        else:
+            return self.write({"status":"success", "error": "支付失败"})
+
+        #给用户添加金额
+
+
 
 """
 @handler_define
@@ -527,4 +563,18 @@ class OderCheck(BaseHandler):
             return self.write({"status":"success", "order_status":1 if is_success else 0})
         except Exception, e:
             logging.error("check order error " + str(e))
+
             return self.write({"status": "success", "order_status": 0})
+
+
+@handler_define
+class GooglePayCancel(BaseHandler):
+    @api_define("google pay cancle", r"/live/pay/order_cancel",
+                [
+                    Param("order_id", True, str, "", "", description=u"订单id")
+                ], description=u"google取消订单")
+    def get(self):
+        order_id = self.arg("order_id")
+        order = TradeBalanceOrder.objects.get(id=order_id)
+        order.update(status=TradeBalanceOrder.STATUS_FIIL_IN_CANCEL)
+

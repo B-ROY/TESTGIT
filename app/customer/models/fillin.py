@@ -350,7 +350,7 @@ class AlipayFillNotice(Document):
     out_trade_no = StringField(verbose_name=u"商户订单号")
     trade_status = StringField(verbose_name=u"交易状态")
     gmt_payment = StringField(verbose_name=u"卖家付款时间")
-    trade_no = StringField(verbose_name=u"支付包交易好")
+    trade_no = StringField(verbose_name=u"支付包交易号")
     seller_id = StringField(verbose_name=u"卖家支付宝用户号")
     total_amount = FloatField(verbose_name=u"订单金额")
     notify_time = StringField(verbose_name=u"通知时间")
@@ -381,7 +381,6 @@ class AlipayFillNotice(Document):
         acn.notify_time = notice_dict.get("notify_time")
         acn.notify_id = notice_dict.get("notify_id")
         acn.buyer_id = notice_dict.get("notify_id")
-        acn.save()
 
         return cls.fill_in(acn)
 
@@ -397,4 +396,32 @@ class AlipayFillNotice(Document):
         else:
             raise Exception("trade order error")
 
+        return True
+
+
+class GooglePayVeriry(Document):
+
+    out_trade_no = StringField(verbose_name=u"商户订单号")
+    google_order_id = StringField(verbose_name=u"Google订单号")
+    notice_time = DateTimeField(verbose_name=u"通知时间")
+    buy_time = DateTimeField(verbose_name=u"购买时间")
+
+    @classmethod
+    def create_order(cls, verify_dict):
+        gpv = GooglePayVeriry()
+        gpv.out_trade_no = verify_dict.get("order_id")
+        gpv.google_order_id = verify_dict.get("google_order_id")
+        gpv.notice_time = datetime.datetime.now()
+        gpv.buy_time = verify_dict.get("buy_time")
+
+        return cls.fill_in(gpv)
+
+    @classmethod
+    def fill_in(cls, gpv):
+        success = Account.fill_in(gpv.out_trade_no)
+        if success:
+            print u"google pay success"
+            gpv.save()
+        else:
+            raise Exception("trado order error")
         return True

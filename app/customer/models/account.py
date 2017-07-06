@@ -193,6 +193,9 @@ class Account(Document):
             #    user.first_purchase_at = datetime.datetime.now()
 
             return True
+        elif order.status == TradeBalanceOrder.STATUS_FIIL_IN_CANCEL:
+            logging.warn(u"order is cancelled " + str(order_id))
+            return False
         else:
             logging.error("order status " + str(order.status))
             return False
@@ -537,13 +540,15 @@ class TradeBalanceOrder(Document):
     STATUS_FILL_IN_ERROR_RULE = 2
     STATUS_FILL_IN_ERROR = 3
     STATUS_FILL_IN_BACK = 4
+    STATUS_FIIL_IN_CANCEL = 5
 
     STATUS_PAY_MAP = {
         STATUS_FILL_IN_WAIT_PAY: u'等待支付',
         STATUS_FILL_IN_PAYED: u'支付成功',
         STATUS_FILL_IN_ERROR_RULE: u'规则错误',
         STATUS_FILL_IN_ERROR: u'支付失败',
-        STATUS_FILL_IN_BACK: u'退费'
+        STATUS_FILL_IN_BACK: u'退费',
+        STATUS_FIIL_IN_CANCEL: u'取消'
     }
     user = GenericReferenceField("User", verbose_name=u'用户')
     rule = GenericReferenceField("TradeBalanceRule", verbose_name=u'交易规则')
