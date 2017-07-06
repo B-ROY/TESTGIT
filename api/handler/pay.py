@@ -8,6 +8,7 @@ from api.util.paylib.applepayapi import *
 from api.util.paylib.apple_verify import ios_pay_verify
 from api.util.paylib.wepayapi import *
 from api.util.paylib.wepayapi_jsapi import *
+from api.util.paylib.googlepayapi import *
 from app.customer.models.fillin import *
 from xml.etree.ElementTree import XML
 import json
@@ -521,6 +522,7 @@ class PayRulesV2(BaseHandler):
         alipay_rule_list = []
         wepay_rule_list = []
         applepay_rule_list = []
+        googlepay_rule_list = []
 
         if not rules:
             return self.write({'status': "fail", "error": u"获取列表失败"})
@@ -532,6 +534,8 @@ class PayRulesV2(BaseHandler):
                 wepay_rule_list.append(rule.normal_info())
             elif rule.trade_type == 2:
                 applepay_rule_list.append(rule.normal_info())
+            elif rule.trade_type == 7:
+                googlepay_rule_list.append(rule.normal_info())
 
         # todo 做到redis中 CMS可调配
         is_wechat_show = 1 #1: 显示 0:隐藏
@@ -539,7 +543,8 @@ class PayRulesV2(BaseHandler):
         self.write({'status': "success", "data": {
             "alipay_rules": alipay_rule_list,
             "wepay_rules": wepay_rule_list,
-            "applepay_rules": applepay_rule_list
+            "applepay_rules": applepay_rule_list,
+            "googlepay_rules":googlepay_rule_list
         },
             "is_wechat_show": is_wechat_show})
 

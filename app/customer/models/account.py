@@ -400,7 +400,8 @@ class TradeBalanceRule(Document):
         (3, u'微信JSAPI'),
         (4, u'银联'),
         (5, u'其他'),
-        (6, u'后台添加')
+        (6, u'后台添加'),
+        (7, u'google pay')
     ]
 
 
