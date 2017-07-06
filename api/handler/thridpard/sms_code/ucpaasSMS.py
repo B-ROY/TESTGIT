@@ -14,7 +14,7 @@ import hashlib
 import pylibmc
 from django.conf import settings
 import time
-
+from redis_model.redis_client import *
 memcache_settings = settings.memcache_settings
 
 
@@ -102,7 +102,7 @@ class UcpaasSMS:
 						<templateId>%s</templateId>\
 						<param>%s</param>\
 					</templateSMS>\
-					" % (__appId, toNumbers, templateId, param)
+					" % (self.__appId, toNumbers, templateId, param)
             responseMode = self.__XML
         req = urllib2.Request(url)
         return urlOpen(createHttpReq(req, url, self.__accountSid, timestamp, responseMode, body))
@@ -169,35 +169,38 @@ class UcpaasSMS:
             return resl
 
     def delSmsCodeCache(self, toTelNumber):
-        smscode_cache = pylibmc.Client(memcache_settings["user_cache"], binary=True,
-                                       behaviors={"tcp_nodelay": True, "ketama": True})
-
-        smscode_cache.delete(str(toTelNumber))
-        smscode_cache.disconnect_all()
+        RQueueClient.getInstance().redis.delete(str(toTelNumber))
+        # smscode_cache = pylibmc.Client(memcache_settings["user_cache"], binary=True,
+        #                                behaviors={"tcp_nodelay": True, "ketama": True})
+        #
+        # smscode_cache.delete(str(toTelNumber))
+        # smscode_cache.disconnect_all()
 
     def getCacheData(self, toTelNumber):
-        smscode_cache = pylibmc.Client(memcache_settings["user_cache"], binary=True,
-                                       behaviors={"tcp_nodelay": True, "ketama": True})
-
-        regCache = {}
-        regCache = smscode_cache.get(toTelNumber)
-        print smscode_cache
+        # smscode_cache = pylibmc.Client(memcache_settings["user_cache"], binary=True,
+        #                                behaviors={"tcp_nodelay": True, "ketama": True})
+        #
+        # regCache = {}
+        # regCache = smscode_cache.get(toTelNumber)
+        print "get____"
+        regCache = RQueueClient.getInstance().redis.get(toTelNumber)
         print "getCacheData"
         print regCache
         if regCache is None:
             return None
+        regCache = json.loads(regCache)
         # curr_time = datetime.datetime.utcnow().strftime("%Y%m%d%H%S%M")
         curr_time = int(time.time())
         # 说明验证码失效
         if (int(regCache['finishDate']) - int(curr_time)) < 0:
             self.delSmsCodeCache(toTelNumber)
             return None
-        smscode_cache.disconnect_all()
+        #smscode_cache.disconnect_all()
         return regCache
 
     def sendRegiesterCode(self, toTelNumber, method=0,sms_type=0):
-        smscode_cache = pylibmc.Client(memcache_settings["user_cache"], binary=True,
-                                       behaviors={"tcp_nodelay": True, "ketama": True})
+        #smscode_cache = pylibmc.Client(memcache_settings["user_cache"], binary=True,
+        #                               behaviors={"tcp_nodelay": True, "ketama": True})
 
         result = self.getCacheData(toTelNumber)
         if result == None:
@@ -231,9 +234,10 @@ class UcpaasSMS:
                 reg.append(respones)
             reult = self.__analyzing(reg, toTelNumber)
             print reult
-            smscode_cache.add(toTelNumber, reult)
+            RQueueClient.getInstance().redis.set(toTelNumber, json.dumps(reult), ex=180)
+            #smscode_cache.add(toTelNumber, reult)
             return reult
-        smscode_cache.disconnect_all()
+        #smscode_cache.disconnect_all()
         return result
 
     def sendForgetPassCode(self, toTelNumber):
