@@ -1986,9 +1986,10 @@ class UserAppeal(BaseHandler):
         user_id = self.arg_int("user_id")
         reason = self.arg("reason", "")
         phone = self.arg("phone", "")
+        guid = self.arg("guid", "")
 
         user = User.objects.get(id=user_id)
-        UserAppealRecord.create_user_appeal_record(user, reason, phone)
+        UserAppealRecord.create_user_appeal_record(user, reason, phone, guid)
 
 
 

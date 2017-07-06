@@ -1107,17 +1107,19 @@ class UserAppealRecord(Document):
     reason = StringField(verbose_name=u"申诉理由")
     phone = StringField(verbose_name=u"手机号码")
     create_time = DateTimeField(verbose_name=u"申诉时间")
+    guid = StringField(verbose_name=u"设备号")
 
     feedback = StringField(verbose_name=u"运营反馈")
     feedback_time = DateTimeField(verbose_name=u"运营")
     
     @classmethod
-    def create_user_appeal_record(cls, user, reason, phone):
+    def create_user_appeal_record(cls, user, reason, phone, guid):
         _obj = cls()
         _obj.user = user
         _obj.reason = reason
         _obj.phone = phone
         _obj.create_time = datetime.datetime.now()
+        _obj.guid = guid
         _obj.save()
 
 
