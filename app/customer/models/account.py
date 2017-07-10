@@ -415,6 +415,7 @@ class TradeBalanceRule(Document):
     trade_type = IntField(verbose_name=u'支付方式', choices=TRADETYPE)
     activity_desc = StringField(verbose_name=u"活动说明", max_length=256, default=None)
     channel = StringField(verbose_name=u"分渠道展示价格特殊价格", default="chatpa")
+    google_product_id = StringField(verbose_name=u"google产品id")
 
     class Meta:
         app_label = "customer"
@@ -429,6 +430,7 @@ class TradeBalanceRule(Document):
             "apple_product_id": self.apple_product_id,
             "platform": self.platform,
             "trade_type": self.trade_type,
+            "google_product_id": self.google_product_id
         }
 
     @classmethod
@@ -506,6 +508,7 @@ class TradeBalanceOrder(Document):
         (4, u'银联'),
         (5, u'其他'),
         (6, u'后台添加余额'),
+        (7, u'goole支付')
     ]
 
     FILL_IN_TYPE_MAP = {

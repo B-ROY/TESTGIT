@@ -12,10 +12,9 @@ import json
 import hmac
 import hashlib
 import pylibmc
-from django.conf import settings
 import time
+from redis_model.redis_client import *
 
-memcache_settings = settings.memcache_settings
 
 # 返回签名
 def getSig(accountSid,accountToken,timestamp):
@@ -50,8 +49,11 @@ class TencentSMS:
     __app_id = 1400028789
     __app_key = '41d0c4112b17dc11a8311a1ec2fd8437'
     __accountToken = "cb6ad643943e90beaaf564b7ee517965"
+    __nation_code = "86"
 
     def __init__(self):
+        if settings.INTERNATIONAL_TYPE != 0:
+            self.__nation_code = "86"
         pass
 
     def get_sig(self, random_str, timestamp, mobiles):
@@ -73,7 +75,7 @@ class TencentSMS:
         body={}
 
         tel_single={}
-        tel_single["nationcode"]="86"
+        tel_single["nationcode"]=self.__nation_code
         tel_single["mobile"] = telnumber
 
         body["tel"] = tel_single
@@ -99,7 +101,7 @@ class TencentSMS:
         body = {}
 
         tel_single = {}
-        tel_single["nationcode"] = "86"
+        tel_single["nationcode"] = self.__nation_code
         tel_single["mobile"] = telnumber
 
         body["tel"] = tel_single
@@ -143,6 +145,7 @@ class TencentSMS:
         return head + b"." + body_bytes
 
     def __analyzing(self, result, phone):
+        print "result is " + str(result)
         if len(result) == 2:
             resl = {}
             resl['smsCode'] = result[0]
@@ -161,22 +164,17 @@ class TencentSMS:
             return resl
 
     def delSmsCodeCache(self, toTelNumber):
-        smscode_cache = pylibmc.Client(memcache_settings["user_cache"], binary=True,
-                                       behaviors={"tcp_nodelay": True, "ketama": True})
+        RQueueClient.getInstance().redis.delete(str(toTelNumber))
 
-        smscode_cache.delete(str(toTelNumber))
-        smscode_cache.disconnect_all()
 
     def getCacheData(self, toTelNumber):
-        smscode_cache = pylibmc.Client(memcache_settings["user_cache"], binary=True,
-                                       behaviors={"tcp_nodelay": True, "ketama": True})
+        regCache = RQueueClient.getInstance().redis.get(toTelNumber)
 
-        regCache = smscode_cache.get(toTelNumber)
-        print smscode_cache
         print "getCacheData"
         print regCache
         if regCache is None:
             return None
+        regCache = json.loads(regCache)
         # curr_time = datetime.datetime.utcnow().strftime("%Y%m%d%H%S%M")
         curr_time = int(time.time())
 
@@ -184,13 +182,9 @@ class TencentSMS:
         if (int(regCache['finishDate']) - int(curr_time)) < 0:
             self.delSmsCodeCache(toTelNumber)
             return None
-        smscode_cache.disconnect_all()
         return regCache
 
     def sendRegiesterCode(self, toTelNumber, method=0, sms_type=0):# 0为文字 1为语音
-        smscode_cache = pylibmc.Client(memcache_settings["user_cache"], binary=True,
-                                       behaviors={"tcp_nodelay": True, "ketama": True})
-
 
         self.__CODE = self.__genCode()
         # TODO 这里是为了苹果测试
@@ -221,8 +215,7 @@ class TencentSMS:
             reg.append(self.send_VOICESMS(toTelNumber, self.__CODE))
         reult = self.__analyzing(reg, toTelNumber)
         print reult
-        smscode_cache.set(toTelNumber, reult)
-        smscode_cache.disconnect_all()
+        RQueueClient.getInstance().redis.set(toTelNumber, json.dumps(reult), ex=180)
 
         return reult
 

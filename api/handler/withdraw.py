@@ -2,7 +2,7 @@
 
 from api.convert.convert_user import *
 from api.document.doc_tools import *
-from api.handler.thridpard.sms_code.ucpaasSMS import UcpaasSMS
+from api.handler.thridpard.sms_code.sms import SMS
 from api.handler.thridpard.weixin import WexinAPI
 from api.view.base import *
 from app.customer.models.account import *
@@ -25,7 +25,7 @@ class WithdrawLogin(BaseHandler):
         if access_token == "" or openid == "":
             return self.write({"status": "fail", "error": "access_token or openid null!", "message_code": 3, })
 
-        ucpass = UcpaasSMS()
+        ucpass = SMS()
         result = ucpass.getCacheData(phone)
         ucpass.delSmsCodeCache(phone)
 

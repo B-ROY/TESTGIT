@@ -7,7 +7,6 @@ yum -y install gcc-c++.x86_64
 
 yum -y install wget
 yum -y install gcc
-yum -y install gcc-c++
 yum -y install openssl-devel
 yum -y install readline-devel
 yum -y install mysql-devel

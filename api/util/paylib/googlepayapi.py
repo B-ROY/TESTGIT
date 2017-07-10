@@ -54,19 +54,22 @@ class GooglePayNotice(GooglePayBase):
         标准post 可以自己实现 ,需要定义 self.create_request_data()
         """
         data = GooglePayRedis.get_access_token()
-        access_token_data = json.loads(data)
+        if data:
+            access_token_data = json.loads(data)
         ctime = int(time.time())
-        if access_token_data.get("exptime") < ctime:
-            # 从redis 中get_access_token 如果取不到 请求
+        if data and access_token_data.get("exptime") >= ctime:
+            access_token = access_token_data.get("access_token")
+
+        else:
             params = self.create_request_data()
             params_encode = urllib.urlencode(params)
             data = RequestApi.post_body_request(self.path, params_encode,
                                                 {"Content-Type": "application/x-www-form-urlencoded"}, self.host)
+
             access_token = data.get("access_token")
             expires_in = data.get("expires_in")
             GooglePayRedis.set_access_token(access_token, ctime+expires_in-60)
-        else:
-            access_token = access_token_data.get("access_token")
+
 
         purchase_check_host = "www.googleapis.com"
         purchase_check_path = "/androidpublisher/v2/applications/"+self.package_name\
@@ -75,6 +78,8 @@ class GooglePayNotice(GooglePayBase):
 
         data = RequestApi.get_json(purchase_check_path, {"access_token":access_token}, {}, purchase_check_host)
         logging.error("googlepay check data is " + data)
+
+
         return data
 
     def validate(self):
@@ -82,5 +87,5 @@ class GooglePayNotice(GooglePayBase):
             data = self.post_data()
             return data.get('purchaseState') == 0
         except Exception as e:
-            logging.error("check google pay error " + str(e) + "---- data is " + str(data))
+            logging.error("check google pay error " + str(e))
             return False

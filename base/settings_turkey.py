@@ -16,19 +16,19 @@ from django.utils import importlib
 
 
 class CHATPAMONGO():
-    db = 'mini_version'
-    host = '10.141.22.154'
-    port = 27017
-    username = 'mini_admin'
-    password = '7*dhDF%asfO!ko_'
-
-
-class CHATPALOGSMONGO():
     db = "mini_version"
-    host = "10.141.15.92"
+    host = "172.31.7.150"
     port = 27017
     username = "mini_admin"
-    password = "bw890905"
+    password = "jop*(Oh(&799783"
+
+
+# class CHATPALOGSMONGO():
+#     db = "mini_version"
+#     host = "10.141.15.92"
+#     port = 27017
+#     username = "mini_admin"
+#     password = "bw890905"
 
 def execute(*modules):
     load_django_settings(*modules)
@@ -72,7 +72,7 @@ def load_settings(settings, debug=False, **kwargs):
     settings.update({
 
 #        "QCLOUD_LIVE_SDK_APP_ID": "1400011479" , #黑洞互动直播测试key，后面可以进行替换
-        "QCLOUD_LIVE_SDK_APP_ID": "1400022298",  # 聊啪APPID
+        "QCLOUD_LIVE_SDK_APP_ID": "1400035387",  # 聊啪APPID
         "QCLOUD_LIVE_SDK_APP_SECRECTs": "e6683b957f7a448c" ,
         'SPHINXES': {
             "host": 'localhost', #连接mogodb，进行用户快速搜索，但目前没有写完业务逻辑
@@ -81,10 +81,10 @@ def load_settings(settings, debug=False, **kwargs):
         },
         'redis_settings': {
             "MQUEUE_BACKEND": {
-                "servers": '10.66.109.88',
+                "servers": '172.31.7.150',
                 "port": 6379,
                 "db": 0,
-                "password": "crs-k10y0188:SuWQin#7yiH86np",
+                "password": "@JIcjec0(H780&NIP",
             },
         },
 
@@ -112,6 +112,7 @@ def load_settings(settings, debug=False, **kwargs):
         #    'localhost'
         #],
         'DATABASES': {
+
         },
 
         'DISABLE_TRANSACTION_MANAGEMENT' : False,
@@ -202,19 +203,20 @@ def load_settings(settings, debug=False, **kwargs):
 
 
         #'Tencent_APP_ID': 1400012778,
-        'Agora_AppId': "0927d1c4bb914c658b4a1a8ba7a88a96",
-        'Agora_appCertificate': "ed1b88f080b644ebb24e60d18439c6ad",
+        'Agora_AppId': "69c9a8a700ba456ca1c47d411c3bcaa9",
+        'Agora_appCertificate': "bd5b264786384dabad44fdcb1b32630b",
         'RabbitQueue_name': "chatpa",
-        'Weixin_pay_notifyurl': "https://api.v1.iwala.cn/api/live/wepay/notice",
-        'Alipay_notifyurl': "https://api.v1.iwala.cn/api/live/alipay/notice",
-        'Message_Tornado_host': "10.141.15.92:9000",
+        'Weixin_pay_notifyurl': "http://123.207.175.223/api/live/wepay/notice",
+        'Alipay_notifyurl' : "http://123.207.175.223/api/live/alipay/notice",
+        'Message_Tornado_host': "127.0.0.1:9005",
+
 
         # 腾讯云 签名工具配置
         "SIG_TOOL_PATH": "/mydata/python/live_video/api/util/tencenttools/tls_sig_api-linux-64/tools",
-        "SIG_KEY_PATH": "/mydata/python/live_video/api/util/tencenttools/keys",
+        "SIG_KEY_PATH": "/mydata/python/live_video/api/util/tencenttools/keys_turkey",
         "SIG_PATH": '/mydata/python/live_video/api/util/tencenttools/tls_sig_api-linux-64/tools',
 
-        "INTERNATIONAL_TYPE": 0
+        "INTERNATIONAL_TYPE": 1
     },
 
 

@@ -177,14 +177,7 @@ class UcpaasSMS:
         # smscode_cache.disconnect_all()
 
     def getCacheData(self, toTelNumber):
-        # smscode_cache = pylibmc.Client(memcache_settings["user_cache"], binary=True,
-        #                                behaviors={"tcp_nodelay": True, "ketama": True})
-        #
-        # regCache = {}
-        # regCache = smscode_cache.get(toTelNumber)
-        print "get____"
         regCache = RQueueClient.getInstance().redis.get(toTelNumber)
-        print "getCacheData"
         print regCache
         if regCache is None:
             return None
@@ -199,8 +192,6 @@ class UcpaasSMS:
         return regCache
 
     def sendRegiesterCode(self, toTelNumber, method=0,sms_type=0):
-        #smscode_cache = pylibmc.Client(memcache_settings["user_cache"], binary=True,
-        #                               behaviors={"tcp_nodelay": True, "ketama": True})
 
         result = self.getCacheData(toTelNumber)
         if result == None:

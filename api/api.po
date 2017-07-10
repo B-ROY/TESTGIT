@@ -1,0 +1,178 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. ( % self.current_user.nickname)
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/audit.py:92
+msgid "%s您好，您的举报我们会及时处理，请静候佳音"
+msgstr ""
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:402 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:546
+msgid "不能邀请自己"
+msgstr ""
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/withdraw.py:202 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/withdraw.py:278
+msgid "余额不足"
+msgstr ""
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/audioroom.py:117
+msgid "余额不足一分钟"
+msgstr ""
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:524
+msgid "创建个人信息超时"
+msgstr ""
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:565
+msgid "创建密码失败"
+msgstr ""
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/withdraw.py:207 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/withdraw.py:283
+msgid "创建提现请求失败"
+msgstr ""
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/service.py:204 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/service.py:255 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/service.py:75
+msgid "勿扰模式下，不能发送漂流瓶"
+msgstr ""
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:404 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:548
+msgid "同一个设备不能邀请自己"
+msgstr ""
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:406 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:550
+msgid "同一个设备仅能邀请1次"
+msgstr ""
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:413
+msgid "完善用户资料是失败"
+msgstr ""
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:619
+msgid "密码有误，请重新输入!"
+msgstr ""
+
+#. ( % self.current_user.nickname)
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:1426
+msgid "尊敬的%s，感谢您的建议，您的建议就是我们进步的动力"
+msgstr ""
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/withdraw.py:188 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/withdraw.py:264
+msgid "尚未进行实名认证，请返回聊啪客户端进行实名认证"
+msgstr ""
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/service.py:198 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/service.py:69
+msgid "尚未通过视频认证"
+msgstr ""
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/audioroom.py:367
+msgid "开启挂单失败"
+msgstr ""
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:785
+msgid "您已绑定过手机号"
+msgstr ""
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:727 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:955
+msgid "您已被封号！请遵守用户协议！"
+msgstr ""
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/audioroom.py:530
+msgid "房间异常"
+msgstr ""
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:1677
+msgid "无可用门槛道具"
+msgstr ""
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:743
+msgid "更改密码失败"
+msgstr ""
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:774
+msgid "未登录"
+msgstr ""
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:778 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/withdraw.py:45
+msgid "未绑定手机号"
+msgstr ""
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:482
+msgid "注册失败"
+msgstr ""
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/service.py:193 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/service.py:250 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/service.py:64
+msgid "漂流瓶消息发送失败"
+msgstr ""
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/audioroom.py:525
+msgid "用户未找到"
+msgstr ""
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:332 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:590
+msgid "经系统检测，您的账号存在违规行为，已经被服务器暂时封停；如您存在疑问请点击下方申诉或联系客服QQ：3270745762"
+msgstr ""
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:338 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:596
+msgid "经系统检测，您的账号存在违规行为，设备已经被服务器暂时封停；如您存在疑问请点击下方申诉或联系客服QQ：3270745762"
+msgstr ""
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/pay.py:452 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/pay.py:490
+msgid "获取列表失败"
+msgstr ""
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:763 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:793 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:803
+msgid "获取验证码失败"
+msgstr ""
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:480 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:761
+msgid "该手机号已注册"
+msgstr ""
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:787
+msgid "该手机号已被绑定, 请输入其他手机号"
+msgstr ""
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:663 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:705 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:769
+msgid "该手机号未注册"
+msgstr ""
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:621
+msgid "该账号不存在"
+msgstr ""
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/audioroom.py:359
+msgid "请录制声音并上传挂单价格"
+msgstr ""
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:400 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:544
+msgid "邀请码填写错误,请重新填写"
+msgstr ""
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/withdraw.py:259
+msgid "金额不支持"
+msgstr ""
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:456 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:649 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:691 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:838 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/withdraw.py:36
+msgid "非法用户"
+msgstr ""
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:460 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:653 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:695 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:842 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/withdraw.py:40
+msgid "验证码失效"
+msgstr ""
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:458 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:651 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:693 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:840 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/withdraw.py:38
+msgid "验证码错误，请输入正确的验证码"
+msgstr ""

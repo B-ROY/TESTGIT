@@ -5,8 +5,7 @@ import json
 from api.convert.convert_user import *
 from api.document.doc_tools import *
 from api.handler.thridpard.qq import QQAPI
-from api.handler.thridpard.sms_code.ucpaasSMS import UcpaasSMS
-from api.handler.thridpard.sms_code.tencentSMS import TencentSMS
+from api.handler.thridpard.sms_code.sms import SMS
 from api.handler.thridpard.weibo import WeiBoAPI
 from api.handler.thridpard.weixin import WexinAPI
 from api.util.tencenttools.signature import gen_signature
@@ -222,7 +221,7 @@ class ThridPardLogin(BaseHandler):
         else:
             channel = uas[5]
 
-        ucpass = UcpaasSMS()
+        ucpass = SMS()
 
         result = ucpass.getCacheData(phone)
 
@@ -408,7 +407,7 @@ class Login(ThridPardLogin):
 
         #清除验证码的缓存
         if source == User.SOURCE_PHONE:
-            ucpass = UcpaasSMS()
+            ucpass = SMS()
             ucpass.delSmsCodeCache(self.arg_int('phone'))
 
         #audio_status = AudioRoomRecord.get_room_status(user_id=user.id)
@@ -496,7 +495,7 @@ class PhoneRegister(BaseHandler):
         if access_token == "" or openid == "":
             return self.write({"status": "fail", "error": "access_token or openid null!", "message_code": 3, })
 
-        ucpass = UcpaasSMS()
+        ucpass = SMS()
         result = ucpass.getCacheData(phone)
 
         if result != None:
@@ -511,7 +510,7 @@ class PhoneRegister(BaseHandler):
 
         status, user_phone = PhonePassword.create_phone(phone)
 
-        ucpass = UcpaasSMS()
+
         ucpass.delSmsCodeCache(phone)
 
         if status:
@@ -689,7 +688,7 @@ class PhoneResetCheck(BaseHandler):
         if access_token == "" or openid == "":
             return self.write({"status": "fail", "error": "access_token or openid null!", "message_code": 3, })
 
-        ucpass = UcpaasSMS()
+        ucpass = SMS()
         result = ucpass.getCacheData(phone)
 
         if result != None:
@@ -702,7 +701,7 @@ class PhoneResetCheck(BaseHandler):
         else:
             return self.write({"status": "fail", "error": "验证码失效", "message_code": 2, })
 
-        ucpass = UcpaasSMS()
+
         ucpass.delSmsCodeCache(phone)
 
         status = PhonePassword.reset_password_check(phone)
@@ -731,7 +730,7 @@ class LoginUserResetCheck(BaseHandler):
         if access_token == "" or openid == "":
             return self.write({"status": "fail", "error": "access_token or openid null!", "message_code": 3, })
 
-        ucpass = UcpaasSMS()
+        ucpass = SMS()
         result = ucpass.getCacheData(phone)
 
         if result != None:
@@ -744,7 +743,6 @@ class LoginUserResetCheck(BaseHandler):
         else:
             return self.write({"status": "fail", "error": "验证码失效", "message_code": 2, })
 
-        ucpass = UcpaasSMS()
         ucpass.delSmsCodeCache(phone)
 
         status = PhonePassword.reset_password_check(phone)
@@ -842,9 +840,11 @@ class SmsCode(ThridPardLogin):
         else:
             return self.write({"status": "fail", "error": u"获取验证码失败", "message_code": 3, })
         if sms_type == 0:
-            usms = UcpaasSMS()
+            print 0
+            usms = SMS()
         else:
-            usms = TencentSMS()
+            print 1
+            usms = SMS(sms_type=1)
         reg = {}
         result = {}
         reg = usms.sendRegiesterCode(phone, method, sms_type)
@@ -878,7 +878,7 @@ class BindVerifyCode(BaseHandler):
         if access_token == "" or openid == "":
             return self.write({"status": "fail", "error": "access_token or openid null!", "message_code": 3, })
 
-        ucpass = UcpaasSMS()
+        ucpass = SMS()
         result = ucpass.getCacheData(phone)
 
         if result != None:
@@ -891,7 +891,7 @@ class BindVerifyCode(BaseHandler):
         else:
             return self.write({"status": "fail", "error": "验证码失效", "message_code": 2, })
 
-        ucpass = UcpaasSMS()
+        ucpass = SMS()
         ucpass.delSmsCodeCache(phone)
 
         return self.write({"status": "success", "phone": phone, })

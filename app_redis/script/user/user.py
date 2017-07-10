@@ -12,7 +12,7 @@ class UserRedisScript:
             key: "user_id"
         """
         user_redis = UserRedis()
-        id_list = range(60010, 300011)
+        id_list = range(1, 300011)
 
         user_redis.push_user_id(id_list)
 
