@@ -10,16 +10,18 @@ from app.customer.models.getuiusers import GeTuiUsers
 class AddGeTui(BaseHandler):
     @api_define("add getui record", "/getui/add_record",
                 [
-                    Param("dev_no", True, str, "", "", u"dev_no"),
-                    Param("cid", True, str, "", "", u"cid"),
-                    Param("province", True, str, "", "", u"province"),
-                    Param("city", True, str, "", "", u"city"),
-                    Param("districts", True, str, "", "", u"districts"),
-                    Param("address", True, str, "", "", u"address"),
-                    Param("os_version", True, str, "", "", u"os_version"),
-                    Param("platfrom", True, str, "", "", u"platfrom"),
+                    Param("dev_no", True, str, "", "", u"客户端设备号"),
+                    Param("cid", True, str, "", "", u"个推clientid"),
+                    Param("province", True, str, "", "", u"省"),
+                    Param("city", True, str, "", "", u"市"),
+                    Param("districts", True, str, "", "", u"区"),
+                    Param("address", True, str, "", "", u"地址"),
+                    Param("os_version", True, str, "", "", u"操作系统版本号"),
+                    Param("platfrom", True, str, "", "", u"平台"),
                 ], description=u"添加个推数据")
     def post(self):
+        ua = self.request.headers.get('User-Agent')
+        app_name = ua.split(";")[0]
         dev_no = self.arg("dev_no", "")
         cid = self.arg("cid", "")
         province = self.arg("province", "")
@@ -31,6 +33,7 @@ class AddGeTui(BaseHandler):
         gtuser = GeTuiUsers()
         gtuser.dev_no = dev_no
         gtuser.cid = cid
+        gtuser.appname = app_name
         gtuser.province = province
         gtuser.city = city
         gtuser.districts = districts
@@ -49,8 +52,8 @@ class AddGeTui(BaseHandler):
 class UpdateGeTui(BaseHandler):
     @api_define("update getui record", "/getui/update_record",
                 [
-                    Param("dev_no", True, str, "", "", u"dev_no"),
-                    Param("user_id", True, str, "", "", u"user_id"),
+                    Param("dev_no", True, str, "", "", u"设备号"),
+                    Param("user_id", True, str, "", "", u"用户短id"),
                 ], description=u"绑定用户设备")
     def get(self):
         resultmap ={}
@@ -74,8 +77,8 @@ class UpdateGeTui(BaseHandler):
 class UnBindGeTui(BaseHandler):
     @api_define("unbind getui record", "/getui/unbind_user",
                 [
-                    Param("dev_no", True, str, "", "", u"dev_no"),
-                    Param("user_id", True, str, "", "", u"user_id"),
+                    Param("dev_no", True, str, "", "", u"设备号"),
+                    Param("user_id", True, str, "", "", u"用户短id"),
                 ], description=u"解绑用户设备")
     def get(self):
         resultmap ={}

@@ -15,8 +15,9 @@ connect(CHATPAMONGO.db, host=CHATPAMONGO.host, port=CHATPAMONGO.port, username=C
 class GeTuiUsers(Document):
     user_id = IntField(verbose_name=u'用户id')
     dev_no = StringField(max_length=64,verbose_name=u'设备id')
-    platfrom = StringField(max_length=10,verbose_name=u'平台') #1ios 2andriod
+    platform = StringField(max_length=10,verbose_name=u'平台') #1ios 2andriod
     os_version = StringField(max_length=20,verbose_name=u'操作系统版本号')
+    appname = StringField(max_length=64,verbose_name=u'app名称')
     cid = StringField(max_length=64,verbose_name=u'个推clientid')
     province = StringField(max_length=20, verbose_name=u'省份')
     city = StringField(max_length=64, verbose_name=u'城市')
