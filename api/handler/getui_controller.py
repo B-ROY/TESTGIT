@@ -18,7 +18,7 @@ class AddGeTui(BaseHandler):
                     Param("districts", True, str, "", "", u"区"),
                     Param("address", True, str, "", "", u"地址"),
                     Param("os_version", True, str, "", "", u"操作系统版本号"),
-                    Param("platfrom", True, str, "", "", u"平台"),
+                    Param("platform", True, str, "", "", u"平台"),
                 ], description=u"添加个推数据")
     def post(self):
         ua = self.request.headers.get('User-Agent')
@@ -30,7 +30,7 @@ class AddGeTui(BaseHandler):
         districts = self.arg("districts", "")
         address = self.arg("address", "")
         os_version = self.arg("os_version", "")
-        platfrom = self.arg("platfrom", "")
+        platform = self.arg("platform", "")
         user_id = self.arg("user_id", "")
         record = GeTuiUsers.objects.filter(dev_no = dev_no).first()
         if record:
@@ -38,13 +38,16 @@ class AddGeTui(BaseHandler):
                 try:
                     record.user_id = int(user_id)
                     record.save()
+                    return self.write({"status": "success"})
                 except Exception,e:
                     logging.error("create Getui error:{0}".format(e))
-                return self.write({"status": "fail","error": u"上报设备信息失败"})
+                    return self.write({"status": "fail","error": u"上报设备信息失败"})
             return self.write({"status": "success"})
         else :
                 gtuser = GeTuiUsers()
                 gtuser.dev_no = dev_no
+                if user_id != "":
+                    gtuser.user_id = int(user_id)
                 gtuser.cid = cid
                 gtuser.appname = app_name
                 gtuser.province = province
@@ -52,7 +55,7 @@ class AddGeTui(BaseHandler):
                 gtuser.districts = districts
                 gtuser.address = address
                 gtuser.os_version = os_version
-                gtuser.platfrom = platfrom
+                gtuser.platform = platform
                 gtuser.create_time = datetime.datetime.now()
                 try:
                     gtuser.save()
