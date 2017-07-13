@@ -25,7 +25,7 @@ from app.customer.models.user import UserAppealRecord
 from app.customer.models.vip import *
 from app.picture.models.picture import *
 from app.redismodel.onlinecount import OnlineCount
-
+import international
 
 class ThridPardLogin(BaseHandler):
     def create_user(self, openid, access_token, phone, userinfo, source, channel, site_openid=''):
@@ -58,7 +58,7 @@ class ThridPardLogin(BaseHandler):
                 openid=openid,
                 source=source,
                 nickname=userinfo.get("nickname")[0:18],
-                gender=userinfo.get("sex", 1),
+                gender=userinfo.get("gender", 1),
                 phone=phone,
                 ip=self.user_ip,
                 image=userinfo.get("headimgurl", "https://hdlive-10048692.image.myqcloud.com/5c8ff8bdc5a3645edcd8d4f9313f29e7"),
@@ -378,13 +378,13 @@ class Login(ThridPardLogin):
 
         if user.is_blocked:
             logging.error("login error: blocked user")
-            return self.write({"status":"fail", "error":"经系统检测，您的账号存在违规行为，已经被服务器暂时封停；如您存在疑问请点击下方申诉或联系客服QQ：3270745762","errcode":"2001", "_uid":user.id})
+            return self.write({"status":"fail", "error":_(u"经系统检测，您的账号存在违规行为，已经被服务器暂时封停；如您存在疑问请点击下方申诉或联系客服QQ：3270745762"),"errcode":"2001", "_uid":user.id})
 
         # 判断封设备
         guid = self.arg("guid")
         block_dev = BlockUserDev.objects.filter(status__ne=3, devno=guid).first()
         if block_dev:
-            return self.write({"status": "fail", "error": "经系统检测，您的账号存在违规行为，设备已经被服务器暂时封停；如您存在疑问请点击下方申诉或联系客服QQ：3270745762","errcode":"2002", "_uid":user.id})
+            return self.write({"status": "fail", "error": _(u"经系统检测，您的账号存在违规行为，设备已经被服务器暂时封停；如您存在疑问请点击下方申诉或联系客服QQ：3270745762"),"errcode":"2002", "_uid":user.id})
 
 
         #convert user info
@@ -446,20 +446,20 @@ class CompletePersonalInfo(BaseHandler):
             if not result_code:
                 UserInviteCode.create_invite_code(user_id=user.id, invite_id=invite_id, user_guid=user_guid)
             elif result_code == 10001:
-                return self.write({"status": "failed", "error_code": 10001, "error_message": u"邀请码填写错误,请重新填写"})
+                return self.write({"status": "failed", "error_code": 10001, "error_message": _(u"邀请码填写错误,请重新填写")})
             elif result_code == 10002:
-                return self.write({"status": "failed", "error_code": 10002, "error_message": u"不能邀请自己"})
+                return self.write({"status": "failed", "error_code": 10002, "error_message": _(u"不能邀请自己")})
             elif result_code == 10003:
-                return self.write({"status": "failed", "error_code": 10003, "error_message": u"同一个设备不能邀请自己"})
+                return self.write({"status": "failed", "error_code": 10003, "error_message": _(u"同一个设备不能邀请自己")})
             elif result_code == 10004:
-                return self.write({"status": "failed", "error_code": 10004, "error_message": u"同一个设备仅能邀请1次"})
+                return self.write({"status": "failed", "error_code": 10004, "error_message": _(u"同一个设备仅能邀请1次")})
 
         status = User.complete_personal_info(user, nickname, gender, img, birth_date)
         if status:
             AudioRoomRecord.create_roomrecord(user_id=user.id, open_time=datetime.datetime.now())
             return self.write({"status": "success"})
         else:
-            return self.write({"status": "failed", "error_message": u"完善用户资料是失败"})
+            return self.write({"status": "failed", "error_message": _(u"完善用户资料是失败")})
 
 
 def generate_default_info():
@@ -502,11 +502,11 @@ class PhoneRegister(BaseHandler):
             createDate = result['createDate']
             user_key = ucpass.get_access_token(phone, openid, createDate)
             if user_key != access_token:
-                return self.write({"status": "fail", "error": "非法用户", "message_code": 3, })
+                return self.write({"status": "fail", "error": _(u"非法用户"), "message_code": 3, })
             if sms_code != result['smsCode']:
-                return self.write({"status": "fail", "error": "验证码错误，请输入正确的验证码", "message_code": 2, })
+                return self.write({"status": "fail", "error": _(u"验证码错误，请输入正确的验证码"), "message_code": 2, })
         else:
-            return self.write({"status": "fail", "error": "验证码失效", "message_code": 2, })
+            return self.write({"status": "fail", "error": _(u"验证码失效"), "message_code": 2, })
 
         status, user_phone = PhonePassword.create_phone(phone)
 
@@ -526,9 +526,9 @@ class PhoneRegister(BaseHandler):
             return self.write({"status": "success", "data": data, })
         else:
             if user_phone:
-                return self.write({"status": "fail", "error": "该手机号已注册", "message_code": 1, })
+                return self.write({"status": "fail", "error": _(u"该手机号已注册"), "message_code": 1, })
             else:
-                return self.write({"status": "fail", "error": "注册失败", "message_code": 3, })
+                return self.write({"status": "fail", "error": _(u"注册失败"), "message_code": 3, })
 
 
 @handler_define
@@ -570,7 +570,7 @@ class PhonePersonalInfo(ThridPardLogin):
         else:
             channel = ua.split(";")[5]
         if not phone:
-            return self.write({"status": "fail", "error": "创建个人信息超时"})
+            return self.write({"status": "fail", "error": _(u"创建个人信息超时")})
 
         if access_token == "" or openid == "":
             return self.write({"status": "fail", "error": "access_token or openid null!"})
@@ -590,13 +590,13 @@ class PhonePersonalInfo(ThridPardLogin):
                 if not result_code:
                     UserInviteCode.create_invite_code(user_id=user.id, invite_id=invite_id, user_guid=user_guid)
                 elif result_code == 10001:
-                    return self.write({"status": "failed", "error_code": 10001, "error_message": u"邀请码填写错误,请重新填写"})
+                    return self.write({"status": "failed", "error_code": 10001, "error_message": _(u"邀请码填写错误,请重新填写")})
                 elif result_code == 10002:
-                    return self.write({"status": "failed", "error_code": 10002, "error_message": u"不能邀请自己"})
+                    return self.write({"status": "failed", "error_code": 10002, "error_message": _(u"不能邀请自己")})
                 elif result_code == 10003:
-                    return self.write({"status": "failed", "error_code": 10003, "error_message": u"同一个设备不能邀请自己"})
+                    return self.write({"status": "failed", "error_code": 10003, "error_message": _(u"同一个设备不能邀请自己")})
                 elif result_code == 10004:
-                    return self.write({"status": "failed", "error_code": 10004, "error_message": u"同一个设备仅能邀请1次"})
+                    return self.write({"status": "failed", "error_code": 10004, "error_message": _(u"同一个设备仅能邀请1次")})
 
             data = {}
             data["user"] = convert_user(user)
@@ -611,7 +611,7 @@ class PhonePersonalInfo(ThridPardLogin):
 
             status = PhonePassword.update_password(phone, password)
             if not status:
-                return self.write({"status": "fail", "error": "创建密码失败"})
+                return self.write({"status": "fail", "error": _(u"创建密码失败")})
 
             AudioRoomRecord.create_roomrecord(user_id=user.id, open_time=datetime.datetime.now())
             return self.write(data)
@@ -636,13 +636,13 @@ class PhoneLogIn(BaseHandler):
 
             if user.is_blocked:
                 logging.error("phone login error: blocked user")
-                return self.write({"status": "fail", "error": "经系统检测，您的账号存在违规行为，已经被服务器暂时封停；如您存在疑问请点击下方申诉或联系客服QQ：3270745762", "errcode": "2001", "_uid":user.id})
+                return self.write({"status": "fail", "error": _(u"经系统检测，您的账号存在违规行为，已经被服务器暂时封停；如您存在疑问请点击下方申诉或联系客服QQ：3270745762"), "errcode": "2001", "_uid":user.id})
 
             # 判断封设备
             guid = self.arg("guid")
             block_dev = BlockUserDev.objects.filter(status__ne=3, devno=guid).first()
             if block_dev:
-                return self.write({"status": "fail", "error": "经系统检测，您的账号存在违规行为，设备已经被服务器暂时封停；如您存在疑问请点击下方申诉或联系客服QQ：3270745762","errcode":"2002", "_uid":user.id})
+                return self.write({"status": "fail", "error": _(u"经系统检测，您的账号存在违规行为，设备已经被服务器暂时封停；如您存在疑问请点击下方申诉或联系客服QQ：3270745762"),"errcode":"2002", "_uid":user.id})
 
             # convert user info
             data = {}
@@ -665,9 +665,9 @@ class PhoneLogIn(BaseHandler):
             return self.write(data)
         else:
             if user_phone:
-                return self.write({"status": "fail", "error": "密码有误，请重新输入!", "message_code": 2, })
+                return self.write({"status": "fail", "error": _(u"密码有误，请重新输入!"), "message_code": 2, })
             else:
-                return self.write({"status": "fail", "error": "该账号不存在", "message_code": 1, })
+                return self.write({"status": "fail", "error": _(u"该账号不存在"), "message_code": 1, })
 
 
 
@@ -695,11 +695,11 @@ class PhoneResetCheck(BaseHandler):
             createDate = result['createDate']
             user_key = ucpass.get_access_token(phone, openid, createDate)
             if user_key != access_token:
-                return self.write({"status": "fail", "error": "非法用户", "message_code": 3, })
+                return self.write({"status": "fail", "error": _(u"非法用户"), "message_code": 3, })
             if sms_code != result['smsCode']:
-                return self.write({"status": "fail", "error": "验证码错误，请输入正确的验证码", "message_code": 2, })
+                return self.write({"status": "fail", "error": _(u"验证码错误，请输入正确的验证码"), "message_code": 2, })
         else:
-            return self.write({"status": "fail", "error": "验证码失效", "message_code": 2, })
+            return self.write({"status": "fail", "error": _(u"验证码失效"), "message_code": 2, })
 
 
         ucpass.delSmsCodeCache(phone)
@@ -709,7 +709,7 @@ class PhoneResetCheck(BaseHandler):
             self.set_cookie("phone", phone, max_age=600)
             return self.write({"status": "success", "phone": phone, })
         else:
-            return self.write({"status": "fail", "error": "该手机号未注册", "message_code": 1, })
+            return self.write({"status": "fail", "error": _(u"该手机号未注册"), "message_code": 1, })
 
 
 # 已登录的用户修改密码检查
@@ -737,11 +737,11 @@ class LoginUserResetCheck(BaseHandler):
             createDate = result['createDate']
             user_key = ucpass.get_access_token(phone, openid, createDate)
             if user_key != access_token:
-                return self.write({"status": "fail", "error": "非法用户", "message_code": 3, })
+                return self.write({"status": "fail", "error": _(u"非法用户"), "message_code": 3, })
             if sms_code != result['smsCode']:
-                return self.write({"status": "fail", "error": "验证码错误，请输入正确的验证码", "message_code": 2, })
+                return self.write({"status": "fail", "error": _(u"验证码错误，请输入正确的验证码"), "message_code": 2, })
         else:
-            return self.write({"status": "fail", "error": "验证码失效", "message_code": 2, })
+            return self.write({"status": "fail", "error": _(u"验证码失效"), "message_code": 2, })
 
         ucpass.delSmsCodeCache(phone)
 
@@ -750,7 +750,7 @@ class LoginUserResetCheck(BaseHandler):
             self.set_cookie("phone", phone, max_age=600)
             return self.write({"status": "success", "phone": phone, })
         else:
-            return self.write({"status": "fail", "error": "该手机号未注册", "message_code": 1, })
+            return self.write({"status": "fail", "error": _(u"该手机号未注册"), "message_code": 1, })
 
 
 
@@ -772,7 +772,7 @@ class PhoneResetPassword(BaseHandler):
 
             if user.is_blocked:
                 logging.error("phone login error: blocked user")
-                return self.write({"status": "fail", "error": "您已被封号！请遵守用户协议！", "errcode": "2001"})
+                return self.write({"status": "fail", "error": _(u"您已被封号！请遵守用户协议！"), "errcode": "2001"})
 
             # convert user info
             data = {}
@@ -788,7 +788,7 @@ class PhoneResetPassword(BaseHandler):
 
             return self.write(data)
         else:
-            return self.write({"status": "fail", "error": "更改密码失败", })
+            return self.write({"status": "fail", "error": _(u"更改密码失败"), })
 
 
 @handler_define
@@ -806,39 +806,39 @@ class SmsCode(ThridPardLogin):
             status, user_phone = PhonePassword.create_phone(phone=phone)
             if not status:
                 if user_phone:
-                    return self.write({"status": "fail", "error": u"该手机号已注册", "message_code": 1, })
+                    return self.write({"status": "fail", "error": _(u"该手机号已注册"), "message_code": 1, })
                 else:
-                    return self.write({"status": "fail", "error": u"获取验证码失败", "message_code": 3, })
+                    return self.write({"status": "fail", "error": _(u"获取验证码失败"), "message_code": 3, })
 
         elif method == 1:
             phone = self.arg('phone')
             status = PhonePassword.reset_password_check(phone=phone)
             if not status:
-                return self.write({"status": "fail", "error": u"该手机号未注册", "message_code": 1, })
+                return self.write({"status": "fail", "error": _(u"该手机号未注册"), "message_code": 1, })
 
         elif method == 2:
             current_user = self.current_user
             if not current_user:
-                return self.write({"status": "fail", "error": u"未登录", "message_code": 3, })
+                return self.write({"status": "fail", "error": _(u"未登录"), "message_code": 3, })
 
             phone = current_user.phone
             if phone == "" or not phone:
-                return self.write({"status": "fail", "error": u"未绑定手机号", "message_code": 3, })
+                return self.write({"status": "fail", "error": _(u"未绑定手机号"), "message_code": 3, })
         elif method == 3:
             user_id = self.current_user_id
             phone = self.arg('phone')
             status, user_phone = PhonePassword.bind_user_check(phone=phone, user_id=user_id)
             if status:
                 if user_phone:
-                    return self.write({"status": "fail", "error": u"您已绑定过手机号", "message_code": 3, })
+                    return self.write({"status": "fail", "error": _(u"您已绑定过手机号"), "message_code": 3, })
                 else:
-                    return self.write({"status": "fail", "error": u"该手机号已被绑定, 请输入其他手机号", "message_code": 1, })
+                    return self.write({"status": "fail", "error": _(u"该手机号已被绑定, 请输入其他手机号"), "message_code": 1, })
 
         elif method == 4:
             phone = self.arg('phone')
 
         else:
-            return self.write({"status": "fail", "error": u"获取验证码失败", "message_code": 3, })
+            return self.write({"status": "fail", "error": _(u"获取验证码失败"), "message_code": 3, })
         if sms_type == 0:
             print 0
             usms = SMS()
@@ -850,7 +850,7 @@ class SmsCode(ThridPardLogin):
         reg = usms.sendRegiesterCode(phone, method, sms_type)
 
         if reg['is_success'] != 1:
-            return self.write({"status": "fail", "error": u"获取验证码失败", "message_code": 3, })
+            return self.write({"status": "fail", "error": _(u"获取验证码失败"), "message_code": 3, })
 
         if reg['is_success'] == 1:
             result['status'] = "success"
@@ -885,11 +885,11 @@ class BindVerifyCode(BaseHandler):
             createDate = result['createDate']
             user_key = ucpass.get_access_token(phone, openid, createDate)
             if user_key != access_token:
-                return self.write({"status": "fail", "error": "非法用户", "message_code": 3, })
+                return self.write({"status": "fail", "error": _(u"非法用户"), "message_code": 3, })
             if sms_code != result['smsCode']:
-                return self.write({"status": "fail", "error": "验证码错误，请输入正确的验证码", "message_code": 2, })
+                return self.write({"status": "fail", "error": _(u"验证码错误，请输入正确的验证码"), "message_code": 2, })
         else:
-            return self.write({"status": "fail", "error": "验证码失效", "message_code": 2, })
+            return self.write({"status": "fail", "error": _(u"验证码失效"), "message_code": 2, })
 
         ucpass = SMS()
         ucpass.delSmsCodeCache(phone)
@@ -1002,7 +1002,7 @@ class AUserInfo(BaseHandler):
             user = User.objects.filter(id=self.arg('uid')).first()
 
         if self.current_user.is_blocked:
-            return self.write({"status":"fail","error":"您已被封号！请遵守用户协议！","errcode":"2001"})
+            return self.write({"status":"fail","error":_(u"您已被封号！请遵守用户协议！"),"errcode":"2001"})
 
         data = {"status": "success"}
 
@@ -1303,7 +1303,7 @@ class UpdateUserInfo(BaseHandler):
         if is_image_change:
             MessageSender.send_picture_detect(user.image, user.id, 2)
         if is_cover_change:
-            MessageSender.send_picture_detect(user.cover, user.id, 1)
+            MessageSender.send_picture_detect(user.cover, user.id, 1) 
 
         self.write({'status': "success"})
 
@@ -1473,7 +1473,7 @@ class CreateFeedback(BaseHandler):
             feedback_id = FeedbackInfo.create_feedback(user_id=user_id, created_at=created_at, ua=ua,
                                                        desc=desc,phone_number=phone_number,qq_number=qq_number)
             if feedback_id:
-                desc = u"<html><p>" + u"尊敬的%s，感谢您的建议，您的建议就是我们进步的动力" % self.current_user.nickname + u"</p></html>"
+                desc = u"<html><p>" + _(u"尊敬的%s，感谢您的建议，您的建议就是我们进步的动力" % self.current_user.nickname) + u"</p></html>"
 
                 MessageSender.send_system_message(user_id, desc)
                 self.write({"status": "success", "feedback_id": feedback_id, })
@@ -1724,7 +1724,7 @@ class MessageSendToolV1(BaseHandler):
             SendToolsRecord.add(send_id, receive_id, str(tool.id), 1)
             return self.write({"status": "success"})
         else:
-            return self.write({"status": "fail", "error": u"无可用门槛道具", })
+            return self.write({"status": "fail", "error": _(u"无可用门槛道具"), })
 
 
 

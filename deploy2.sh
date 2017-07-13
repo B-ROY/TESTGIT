@@ -64,3 +64,9 @@ chkconfig tornado on
  # /usr/bin/memcached -d -U 11211 -p 11211 -u nobody -m 200 -c 10000 -P /var/run/memcached/memcached.11211.pid
  # create database livevideo_platform  CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
  # vim /usr/share/mysql/charsets/Index.xml utf8-> utf8mb4
+
+#安装pip
+
+
+#安装facebook python
+pip install facebook-sdk

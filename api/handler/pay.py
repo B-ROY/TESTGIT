@@ -16,6 +16,7 @@ import hashlib
 from django.conf import settings
 import logging
 from app.customer.models.promotion import *
+import international
 
 def parser_receipt(receipt):
     if not receipt:
@@ -490,7 +491,7 @@ class PayRules(BaseHandler):
                                                                                                    "money")
 
         if not rules:
-            return self.write({'status':"fail","error": u"获取列表失败"})
+            return self.write({'status':"fail","error": _(u"获取列表失败")})
 
         results = []
         for rule in rules or []:
@@ -529,7 +530,7 @@ class PayRulesV2(BaseHandler):
         googlepay_rule_list = []
 
         if not rules:
-            return self.write({'status': "fail", "error": u"获取列表失败"})
+            return self.write({'status': "fail", "error": _(u"获取列表失败")})
 
         for rule in rules:
             if rule.trade_type == 0:

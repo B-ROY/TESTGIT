@@ -18,6 +18,7 @@ from django.utils import importlib
 class CHATPAMONGO():
     db = "mini_version"
     host = "10.141.15.92"
+    #host = "123.207.147.20"
     port = 27017
     username = "mini_admin"
     password = "bw890905"

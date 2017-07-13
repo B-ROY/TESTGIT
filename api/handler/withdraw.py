@@ -6,7 +6,7 @@ from api.handler.thridpard.sms_code.sms import SMS
 from api.handler.thridpard.weixin import WexinAPI
 from api.view.base import *
 from app.customer.models.account import *
-
+import international
 
 @handler_define
 class WithdrawLogin(BaseHandler):
@@ -33,16 +33,16 @@ class WithdrawLogin(BaseHandler):
             createDate = result['createDate']
             user_key = ucpass.get_access_token(phone, openid, createDate)
             if user_key != access_token:
-                return self.write({"status": "fail", "error": "非法用户", "message_code": 3, })
+                return self.write({"status": "fail", "error": _(u"非法用户"), "message_code": 3, })
             if sms_code != result['smsCode']:
-                return self.write({"status": "fail", "error": "验证码错误，请输入正确的验证码", "message_code": 2, })
+                return self.write({"status": "fail", "error": _(u"验证码错误，请输入正确的验证码"), "message_code": 2, })
         else:
-            return self.write({"status": "fail", "error": "验证码失效", "message_code": 2, })
+            return self.write({"status": "fail", "error": _(u"验证码失效"), "message_code": 2, })
 
         user = User.objects.filter(phone=phone).order_by("created_at").first()
 
         if not user:
-            return self.write({"status": "fail", "error": "未绑定手机号", "message_code": 4})
+            return self.write({"status": "fail", "error": _(u"未绑定手机号"), "message_code": 4})
 
         invite_list = UserInviteCode.get_invite_list(invite_id=user.id)
 
@@ -185,7 +185,7 @@ class H5WithDrawRequest(BaseHandler):
             #检查实名认证状态
             realname_status = RealNameVerify.check_user_verify(user_id)
             if realname_status != 1:
-                return self.write({"status": "fail", "error":u"尚未进行实名认证，请返回聊啪客户端进行实名认证"})
+                return self.write({"status": "fail", "error": _(u"尚未进行实名认证，请返回聊啪客户端进行实名认证")})
             """ 原有代码 留作参考
             invite_list = UserInviteCode.get_invite_list(invite_id=user.id)
 
@@ -199,12 +199,12 @@ class H5WithDrawRequest(BaseHandler):
             money_available = ticket_account.money - ticket_account.money_withdrawed - ticket_account.money_requesting
 
             if money > money_available:
-                return self.write({"status": "fail", "error": u"余额不足",})
+                return self.write({"status": "fail", "error": _(u"余额不足"),})
 
             status = WithdrawRequest.create_withdraw_request(user_id=user_id, request_money=money,
                                                              user_agent=user_agent, openid=openid, ip=ip)
             if not status:
-                return self.write({"status": "fail", "error": u"创建提现请求失败", })
+                return self.write({"status": "fail", "error": _(u"创建提现请求失败"), })
             else:
                 return self.write({"status": "success", "request_money": money})
         except Exception,e:
@@ -256,12 +256,12 @@ class WithdrawRequestHandler(BaseHandler):
             money = self.arg_int("money")
             openid = self.arg("openid")
             if money not in WithdrawRequest.WITHDRAW_MONEY_LIST:
-                return self.write({"status":"fail", "error":u"金额不支持"})
+                return self.write({"status":"fail", "error": _(u"金额不支持")})
             #检查实名认证状态
             realname_status = RealNameVerify.check_user_verify(user_id)
 
             if realname_status != 1:
-                return self.write({"status": "fail", "error":u"尚未进行实名认证，请返回聊啪客户端进行实名认证"})
+                return self.write({"status": "fail", "error": _(u"尚未进行实名认证，请返回聊啪客户端进行实名认证")})
             """ 原有代码 留作参考
             invite_list = UserInviteCode.get_invite_list(invite_id=user.id)
 
@@ -275,12 +275,12 @@ class WithdrawRequestHandler(BaseHandler):
             money_available = ticket_account.money - ticket_account.money_withdrawed - ticket_account.money_requesting
 
             if money > money_available:
-                return self.write({"status": "fail", "error": u"余额不足",})
+                return self.write({"status": "fail", "error": _(u"余额不足"),})
 
             status = WithdrawRequest.create_withdraw_request(user_id=user_id, request_money=money,
                                                              user_agent=user_agent, openid=openid, ip=ip)
             if not status:
-                return self.write({"status": "fail", "error": u"创建提现请求失败", })
+                return self.write({"status": "fail", "error": _(u"创建提现请求失败"), })
             else:
                 return self.write({"status": "success", "request_money": money})
         except Exception,e:

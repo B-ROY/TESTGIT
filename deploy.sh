@@ -99,7 +99,7 @@ echo "export PATH=/mydata/python2.7/bin:\$PATH" > /etc/profile.d/python.sh
 
 echo "[setup setuptools from ]"
 cd /mydata/downloads/
-wget --no-check-certificate  http://pypi.python.org/packages/source/s/setuptools/setuptools-0.6c11.tar.gz#md5=7df2a529a074f613b509fb44feefe74etar zxvf setuptools-0.6c11.tar.gz
+wget --no-check-certificate  http://pypi.python.org/packages/source/s/setuptools/setuptools-0.6c11.tar.gz#md5=7df2a529a074f613b509fb44feefe74e
 tar zxvf setuptools-0.6c11.tar.gz
 cd setuptools-0.6c11
 /mydata/python2.7/bin/python setup.py install

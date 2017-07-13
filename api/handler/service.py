@@ -8,7 +8,7 @@ from app.customer.models.share import *
 from app.util.messageque.msgsender import MessageSender
 from app.customer.models.bottle_message import *
 from app.customer.models.tools import *
-
+import international
 
 @handler_define
 class RankListCharm(BaseHandler):
@@ -61,18 +61,18 @@ class BottleMessageSend(BaseHandler):
             if status_code == 200:
                 return self.write({"status": "success", "count": count})
             else:
-                return self.write({"status": "failed", "error_code": status_code, "error": u"漂流瓶消息发送失败"})
+                return self.write({"status": "failed", "error_code": status_code, "error": _(u"漂流瓶消息发送失败")})
         elif user.is_video_auth != 1:
             self.write({
                 "status": "failed",
                 "errcode": 30001,
-               "error": u"尚未通过视频认证"
+               "error": _(u"尚未通过视频认证")
             })
         else:
             self.write({
                 "status": "failed",
                 "errcode": 30002,
-                "error": u"勿扰模式下，不能发送漂流瓶"
+                "error": _(u"勿扰模式下，不能发送漂流瓶")
             })
 
 
@@ -190,18 +190,18 @@ class BottleMessaegSend_V2(BaseHandler):
                 BottleRecord.create_bottle_record(user.id, label, message_content, 0, count)
                 return self.write({"status": "success", "count": count})
             else:
-                return self.write({"status": "failed", "error_code": status_code, "error": u"漂流瓶消息发送失败"})
+                return self.write({"status": "failed", "error_code": status_code, "error": _(u"漂流瓶消息发送失败")})
         elif user.is_video_auth != 1:
             self.write({
                 "status": "failed",
                 "errcode": 30001,
-                "error": u"尚未通过视频认证"
+                "error": _(u"尚未通过视频认证")
             })
         else:
             self.write({
                 "status": "failed",
                 "errcode": 30002,
-                "error": u"勿扰模式下，不能发送漂流瓶"
+                "error": _(u"勿扰模式下，不能发送漂流瓶")
             })
 
 
@@ -247,12 +247,12 @@ class BottleMessaegSend_V3(BaseHandler):
 
                 return self.write({"status": "success", "count": count})
             else:
-                return self.write({"status": "failed", "error_code": status_code, "error": u"漂流瓶消息发送失败"})
+                return self.write({"status": "failed", "error_code": status_code, "error": _(u"漂流瓶消息发送失败")})
         else:
             self.write({
                 "status": "failed",
                 "errcode": 30002,
-                "error": u"勿扰模式下，不能发送漂流瓶"
+                "error": _(u"勿扰模式下，不能发送漂流瓶")
             })
 
 

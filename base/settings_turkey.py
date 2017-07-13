@@ -208,7 +208,7 @@ def load_settings(settings, debug=False, **kwargs):
         'RabbitQueue_name': "chatpa",
         'Weixin_pay_notifyurl': "http://123.207.175.223/api/live/wepay/notice",
         'Alipay_notifyurl' : "http://123.207.175.223/api/live/alipay/notice",
-        'Message_Tornado_host': "127.0.0.1:9005",
+        'Message_Tornado_host': "backapi.b4ij.cn",
 
 
         # 腾讯云 签名工具配置

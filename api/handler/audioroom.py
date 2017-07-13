@@ -26,10 +26,11 @@ from api.handler.thridpard.qcloud.im import QCloudIM
 import json
 from django.conf import settings
 from app.customer.models.vip import *
-
+import international
 
 appID = settings.Agora_AppId
 appCertificate = settings.Agora_appCertificate
+
 
 #声网登录
 @handler_define
@@ -114,7 +115,7 @@ class GenerateChannelKey(BaseHandler):
 
         user_account = Account.objects.get(user=User.objects.get(id=uid))
         if uid != ruid and user_account.diamond < room.now_price:
-            return self.write({"status": "failed", "error": u"余额不足一分钟", })
+            return self.write({"status": "failed", "error": _(u"余额不足一分钟"), })
 
         room_status = AudioRoomRecord.get_room_status(user_id=ruid)
 
@@ -356,7 +357,7 @@ class CreateOneToOneOrder(BaseHandler):
         user_id = self.current_user_id
         user = self.current_user
         if not user.listen_url or user.now_price == None:
-            self.write({"status": "failed", "error": u"请录制声音并上传挂单价格", })
+            self.write({"status": "failed", "error": _(u"请录制声音并上传挂单价格"), })
 
         create_time = datetime.datetime.now()
         order_id = str(AudioRoomRecord.create_roomrecord(user_id=user_id, open_time=create_time))
@@ -364,7 +365,7 @@ class CreateOneToOneOrder(BaseHandler):
         if order_id:
             self.write({"status": "success", "order_id": order_id})
         else:
-            self.write({"status": "failed", "error": u"开启挂单失败", })
+            self.write({"status": "failed", "error": _(u"开启挂单失败"), })
 
 
 #价格列表
@@ -522,12 +523,12 @@ class ReportAudioRoom(BaseHandler):
             else:
                 AudioRoomRecord.finish_roomrecord(room_id=room_id, end_time=end_time)
                 logging.error("/audio/report errcode 3002")
-                return self.write({'status': "fail", "error": "用户未找到", 'errcode':'3002'})
+                return self.write({'status': "fail", "error": _(u"用户未找到"), 'errcode':'3002'})
 
         else:
             AudioRoomRecord.finish_roomrecord(room_id=room_id, end_time=end_time)
             logging.error("/audio/report errcode 3003")
-            return self.write({'status': 'fail', "error": "房间异常", 'errcode': '3003'})
+            return self.write({'status': 'fail', "error": _(u"房间异常"), 'errcode': '3003'})
 
         return self.write({'status': "success"})
 

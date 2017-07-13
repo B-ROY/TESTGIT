@@ -6,7 +6,7 @@ from app.customer.models.report import *
 from app.util.messageque.msgsender import MessageSender
 from app.util.shumeitools.shumeitools import *
 from app.customer.models.block_user_device import BlockUserRecord
-
+import international
 
 @handler_define
 class PornCheck(BaseHandler):
@@ -89,7 +89,7 @@ class ReportMessageUpload(BaseHandler):
                                           text=message, pic_url=pic_url,
                                           file_id=file_id, report_type=report_type)
 
-        desc = u"<html><p>" + u"%s您好，您的举报我们会及时处理，请静候佳音" % self.current_user.nickname + u"</p></html>"
+        desc = u"<html><p>" + _(u"%s您好，您的举报我们会及时处理，请静候佳音" % self.current_user.nickname) + u"</p></html>"
 
         MessageSender.send_system_message(user_id, desc)
 
