@@ -186,8 +186,8 @@ class User(Document):
 
     @property
     def gender_desc(self):
-        dic = {0: u"未知", 1: u"男", 2: u"女", }
-        return dic.get(self.gender, u"女")
+        dic = {0: _(u"未知"), 1: _(u"男"), 2: _(u"女"), }
+        return dic.get(self.gender, _(u"女"))
 
     @property
     def source_zh(self):

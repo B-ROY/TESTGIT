@@ -4,8 +4,7 @@ import time
 import datetime
 import logging
 import random
-from django.db import models
-from util.cache import func_cache
+
 
 """
 http://www.bootcss.com/p/bootstrap-switch/
@@ -91,40 +90,5 @@ class Switcher(Document):
             if platform.upper() in switch.platform:
                 results.append(switch)
         return results
-
-    @classmethod
-    def get_all_switches(cls):
-        try:
-            data_at = switcher_info.get("data_at", int(time.time()))
-            switcher = switcher_info.get("switcher")
-
-            #如果大于30分钟，重新加载数据
-            if time.time() - data_at > 1800 or not switcher:
-                #允许有10个并发锁
-                key_mutex = "reload:data:swich:%s" % random.randint(0,5)
-                #memcache add lock
-
-                if func_cache.add(key_mutex, 1, 5):
-                    cls.init_switch()
-                    #memcache reload lock
-                    func_cache.delete(key_mutex)
-                    return switcher_info.get("switcher")
-                else:
-                    pass
-
-
-        except Exception, e:
-            logging.error(e)
-
-        #返回匹配股则
-        return switcher
-
-    @classmethod
-    def init_switch(cls):
-        ss = cls.get_all()
-        switcher_info["switcher"] = []
-        for switch in ss:
-            switcher_info["switcher"].append(switch)
-        switcher_info["data_at"] = int(time.time())
 
 

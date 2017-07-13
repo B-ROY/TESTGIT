@@ -182,10 +182,10 @@ def load_settings(settings, debug=False, **kwargs):
         "PROXY_MEMCACHE": False,
 
         "memcache_settings": {
-            'func_cache': ['10.141.108.216:11211'],
-            'page_cache': ['10.141.108.216:11211'],
-            'fragment_cache': ['10.141.108.216:11211'],
-            'user_cache': ['10.141.108.216:11211'],
+            'func_cache': ['127.0.0.1:11211'],
+            'page_cache': ['127.0.0.1:11211'],
+            'fragment_cache': ['127.0.0.1:11211'],
+            'user_cache': ['127.0.0.1:11211'],
         },
         'enable_memcached': True,
         'apple_verify': True,

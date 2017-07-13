@@ -358,16 +358,17 @@ class GooglePayVerifyHandler(BaseHandler):
         google_notice = GooglePayNotice(package_name=package_name, product_id=sku, purchase_token=purchase_token)
         result = google_notice.validate()
         if result:
-            notice_dict = {
-                "out_trade_no": order_id,
-
+            verify_dict = {
+                "order_id": order_id,
+                "google_order_id": google_order_id,
+                "purchase_token": purchase_token
             }
+            GooglePayVeriry.create_order(verify_dict)
             return self.write({"status": "success"})
 
         else:
-            return self.write({"status": "success", "error": "支付失败"})
+            return self.write({"status": "fail", "error": "支付失败"})
 
-        #给用户添加金额
 
 
 

@@ -56,7 +56,9 @@ class GooglePayNotice(GooglePayBase):
         data = GooglePayRedis.get_access_token()
         if data:
             access_token_data = json.loads(data)
+            print "access_token_data is " + access_token_data
         ctime = int(time.time())
+        print "ctime is " + ctime
         if data and access_token_data.get("exptime") >= ctime:
             access_token = access_token_data.get("access_token")
 
@@ -65,7 +67,7 @@ class GooglePayNotice(GooglePayBase):
             params_encode = urllib.urlencode(params)
             data = RequestApi.post_body_request(self.path, params_encode,
                                                 {"Content-Type": "application/x-www-form-urlencoded"}, self.host)
-
+            data = json.loads(data)
             access_token = data.get("access_token")
             expires_in = data.get("expires_in")
             GooglePayRedis.set_access_token(access_token, ctime+expires_in-60)
@@ -74,10 +76,10 @@ class GooglePayNotice(GooglePayBase):
         purchase_check_host = "www.googleapis.com"
         purchase_check_path = "/androidpublisher/v2/applications/"+self.package_name\
                              +"/purchases/products/"+self.product_id+"/tokens/"\
-                             + self.purchase_token + "?access_token=" + access_token
+                             + self.purchase_token
 
-        data = RequestApi.get_json(purchase_check_path, {"access_token":access_token}, {}, purchase_check_host)
-        logging.error("googlepay check data is " + data)
+        data = RequestApi.get_json(purchase_check_path, {"access_token": access_token}, {}, purchase_check_host)
+        logging.error("googlepay check data is " + str(data))
 
 
         return data

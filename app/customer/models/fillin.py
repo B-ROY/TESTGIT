@@ -404,7 +404,6 @@ class GooglePayVeriry(Document):
     out_trade_no = StringField(verbose_name=u"商户订单号")
     google_order_id = StringField(verbose_name=u"Google订单号")
     notice_time = DateTimeField(verbose_name=u"通知时间")
-    buy_time = DateTimeField(verbose_name=u"购买时间")
 
     @classmethod
     def create_order(cls, verify_dict):
@@ -412,8 +411,6 @@ class GooglePayVeriry(Document):
         gpv.out_trade_no = verify_dict.get("order_id")
         gpv.google_order_id = verify_dict.get("google_order_id")
         gpv.notice_time = datetime.datetime.now()
-        gpv.buy_time = verify_dict.get("buy_time")
-
         return cls.fill_in(gpv)
 
     @classmethod
