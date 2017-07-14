@@ -56,9 +56,7 @@ class GooglePayNotice(GooglePayBase):
         data = GooglePayRedis.get_access_token()
         if data:
             access_token_data = json.loads(data)
-            print "access_token_data is " + access_token_data
         ctime = int(time.time())
-        print "ctime is " + ctime
         if data and access_token_data.get("exptime") >= ctime:
             access_token = access_token_data.get("access_token")
 
@@ -79,8 +77,6 @@ class GooglePayNotice(GooglePayBase):
                              + self.purchase_token
 
         data = RequestApi.get_json(purchase_check_path, {"access_token": access_token}, {}, purchase_check_host)
-        logging.error("googlepay check data is " + str(data))
-
 
         return data
 
