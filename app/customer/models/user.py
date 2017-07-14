@@ -11,6 +11,7 @@ from base.settings import CHATPAMONGO
 import random
 from app.util.messageque.msgsender import MessageSender
 from app_redis.user.models.user import UserRedis
+from django.conf import settings
 
 connect(CHATPAMONGO.db, host=CHATPAMONGO.host, port=CHATPAMONGO.port, username=CHATPAMONGO.username,password=CHATPAMONGO.password)
 
@@ -391,7 +392,7 @@ class User(Document):
                 user_type=0,
                 guid=guid,
                 nickname=nickname,
-                desc=u"等待一通电话，连接你我的心。",
+                desc=_(u"等待一通电话，连接你我的心。"),
                 phone=phone,
                 gender=gender,
                 image=User.convert_http_to_https(image),
@@ -977,7 +978,7 @@ class RealNameVerify(Document):
                 is_valid=1
             )
             verify.save()
-            desc = u"<html><p>"+ _(u"亲爱的播主您好，认证申请已成功提交，请等待工作人员审核（1-2工作日)") + u"</p></html>"
+            desc = u"<html><p>"+ _(u"亲爱的播主您好，认证申请已成功提交，请等待工作人员审核（1-2工作日)") + u"</p></br></html>"
             MessageSender.send_system_message(str(user_id), desc)
             return True
         except Exception,e:
@@ -1033,7 +1034,7 @@ class VideoManagerVerify(Document):
             user = User.objects.get(id=int(user_id))
             user.is_video_auth = 0
             user.save()
-            desc = u"<html><p>" + _(u"亲爱的用户您好，认证申请已成功提交，请等待工作人员审核（1-2工作日）") + u"</p></html>"
+            desc = u"<html><p>" + _(u"亲爱的用户您好，认证申请已成功提交，请等待工作人员审核（1-2工作日）") + u"</p></br></html>"
             MessageSender.send_system_message(user.sid, desc)
             return True
         except Exception, e:
@@ -1097,9 +1098,9 @@ class RegisterInfo():
 
     @classmethod
     def make_nickname(cls):
+        if settings.INTERNATIONAL_TYPE != 0:
+            return ""
         return cls.ADJECTIVE[random.randint(0, len(cls.ADJECTIVE)-1)] + u"的" +cls.NOUN[random.randint(0, len(cls.NOUN)-1)]
-
-
 
 
 class UserAppealRecord(Document):

@@ -240,7 +240,7 @@ msgid "女"
 msgstr "Kadın"
 
 msgid "未知"
-msgstr ""
+msgstr " "
 
 msgid "等待一通电话，连接你我的心。"
-msgstr ""
+msgstr " "

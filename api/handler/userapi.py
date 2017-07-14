@@ -1473,7 +1473,7 @@ class CreateFeedback(BaseHandler):
             feedback_id = FeedbackInfo.create_feedback(user_id=user_id, created_at=created_at, ua=ua,
                                                        desc=desc,phone_number=phone_number,qq_number=qq_number)
             if feedback_id:
-                desc = u"<html><p>" + _(u"尊敬的%s，感谢您的建议，您的建议就是我们进步的动力" % self.current_user.nickname) + u"</p></html>"
+                desc = u"<html><p>" + _(u"尊敬的%s，感谢您的建议，您的建议就是我们进步的动力" % self.current_user.nickname) + u"</p></br></html>"
 
                 MessageSender.send_system_message(user_id, desc)
                 self.write({"status": "success", "feedback_id": feedback_id, })
