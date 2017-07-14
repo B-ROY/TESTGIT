@@ -1,0 +1,246 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf8\n"
+"Content-Transfer-Encoding: utf8\n"
+
+
+#. ( % self.current_user.nickname)
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/audit.py:92
+msgid "%s您好，您的举报我们会及时处理，请静候佳音"
+msgstr "%sMerhaba en kısa sürede raporunuzla ilgilenip size geri dönüş yapacağız.Teşekkürler"
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:451 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:595
+msgid "不能邀请自己"
+msgstr "Kendinizi davet edemezsiniz"
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/withdraw.py:202 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/withdraw.py:278
+msgid "余额不足"
+msgstr "Bakiye yetersiz"
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/audioroom.py:117
+msgid "余额不足一分钟"
+msgstr "Bakiyeniz 1 dk.’dan az"
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:573
+msgid "创建个人信息超时"
+msgstr "Kişisel bilgileri oluşturma zaman aşımına uğradı"
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:614
+msgid "创建密码失败"
+msgstr "Parola oluşturma başarısız"
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/withdraw.py:207 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/withdraw.py:283
+msgid "创建提现请求失败"
+msgstr "Para çekme başvurusu başarısız"
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/service.py:204 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/service.py:255 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/service.py:75
+msgid "勿扰模式下，不能发送漂流瓶"
+msgstr "Rahatsız etme modundayken şişedeki mesajı gönderemezsiniz"
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:453 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:597
+msgid "同一个设备不能邀请自己"
+msgstr "Aynı cihazdan kendinizi davet edemezsin"
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:455 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:599
+msgid "同一个设备仅能邀请1次"
+msgstr "Aynı cihazdan en fazla bir kere davet edilebir"
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:462
+msgid "完善用户资料是失败"
+msgstr "Kullanıcı bilgileri tamamlanamadı"
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:668
+msgid "密码有误，请重新输入!"
+msgstr "Hatalı parola,lütfen tekrar girin! "
+
+#. ( % self.current_user.nickname)
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:1476
+msgid "尊敬的%s，感谢您的建议，您的建议就是我们进步的动力"
+msgstr "Sevgili%s，Tavsiyelerin için teşekkürler.En kısa sürede değerlendirip size geri dönüş yapacağız"
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/withdraw.py:188 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/withdraw.py:264
+msgid "尚未进行实名认证，请返回聊啪客户端进行实名认证"
+msgstr "Henüz kullanıcı onayı almadınız. Lütfen Onaylı kullanıcı sekmesine gidin"
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/service.py:198 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/service.py:69
+msgid "尚未通过视频认证"
+msgstr "Video onay yapılmadı"
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/audioroom.py:367
+msgid "开启挂单失败"
+msgstr ""
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:833
+msgid "您已绑定过手机号"
+msgstr "Telefon numarası eklenmedi"
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:1005 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:775
+msgid "您已被封号！请遵守用户协议！"
+msgstr "Üyleliğiniz banlandı. Lütfen kullanıcı sözleşmesine uyun！"
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/audioroom.py:530
+msgid "房间异常"
+msgstr "Sohbet odası hatası"
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:1727
+msgid "无可用门槛道具"
+msgstr "Anahtar kullanılamaz"
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:791
+msgid "更改密码失败"
+msgstr "Parola değiştirme başarısız"
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:822
+msgid "未登录"
+msgstr "Giriş yapılmadı"
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:826 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/withdraw.py:45
+msgid "未绑定手机号"
+msgstr "Telefon numarası eklenmedi"
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:531
+msgid "注册失败"
+msgstr "Kayıt başarısız"
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/service.py:193 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/service.py:250 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/service.py:64
+msgid "漂流瓶消息发送失败"
+msgstr "Şişedeki mesaj gönderme başarısız"
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/audioroom.py:525
+msgid "用户未找到"
+msgstr "Kullanıcı bulunamadı"
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:381 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:639
+msgid "经系统检测，您的账号存在违规行为，已经被服务器暂时封停；如您存在疑问请点击下方申诉或联系客服QQ：3270745762"
+msgstr "Kuralları ihlal ettiğiniz için üyeliğiniz askıya alındı, eğer aksini düşünüyorsanız lütfen bizimle iletişime geçiniz  Whatsapp: +86 17388210396"
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:387 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:645
+msgid "经系统检测，您的账号存在违规行为，设备已经被服务器暂时封停；如您存在疑问请点击下方申诉或联系客服QQ：3270745762"
+msgstr "Kuralları ihlal ettiğiniz cihazınız askıya alınmıştır.Bu cihazdan giriş yapamazsınız. İletişime geömek için . WhatsApp：+86 17388210396"
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/pay.py:493 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/pay.py:532
+msgid "获取列表失败"
+msgstr "Liste yüklenemedi"
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:811 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:841 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:853
+msgid "获取验证码失败"
+msgstr "Onay kodu alınamadı"
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:529 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:809
+msgid "该手机号已注册"
+msgstr "Bu telefon numarası kayıtlı"
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:835
+msgid "该手机号已被绑定, 请输入其他手机号"
+msgstr "Bu telefon numarası kayıtlı lütfen başka bir numara kullanın"
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:712 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:753 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:817
+msgid "该手机号未注册"
+msgstr "Bu numara kayıtlı değil"
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:670
+msgid "该账号不存在"
+msgstr "Bu numara kayıtlı"
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/audioroom.py:359
+msgid "请录制声音并上传挂单价格"
+msgstr "Lütfen sesinizi kaydedip yükleyin ardından fiyat belirleyebilirsiniz"
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:449 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:593
+msgid "邀请码填写错误,请重新填写"
+msgstr "Hatalı davet kodu lütfen tekrar giriniz"
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/withdraw.py:259
+msgid "金额不支持"
+msgstr "Yetersiz bakiye"
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:505 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:698 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:740 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:888 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/withdraw.py:36
+msgid "非法用户"
+msgstr "Yasaklı Kullanıcı"
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:509 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:702 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:744 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:892 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/withdraw.py:40
+msgid "验证码失效"
+msgstr "Profil onaylanmadı"
+
+#: /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:507 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:700 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:742 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/userapi.py:890 /Users/biweibiren/ALLIN_API_OFFICIAL/live_video/api/handler/withdraw.py:38
+msgid "验证码错误，请输入正确的验证码"
+msgstr "Hatalı onay kodu lütfen tekrar giriniz"
+
+# constellation
+msgid "摩羯座"
+msgstr "Oğlak"
+
+msgid "水瓶座"
+msgstr "Kova"
+
+msgid "双鱼座"
+msgstr "Balık"
+
+msgid "白羊座"
+msgstr "Koç"
+
+msgid "金牛座"
+msgstr "Boğa"
+
+msgid "双子座"
+msgstr "İkizler"
+
+msgid "巨蟹座"
+msgstr "Yengeç"
+
+msgid "狮子座"
+msgstr "Aslan"
+
+msgid "处女座"
+msgstr "Başak"
+
+msgid "天秤座"
+msgstr "Terazi"
+
+msgid "天蝎座"
+msgstr "Akrep"
+
+msgid "射手座"
+msgstr "Yay"
+
+msgid "亲爱的用户您好，实名认证成功，可以申请提现啦~"
+msgstr "Sevgili kullanıcı onay aşamasından başarıyla geçtiniz.Şimdi para çekme için başvurabilirsiniz"
+
+msgid "亲爱的用户您好，提现申请已成功提交，请等待工作人员审核（1-2工作日）"
+msgstr "Sevgili kullanıcı Para çekme başvurunuz başarıyla yapıldı. İşleminiz 1-2 iş günü içerisinde çalışanlarımız tarafından gerçekleştirilecektir."
+
+msgid "亲爱的用户您好，视频播主认证成功，可以开始视频啦~"
+msgstr "Sevgili kullanıcı Yayıncı başvurunuzkabul edilmiştir. Canlı yayın yapmaya başlayabilirsiniz"
+
+msgid "亲爱的用户您好，认证申请已成功提交，请等待工作人员审核（1-2工作日）"
+msgstr "Sevgili kullanıcı kullanıcı onayı başvurunuz alındı. İşleminiz en kısa sürede gerçekleştirilecektir. (Maks. 1-2 iş günü)"
+
+msgid "由于未满足提现条件，你的申请已被驳回，申请时间:"
+msgstr "Para çekme koşullarını tamamlamadığınız için işleminiz reddedildi. İşlem zamanı::"
+
+msgid "经系统鉴黄检测，您在视频聊天过程中存在违规行为；根据平台绿色运营协定，将对账号给予封号处理;"
+msgstr "Sistem raporlarına göre video görüşme sırasında olumsuz davranış sergilediniz. Bu üyelik banlanmıştır"
+
+msgid "男"
+msgstr "Erkek"
+
+msgid "女"
+msgstr "Kadın"
+
+msgid "未知"
+msgstr ""
+
+msgid "等待一通电话，连接你我的心。"
+msgstr ""

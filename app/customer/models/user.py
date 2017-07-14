@@ -277,7 +277,7 @@ class User(Document):
                 user_type=0,
                 guid=guid,
                 nickname=nickname,
-                desc=u"等待一通电话，连接你我的心。",
+                desc=_(u"等待一通电话，连接你我的心。"),
                 phone=phone,
                 gender=gender,
                 image=User.convert_http_to_https(image),
@@ -977,7 +977,7 @@ class RealNameVerify(Document):
                 is_valid=1
             )
             verify.save()
-            desc = u"<html><p>亲爱的播主您好，认证申请已成功提交，请等待工作人员审核（1-2工作日）</p></html>"
+            desc = u"<html><p>"+ _(u"亲爱的播主您好，认证申请已成功提交，请等待工作人员审核（1-2工作日)") + u"</p></html>"
             MessageSender.send_system_message(str(user_id), desc)
             return True
         except Exception,e:
@@ -1033,7 +1033,7 @@ class VideoManagerVerify(Document):
             user = User.objects.get(id=int(user_id))
             user.is_video_auth = 0
             user.save()
-            desc = u"<html><p>亲爱的用户您好，认证申请已成功提交，请等待工作人员审核（1-2工作日）</p></html>"
+            desc = u"<html><p>" + _(u"亲爱的用户您好，认证申请已成功提交，请等待工作人员审核（1-2工作日）") + u"</p></html>"
             MessageSender.send_system_message(user.sid, desc)
             return True
         except Exception, e:
