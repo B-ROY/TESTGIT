@@ -8,6 +8,7 @@ from app.customer.models.version_info import VersionInfo
 import time
 from app.customer.models.user import UserHeartBeat
 from app.channel.models.audit_info import *
+from django.conf import settings
 
 @handler_define
 class Initial(BaseHandler):
@@ -91,8 +92,8 @@ class Initial(BaseHandler):
             version_info['download_url'] = ''
 
 
-        share_url = "http://www.iwala.cn/shar/"
-        invite_url = "http://www.iwala.cn/invitte/liaopa_invite_.html"
+        share_url = settings.SHARE_URL
+        invite_url = settings.INVITE_URL
 
         self.write({
             'status': "success",
