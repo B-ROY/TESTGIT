@@ -94,6 +94,7 @@ class Initial(BaseHandler):
 
         share_url = settings.SHARE_URL
         invite_url = settings.INVITE_URL
+        ins_img_url = settings.INS_IMAGE_URL
 
         self.write({
             'status': "success",
@@ -103,5 +104,6 @@ class Initial(BaseHandler):
             "version_info": version_info,
             "report_interval": UserHeartBeat.REPORT_INTERVAL,
             "share_url": share_url,
-            "invite_url": invite_url
+            "invite_url": invite_url,
+            "ins_img_url": ins_img_url
         })

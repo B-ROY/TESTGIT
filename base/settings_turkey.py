@@ -30,6 +30,10 @@ class CHATPAMONGO():
 #     username = "mini_admin"
 #     password = "bw890905"
 
+class Manifest(object):
+    languages = 'turkey'
+
+
 def execute(*modules):
     load_django_settings(*modules)
     execute_from_command_line()
@@ -216,9 +220,10 @@ def load_settings(settings, debug=False, **kwargs):
         "SIG_KEY_PATH": "/mydata/python/live_video/api/util/tencenttools/keys_turkey",
         "SIG_PATH": '/mydata/python/live_video/api/util/tencenttools/tls_sig_api-linux-64/tools',
 
-        "INTERNATIONAL_TYPE": 1,
+        "INTERNATIONAL_TYPE": 90,
         "SHARE_URL": "http://52.29.158.14/share/",
         "INVITE_URL": "http://52.29.158.14/share/",
+        "INS_IMAGE_URL": "https://heydo-10048692.file.myqcloud.com/pic/turkey_share.jpeg"
     },
 
 

@@ -52,8 +52,7 @@ class TencentSMS:
     __nation_code = "86"
 
     def __init__(self):
-        if settings.INTERNATIONAL_TYPE != 0:
-            self.__nation_code = "86"
+        self.__nation_code = settings.INTERNATIONAL_TYPE
         pass
 
     def get_sig(self, random_str, timestamp, mobiles):

@@ -30,6 +30,11 @@ class CHATPALOGSMONGO():
     username = "mini_admin"
     password = "bw890905"
 
+
+class Manifest(object):
+    languages = 'zh-CN'
+
+
 def execute(*modules):
     load_django_settings(*modules)
     execute_from_command_line()
@@ -214,9 +219,10 @@ def load_settings(settings, debug=False, **kwargs):
         "SIG_KEY_PATH": "/mydata/python/live_video/api/util/tencenttools/keys",
         "SIG_PATH": '/mydata/python/live_video/api/util/tencenttools/tls_sig_api-linux-64/tools',
 
-        "INTERNATIONAL_TYPE": 0,
+        "INTERNATIONAL_TYPE": 86,
         "SHARE_URL": "http://www.iwala.cn/shar/",
         "INVITE_URL": "http://www.iwala.cn/invitte/liaopa_invite_.html",
+        "INS_IMAGE_URL": ""
     },
 
 

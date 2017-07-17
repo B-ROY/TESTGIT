@@ -244,3 +244,6 @@ msgstr " "
 
 msgid "等待一通电话，连接你我的心。"
 msgstr " "
+
+msgid "恭喜您注册成功，快去体验我们给您带来的最新交友方式吧！！"
+msgstr "Kayıt başarılı . Artık Papa dünyasındaki yeni maceralarınıza yelken açabilirsiniz . "

@@ -1098,7 +1098,7 @@ class RegisterInfo():
 
     @classmethod
     def make_nickname(cls):
-        if settings.INTERNATIONAL_TYPE != 0:
+        if settings.INTERNATIONAL_TYPE != 86:
             return ""
         return cls.ADJECTIVE[random.randint(0, len(cls.ADJECTIVE)-1)] + u"的" +cls.NOUN[random.randint(0, len(cls.NOUN)-1)]
 
