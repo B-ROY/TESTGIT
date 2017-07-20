@@ -33,7 +33,7 @@ class PriceList(Document):
 
     @classmethod
     def get_price_list(cls):
-        price_list = cls.objects.all()
+        price_list = cls.objects.all().order_by("-price")
         return price_list
 
     @classmethod
@@ -65,7 +65,7 @@ class VideoPriceList(Document):
 
     @classmethod
     def get_price_list(cls):
-        price_list = cls.objects.all()
+        price_list = cls.objects.all().order_by("-price")
         return price_list
 
     @classmethod

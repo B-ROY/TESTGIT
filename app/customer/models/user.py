@@ -282,7 +282,7 @@ class User(Document):
                 phone=phone,
                 gender=gender,
                 image=User.convert_http_to_https(image),
-                constellation=u'摩羯座',
+                constellation=_(u'摩羯座'),
                 occupation="",
                 blood_type="",
                 birth_date=datetime.date(1995, 1, 1),
@@ -396,7 +396,7 @@ class User(Document):
                 phone=phone,
                 gender=gender,
                 image=User.convert_http_to_https(image),
-                constellation=u'摩羯座',
+                constellation=_(u'摩羯座'),
                 occupation="",
                 blood_type="",
                 birth_date=datetime.date(1995, 1, 1),
@@ -1005,8 +1005,8 @@ class VideoManagerVerify(Document):
     user_id = IntField(verbose_name=u"用户id")
     avtar_auth = StringField(verbose_name=u"头像认证照片", max_length=256)
     active_auth = StringField(verbose_name=u"动作认证照片", max_length=256)
-    create_time = DateTimeField(verbose_name=u"上传时间", default=datetime.datetime.now())
-    verify_time = DateTimeField(verbose_name=u"确认时间", default=datetime.datetime.now())
+    create_time = DateTimeField(verbose_name=u"上传时间")
+    verify_time = DateTimeField(verbose_name=u"确认时间")
     feedback_reason = StringField(verbose_name=u"认证审核反馈", max_length=256)
     status = IntField(verbose_name=u"认证状态", choices=VERIFY_STATUS)
     is_valid = IntField(verbose_name=u"是否忽略", default=1)#1不忽略 2，忽略

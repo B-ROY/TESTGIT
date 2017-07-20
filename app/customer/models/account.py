@@ -416,6 +416,7 @@ class TradeBalanceRule(Document):
     activity_desc = StringField(verbose_name=u"活动说明", max_length=256, default=None)
     channel = StringField(verbose_name=u"分渠道展示价格特殊价格", default="chatpa")
     google_product_id = StringField(verbose_name=u"google产品id")
+    status = IntField(verbose_name=u'状态', default=0)
 
     class Meta:
         app_label = "customer"
@@ -439,7 +440,7 @@ class TradeBalanceRule(Document):
 
     @classmethod
     def get_list(cls):
-        return cls.objects.all().order_by("-activity_desc", "money")
+        return cls.objects.filter(status__ne=1).order_by("-activity_desc", "money")
 
     @classmethod
     def get_rule(cls, money, platform, tradetype):

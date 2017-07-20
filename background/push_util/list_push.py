@@ -122,6 +122,15 @@ GETUI_CONSTANT = {
         "MASTERSECRET": "t0LEhXrvtL9LydXQ6MHTY4",
         "Alias": '请输入别名',
         "DEVICETOKEN": ""
+    },
+    "liaoai_yelaixiang":{
+        "APPID": "372H9A4X2G8YtBjZTHvgE2",
+        "APPKEY": "aaO8e27kDp58gELA1dv9o",
+        "APPSECRET": "jHGvKI987W9dmePafm5wS6",
+        "MASTERSECRET": "5hsnWwMiooAVfjJfPnXCGA",
+        "Alias": '请输入别名',
+        "DEVICETOKEN": ""
+
     }
 
 }

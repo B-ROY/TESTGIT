@@ -516,7 +516,7 @@ class PayRulesV2(BaseHandler):
             channel = ""
 
         #将所有的取出 然后进行过滤
-        rules = TradeBalanceRule.objects.filter(platform=platform).order_by("money")
+        rules = TradeBalanceRule.objects.filter(platform=platform, status__ne=1).order_by("money")
 
         if channel in rules.distinct("channel"):
             rules.filter(channel=channel)
