@@ -37,6 +37,20 @@ class AddGeTui(BaseHandler):
             if user_id != "":
                 try:
                     record.user_id = int(user_id)
+                    if app_name != "":
+                        record.appname = app_name
+                    if province != "":
+                        record.province = province
+                    if city != "":
+                        record.city = city
+                    if districts != "":
+                        record.districts = districts
+                    if address != "":
+                        record.address = address
+                    if os_version != "":
+                        record.os_version = os_version
+                    if platform != "":
+                        record.platform = platform
                     record.save()
                     return self.write({"status": "success"})
                 except Exception,e:
