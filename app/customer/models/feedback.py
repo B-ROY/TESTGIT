@@ -51,7 +51,7 @@ class FeedbackInfo(Document):
             )
             feedback.save()
         except Exception,e:
-            logging.error("create feedback error:{0}".formate(e))
+            logging.error("create feedback error:{0}".format(e))
             return False
         return str(feedback.id)
 
