@@ -164,6 +164,7 @@ class GetMoment(BaseHandler):
         moment_id = self.arg('moment_id', "")
         moment = UserMoment.objects.filter(show_status__ne=2, delete_status=1, id=moment_id).first()
         if moment:
+            UserMomentLook.inc_look(user_id, str(moment.id))
             like_user_list = moment.like_user_list
             dic = convert_user_moment(moment)
             if int(user_id) in like_user_list:
@@ -172,7 +173,6 @@ class GetMoment(BaseHandler):
                 is_liked = 0
             dic["is_liked"] = is_liked
             data.append(dic)
-            UserMomentLook.inc_look(user_id, str(moment.id))
         else:
             return self.write({'status': "fail",
                                'error': u"该动态已经被删除"})

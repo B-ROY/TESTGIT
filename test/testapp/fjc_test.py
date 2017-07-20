@@ -5,11 +5,29 @@ import datetime
 from app.customer.models.first_charge_activity import *
 from app.customer.models.account import *
 from app.customer.models.user import *
+from app.customer.models.friend import Friend
+from app.customer.models.follow_user import FriendUser
 
 
 # now = datetime.datetime.now()
 # date = now.strftime('%Y年%m月%d日')
 # print date
+
+def sync_friend():
+    friends = Friend.objects.filter(friend_status=2)
+    for friend in friends:
+        create_time = friend.update_time
+        user_id = friend.user_id
+        friend_id = friend.friend_id
+
+        db_friend_user = FriendUser.objects.filter(from_id=user_id, to_id=friend_id).first()
+        if not db_friend_user:
+            friend_user = FriendUser()
+            friend_user.create_time = create_time
+            friend_user.from_id = user_id
+            friend_user.to_id = friend_id
+            friend_user.save()
+
 
 def test():
 
