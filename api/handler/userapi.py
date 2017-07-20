@@ -1700,7 +1700,7 @@ class MessageSendGift(BaseHandler):
             return self.write({"status": "fail", "error": u"支付失败", })
         else:
             if return_money == 0:
-                return self.write({"status": "fail", "error": u"余额不足", })
+                return self.write({"status": "fail", "error": _(u"余额不足"), })
             else:
                 return self.write({"status": "success", })
 
@@ -1897,7 +1897,7 @@ class RichUserList(BaseHandler):
             try:
                 account.diamond_trade_out(price=tool.price, desc=u"千里眼消耗金额", trade_type=TradeDiamondRecord.TradeTypeClairvoyant)
             except ApiException, e:
-                return self.write({"status": "success", "error": "余额不足"})
+                return self.write({"status": "success", "error": _(u"余额不足")})
 
         else:
             # 用户减少一个道具,  消耗道具记录
