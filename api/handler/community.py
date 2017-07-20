@@ -244,9 +244,11 @@ class CreateComment(BaseHandler):
             return self.write({"status": "success", "comment_id": str(comment.id)})
 
         else:
-            UserComment.delete_comment(comment_id)
-
-        self.write({"status": "success"})
+            status = UserComment.delete_comment(comment_id, user.id)
+            if status:
+                return self.write({"status": "success"})
+            else:
+                return self.write({"status": "failed"})
 
 
 @handler_define

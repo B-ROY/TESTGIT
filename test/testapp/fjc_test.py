@@ -131,19 +131,19 @@ def test():
 #
 # print hour_str + ":" + minute_str + ":" + second_str
 
-# from app.customer.models.index_column import *
-# def init():
-#     column = IndexColumn()
-#     column.name = "推荐"
-#     column.column_type = 1
-#     column.delete_status = 1
-#     column.save()
-#
-#     column2 = IndexColumn()
-#     column2.name = "新人驾到"
-#     column2.column_type = 2
-#     column2.delete_status = 1
-#     column2.save()
+from app.customer.models.index_column import IndexColumn
+def init_index_colum():
+    column = IndexColumn()
+    column.name = "热门推荐"
+    column.column_type = 1
+    column.delete_status = 1
+    column.save()
+
+    column2 = IndexColumn()
+    column2.name = "新人驾到"
+    column2.column_type = 2
+    column2.delete_status = 1
+    column2.save()
 
 import time
 

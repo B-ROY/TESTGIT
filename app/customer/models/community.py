@@ -175,14 +175,25 @@ class UserComment(Document):
         return user_coment
 
     @classmethod
-    def delete_comment(cls, comment_id):
-        user_comment = UserComment.objects.filter(id=str(comment_id)).first()
-        user_comment.delete_status = 2
-        user_comment.save()
-        # 更新评论数
-        comment_count = len(UserComment.objects.filter(user_moment_id=user_comment.user_moment_id, delete_status=1))
-        user_moment = UserMoment.objects.filter(id=user_comment.user_moment_id).first()
-        user_moment.update(set__comment_count=comment_count)
+    def delete_comment(cls, comment_id, user_id):
+        try:
+            user_comment = UserComment.objects.filter(id=str(comment_id)).first()
+            if user_comment:
+                if user_comment.user_id == int(user_id):
+                    user_comment.delete_status = 2
+                    user_comment.save()
+                    # 更新评论数
+                    comment_count = len(UserComment.objects.filter(user_moment_id=user_comment.user_moment_id, delete_status=1))
+                    user_moment = UserMoment.objects.filter(id=user_comment.user_moment_id).first()
+                    user_moment.update(set__comment_count=comment_count)
+                    return True
+                else:
+                    return False
+        except Exception,e:
+            logging.error("delete comment error:{0}".format(e))
+            return False
+        return True
+
 
     def normal_info(self):
         user = User.objects.filter(id=self.user_id).first()
