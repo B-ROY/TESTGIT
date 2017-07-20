@@ -236,6 +236,8 @@ class AliPayNoticeHandler(BaseHandler):
             return self.write("failed")
 
         dic = dict(params)
+        if dic.get("trade_status") == "TRADE_CLOSED":
+            return self.write({"success"})
         success = AlipayFillNotice.create_order(dic)
 
         if success:

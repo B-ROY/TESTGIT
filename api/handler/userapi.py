@@ -1161,17 +1161,20 @@ class BatchUserInfo(BaseHandler):
         Param('uids', False, str, "", "", u'用户_uid逗号分隔，例如：1,2,3，腾讯云是identity'),
     ], description=u"批量获取用户信息")
     def get(self):
-        uids = self.arg("uids")
-        uids = uids.split(",")
+        try:
+            uids = self.arg("uids")
+            uids = uids.split(",")
 
-        results = []
-        users = User.objects.filter(id__in=uids)
-        for user in users:
-            results.append(convert_user(user))
+            results = []
+            users = User.objects.filter(id__in=uids)
+            for user in users:
+                results.append(convert_user(user))
 
-        data = {"status": "success", "results": results}
+            data = {"status": "success", "results": results}
 
-        self.write(data)
+            self.write(data)
+        except Exception, e:
+            self.write({"status":"fail", "desc": e.message})
 
 
 # 更新用户cid
