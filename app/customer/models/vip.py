@@ -1,6 +1,10 @@
 # coding=utf-8
 
-
+import datetime
+from mongoengine import *
+from base.settings import CHATPAMONGO
+from app.customer.models.account import *
+from app.customer.models.user import User
 from app.customer.models.tools import *
 
 
@@ -199,6 +203,13 @@ class VipAdv(Document):
             return url
         else:
             return url.replace("http", "https")
+
+
+class VipReceiveRecord(Document):
+    user_id = IntField(verbose_name=u'用户id', required=True)
+    vip_id = StringField(verbose_name=u"会员id", required=True)
+    create_time = DateTimeField(verbose_name=u"创建时间")
+
 
 
 

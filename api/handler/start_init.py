@@ -48,38 +48,25 @@ class Initial(BaseHandler):
             channel = uas[5]
 
         version = VersionInfo.get_version_info(platform, app_name, channel)
-        if version:
-            version_info = version.format_version_info()
         ua_version = ua.split(";")[1]
 
-        if platform.upper() == 'ANDROID' and ua_version < "2.2.1":
-            if channel == "chatpa" or channel == "600009":
-                channel = "600000"
-            version_info["upgrade_type"] = 1
-            version_info["version_code"] = 300
-            downloads_url = "http://heydo-10048692.file.myqcloud.com/android_apk/chatpa2.2.1_" + channel + ".apk"
-            version_info["download_url"] = downloads_url
-            version_info["desc"] = "亲爱的女神、男神：您好！为了给大家提供更好的服务，我们将现有版本升级，新版特性：\n" \
-                                   "\n" \
-                                   "优化了视频显示效果；\n" \
-                                   "VIP功能上线，享受更多特权。\n" \
-                                   "增加支付宝支付"
+        if version:
+            version_info = version.format_version_info()
+            # 强升
+            if ua_version < version.min_version:
+                version_info["upgrade_type"] = 1
+            else:
+                version_info["upgrade_type"] = version.upgrade_type
 
-        if platform.upper() == 'ANDROID' and ua_version == "2.2.1":
-            if channel == "chatpa" or channel == "600009":
-                channel = "600000"
-            version_info["upgrade_type"] = 2
-            version_info["version_code"] = 300
-            downloads_url = "http://heydo-10048692.file.myqcloud.com/android_apk/chatpa2.2.2_" + channel + ".apk"
+            downloads_url = version.download_url
             version_info["download_url"] = downloads_url
-            version_info["desc"] = "亲爱的女神、男神：您好！为了给大家提供更好的服务，我们将现有版本升级，新版特性：\n" \
-                                   "\n" \
-                                   "1.优化视频拨打逻辑；\n" \
-                                   "2.优化UI界面体验；\n" \
-                                   "3.修复若干BUG；"
+            version_info["desc"] = version.upgrade_info
+        else:
+            version_info["upgrade_type"] = 0
+            version_info["download_url"] = ""
+            version_info["desc"] = ""
 
         audit_info = ChannelAuditInfo.get_audit_info(channel)
-
 
         if audit_info and ua_version >= audit_info.version:
             switches["review"] = 0

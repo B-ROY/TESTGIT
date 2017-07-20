@@ -3,7 +3,7 @@
 import datetime
 from mongoengine import *
 from base.settings import CHATPAMONGO
-from app.customer.models.account import *
+from app.customer.models.account import Account, TradeDiamondRecord
 from app.customer.models.user import User
 from django.db.models import F
 
@@ -65,6 +65,7 @@ class UserTools(Document):
         (1, u"会员自动发放"),  # 限时一天的道具
         (2, u"购买"),
         (3, u"后台添加"),
+        (4, u"活动奖励"),
     )
 
     user_id = IntField(verbose_name=u'用户id', required=True)
@@ -186,6 +187,7 @@ class UserToolsRecord(Document):
         (3, u"会员发放道具"),
         (4, u"领取道具"),
         (5, u"后台添加"),
+        (6, u"活动奖励添加"),
 
     )
 
@@ -235,12 +237,21 @@ class ToolsActivity(Document):
         (1, u"未删除"),
     )
 
+    name = StringField(max_length=512, verbose_name=u"名称")
     tools_data = StringField(max_length=512, verbose_name=u"道具,字典 字符串 格式")
     create_time = DateTimeField(verbose_name=u"创建时间", default=datetime.datetime.now())
     delete_status = IntField(verbose_name=u"是否删除", choices=Delete_STATUS)
     start_time = DateTimeField(verbose_name=u"起始时间(包含在内)")
     end_time = DateTimeField(verbose_name=u"结束时间(包含在内)")
-    role = IntField(verbose_name=u"人群")  #1: 新主播 2：老主播 3：用户
+    start_hms = StringField(verbose_name=u"起始的时分秒时间段 如: 08:25:00", max_length=32)
+    end_hms = StringField(verbose_name=u"结束的时分秒时间段 如: 08:25:00", max_length=32)
+    role = StringField(verbose_name=u"人群",  max_length=256)  #1: 新主播 2：老主播 3：用户(多个逗号分隔)
+
+
+class ToolsActivityRecord(Document):
+    date_time = DateTimeField(verbose_name=u"创建时间")
+    tools_activity_id = StringField(max_length=64, verbose_name=u"道具活动id")
+    user_id = IntField(verbose_name=u'用户id', required=True)
 
 
 

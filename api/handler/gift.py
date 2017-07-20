@@ -4,7 +4,7 @@ from api.view.base import *
 from app.customer.models.gift import *
 from app.customer.models.account import *
 import json
-
+from app.customer.models.black_user import *
 
 @handler_define
 class GetGiflList(BaseHandler):
@@ -17,8 +17,8 @@ class GetGiflList(BaseHandler):
             data.append(Gift.normal_info(gift))
 
         self.write({
-            "status":"success",
-            "gift_list":data
+            "status": "success",
+            "gift_list": data
         })
 @handler_define
 class GetInstantGiftList(BaseHandler):
@@ -59,6 +59,21 @@ class SendGift(BaseHandler):
             return self.write({
                 "status": "failed",
                 "error": "dick boom sky",
+            })
+
+        # 校验黑名单
+        black_user = BlackUser.objects.filter(from_id=from_user.id, to_id=to_user.id).first()
+        if black_user:
+            return self.write({
+                "status": "failed",
+                "error": "to_user is on the blacklist"
+            })
+
+        rever_black_user = BlackUser.objects.filter(from_id=to_user.id, to_id=from_user.id).first()
+        if rever_black_user:
+            return self.write({
+                "status": "failed",
+                "error": "you are on to_user's blacklist"
             })
 
         value, error_code, error_message = Gift.gift_giving(from_user=from_user, to_user=to_user, gift_id=gift_id,

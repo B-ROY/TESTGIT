@@ -1,19 +1,19 @@
 # coding=utf-8
+import datetime
 from django.db import models
 import logging
+from app.customer.models.user import User
+
 from mongoengine import *
 from base.settings import CHATPAMONGO
-import datetime
-from app.customer.models.user import User
 
 
 connect(CHATPAMONGO.db, host=CHATPAMONGO.host, port=CHATPAMONGO.port, username=CHATPAMONGO.username,
         password=CHATPAMONGO.password)
 
-
 # 封号状态查询
-class BlockUserDev(Document):
 
+class BlockUserDev(Document):
     id = IntField(verbose_name=u"封号记录id", primary_key=True)
     block_user = IntField(verbose_name=u"被封号者")
     block_admin = IntField(verbose_name=u"封号者")
@@ -21,10 +21,11 @@ class BlockUserDev(Document):
     block_end = DateTimeField(verbose_name=u"封号结束时间", default=None)
     created_time =  DateTimeField(verbose_name=u"创建时间", default=None)
     update_time =  DateTimeField(verbose_name=u"修改时间", default=None)
-    status = IntField(verbose_name=u"状态", default=None)#3解封 1封一周 2 永久封
+    status = IntField(verbose_name=u"状态", default=None)#3解封 1封一周 2 永久封,4封一天
     reason = StringField(verbose_name=u"原因", max_length=280, default=None)
     devno = StringField(verbose_name=u"设备号", max_length=280, default=None)
     block_type = IntField(verbose_name=u"封号类型")#1封设备 2封id
+    reason_type = IntField(verbose_name=u"封号分类")#1 微信拉人 2 竞品拉人 3 故意挂断 4 鉴黄 5 其他
 
 
     class Meta:
@@ -34,7 +35,7 @@ class BlockUserDev(Document):
 
 
     @classmethod
-    def add_block_user(cls, block_user, block_admin, block_start=None, block_end=None, status=None, reason=None,devno=None,created_time=None,update_time=None,block_type=None):
+    def add_block_user(cls, block_user, block_admin, block_start=None, block_end=None, status=None, reason=None,devno=None,created_time=None,update_time=None,block_type=None,reason_type = None):
         # count = BlockUser.objects.filter(block_user=block_user).count()
         # if count == 0:
         try:
@@ -49,6 +50,8 @@ class BlockUserDev(Document):
             _obj.created_time = created_time
             _obj.update_time = update_time
             _obj.block_type = block_type
+            _obj.devno = devno
+            _obj.reason_type = reason_type
             _obj.save()
             return _obj
         except Exception, e:
@@ -64,35 +67,28 @@ class BlockUserRecord(Document):
 
     @classmethod
     def get_block_list(cls, last_day):
-        return cls.objects.filter(block_date__lt=last_day).order_by("-block_date")[0:10]
+        return cls.objects.filter(block_date_lt=last_day)[0:7]
 
     @classmethod
     def write_record_daily(cls):
         today = datetime.datetime.today()
-
         yesterday = datetime.datetime.today() - datetime.timedelta(days=1)
-
-        block_record = BlockUserDev.objects.filter(created_time__gte=yesterday, created_time__lt=today, status__ne=3)
+        block_record = BlockUserDev.objects.filter(block_start__gte=yesterday, block_start__lt=today,
+                                                   status__ne=3)
         if block_record:
             block_user_daily_record = cls()
-            block_user_daily_record.block_date = yesterday  # yesterday
+            block_user_daily_record.block_date = yesterday
             id_record = ""
             dev_record = ""
             for record in block_record:
-                block_user = User.objects.get(id=record.block_user)
+                block_user = User.objects(id=record)
                 if record.block_type == 1:
                     id_record += block_user.nickname + ","
                 elif record.block_type == 2:
                     dev_record += block_user.nickname + ","
 
-            block_user_daily_record.block_user_id = id_record[0:-1]
-            block_user_daily_record.block_user_dev = dev_record[0:-1]
+            block_user_daily_record.block_user_id = id_record
+            block_user_daily_record.block_user_dev = dev_record
+
             block_user_daily_record.save()
-
-
-
-
-
-
-
 

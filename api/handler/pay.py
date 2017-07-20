@@ -506,7 +506,7 @@ class PayRules(BaseHandler):
 class PayRulesV2(BaseHandler):
     @api_define("PayRules", r'/live/pay/rules_v2', [
         Param('platform', True, int, "str", "1", u"平台：(1, u'Android'),(2, u'IOS'),(3, u'WP'),(4, u'其他')"),
-    ], description=u"购买规则列表V2")
+    ], description=u"购买规则列表V2 (default_pay:  1:微信  2:支付宝)")
     @login_required
     def get(self):
         platform = self.arg_int('platform')
@@ -554,7 +554,7 @@ class PayRulesV2(BaseHandler):
             "applepay_rules": applepay_rule_list,
             "googlepay_rules":googlepay_rule_list
         },
-            "is_wechat_show": is_wechat_show})
+            "is_wechat_show": is_wechat_show, "default_pay": 1})
 
 
 @handler_define

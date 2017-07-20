@@ -26,6 +26,12 @@ from app.customer.models.vip import *
 from app.picture.models.picture import *
 from app.redismodel.onlinecount import OnlineCount
 import international
+# from background.audit_handler.audit_handler import *
+from app.util.shumeitools.shumeitools import *
+from app.customer.models.shumeidetect import *
+from app.customer.models.follow_user import *
+from app.customer.models.black_user import *
+from app.customer.models.community import *
 
 class ThridPardLogin(BaseHandler):
     def create_user(self, openid, access_token, phone, userinfo, source, channel, site_openid=''):
@@ -122,7 +128,6 @@ class ThridPardLogin(BaseHandler):
         userinfo = WexinAPI.get_user_info(access_token, openid)
         site_openid = openid
         openid = userinfo.get("unionid")
-
         if not userinfo.get("nickname"):
             raise Exception("nickname null!")
 
@@ -330,44 +335,44 @@ class Login(ThridPardLogin):
                 is_new, user = self.weixin_login()
             except Exception, e:
                 logging.error("weixin login error:%s" % str(e))
-                return self.write({"status": "fail", "error": "%s:%s" % (e,e.message)})
+                return self.write({"status": "fail", "error": "%s" % (e.message)})
         elif source == User.SOURCE_QQ:
             try:
                 is_new, user = self.qq_login()
             except Exception, e:
                 logging.error("qq login error:%s" % str(e))
-                return self.write({"status": "fail", "error": "%s:%s" % (e,e.message)})
+                return self.write({"status": "fail", "error": "%s" % (e.message)})
         elif source == User.SOURCE_YOUMENG_WEIXIN:
             try:
                 is_new, user = self.weixin_youmeng_login()
             except Exception, e:
                 logging.error("youmeng login error:%s" % str(e))
-                return self.write({"status": "fail", "error": "%s:%s" % (e,e.message)  })
+                return self.write({"status": "fail", "error": "%s" % (e.message)})
         elif source == User.SOURCE_WEIBO:
             try:
                 is_new, user = self.weibo_login()
             except Exception, e:
                 logging.error("weibo login error:%s" % str(e))
-                return self.write({"status": "fail", "error": "%s:%s" % (e,e.message)})
+                return self.write({"status": "fail", "error": "%s" % (e.message)})
         elif source == User.SOURCE_PHONE:
             try:
                 is_new, user = self.phone_login()
             except Exception,e:
                 logging.error("phone login error:%s" % str(e))
-                return self.write({"status": "fail", "error": "%s:%s" % (e, e.message)})
+                return self.write({"status": "fail", "error": "%s" % (e.message)})
         elif source == User.SOURCE_FACEBOOK:
             try:
                 is_new, user = self.facebook_login()
             except Exception, e:
                 logging.error("facebook login error:%s" % str(e))
-                return self.write({"status": "fail", "error": "%s:%s" % (e,e.message)})
+                return self.write({"status": "fail", "error": "%s" % (e.message)})
             pass
         elif source == User.SOURCE_TWITTER:
             try:
                 is_new, user = self.twitter_login()
             except Exception, e:
                 logging.error("titter login error:%s" % str(e))
-                return self.write({"status": "fail", "error": "%s:%s" % (e,e.message)})
+                return self.write({"status": "fail", "error": "%s" % (e.message)})
             pass
         elif source == 100:
             is_new, user = self.test_login("test100","100")
@@ -382,7 +387,7 @@ class Login(ThridPardLogin):
 
         # 判断封设备
         guid = self.arg("guid")
-        block_dev = BlockUserDev.objects.filter(status__ne=3, devno=guid).first()
+        block_dev = BlockUserDev.objects.filter(status__ne=3, devno=guid, reason_type__ne=4).first()
         if block_dev:
             return self.write({"status": "fail", "error": _(u"经系统检测，您的账号存在违规行为，设备已经被服务器暂时封停；如您存在疑问请点击下方申诉或联系客服QQ：3270745762"),"errcode":"2002", "_uid":user.id})
 
@@ -431,6 +436,34 @@ class CompletePersonalInfo(BaseHandler):
         user = self.current_user
         img = self.arg("img", "")
         nickname = self.arg("nickname","")
+
+        # 用户昵称 鉴黄
+
+        if self.has_arg("nickname"):
+            ret, duration = shumei_text_spam(text=user.nickname, timeout=1, user_id=user.id, channel=1, nickname=nickname,
+                                                                phone=user.phone, ip=self.user_ip)
+            is_pass = 0
+            if ret["code"] == 1100:
+                if ret["riskLevel"] == "PASS":
+                    is_pass = 1
+                if ret["riskLevel"] == "REJECT":
+                    is_pass = 0
+                if ret["riskLevel"] == "REVIEW":
+                    # todo +人工审核逻辑
+                    is_pass = 1
+            if not is_pass:
+                # user.update(set__nickname="爱聊用户" + str(user.identity))
+                text_detect = TextDetect()
+                text_detect.user = user
+                text_detect.text_channel = 1
+                text_detect.text = user.nickname
+                text_detect.created_time = datetime.datetime.now()
+                text_detect.save()
+                return self.write({'status': "fail",
+                                   "error_code": 10005,
+                                   'error_message': u"经系统检测,您的昵称内容涉及违规因素,请重新编辑"})
+
+
         birth_date = self.arg("birth_date", "1995-01-01")
         gender = self.arg_int("gender", 2)
         invite_code = self.arg("invite_code", "0")
@@ -640,7 +673,7 @@ class PhoneLogIn(BaseHandler):
 
             # 判断封设备
             guid = self.arg("guid")
-            block_dev = BlockUserDev.objects.filter(status__ne=3, devno=guid).first()
+            block_dev = BlockUserDev.objects.filter(status__ne=3, devno=guid, reason_type__ne=4).first()
             if block_dev:
                 return self.write({"status": "fail", "error": _(u"经系统检测，您的账号存在违规行为，设备已经被服务器暂时封停；如您存在疑问请点击下方申诉或联系客服QQ：3270745762"),"errcode":"2002", "_uid":user.id})
 
@@ -1026,12 +1059,14 @@ class AUserInfo(BaseHandler):
         self.write(data)
 
 
-# 新版个人主页
+# 个人主页
 @handler_define
 class UserHomepageV1(BaseHandler):
     @api_define("User homepage v1", r'/live/user/homepage_v1', [
         Param('home_id', True, str, "", "", u'个人主页用户id'),
-    ], description=u"新版个人主页v1")
+    ], description=u"新版个人主页v1 <br>"
+                   u"black_type    0:互相拉黑   1:已把对方拉黑  2:对方把您拉黑  3:均未拉黑<br>"
+                   u"follow_type   0:未关注     1:已关注")
     def get(self):
         user_id = self.current_user_id
 
@@ -1058,7 +1093,7 @@ class UserHomepageV1(BaseHandler):
 
             if is_purchase:
                 dic = {
-                    "picture": convert_real_picture(picture),
+                    "picture": convert_picture(picture),
                     "is_purchase": is_purchase,
                     "is_like": is_like,
                     "user": convert_user(home_user),
@@ -1104,9 +1139,119 @@ class UserHomepageV1(BaseHandler):
         else:
             is_online = 0
 
+        # 判断是否了黑此用户
+        black_type = BlackUser.is_black(user_id, home_id)
+
+        # 判断是否关注此用户
+        follow_type = FollowUser.is_follow_user(user_id, home_id)
+
+        dic["follow_type"] = follow_type
+        dic["black_type"] = black_type
+
         dic["is_online"] = is_online
         data.update(dic)
 
+        self.write({"status": "success", "data": data, })
+
+
+# 新版个人主页_new
+@handler_define
+class UserHomepageV2(BaseHandler):
+    @api_define("User homepage v1", r'/live/user/homepage_v2', [
+        Param('home_id', True, str, "", "", u'个人主页用户id'),
+    ], description=u"精简_新版个人主页v2 <br>"
+                   u"black_type    0:互相拉黑   1:已把对方拉黑  2:对方把您拉黑  3:均未拉黑<br>"
+                   u"follow_type   0:未关注     1:已关注")
+    def get(self):
+        user_id = self.current_user_id
+
+        home_id = self.arg_int('home_id')
+        home_user = User.objects.get(id=home_id)
+
+        personal_tags = UserTags.get_usertags(user_id=home_id)
+        if not personal_tags:
+            personal_tags = []
+
+        data = {}
+        data_pic = []
+        pictures = PictureInfo.objects.filter(user_id=home_id, status=0).order_by('-created_at')
+        for picture in pictures:
+            pic_url = picture.picture_url
+            if pic_url:
+                data_pic.append(pic_url)
+
+        dic = {}
+        if home_user.audio_room_id:
+            audioroom = AudioRoomRecord.objects.get(id=home_user.audio_room_id)
+        else:
+            audioroom = None
+
+        dic["user"] = convert_user(home_user)
+        if not audioroom:
+            dic["audio"] = []
+            dic["audio_status"] = 0
+        else:
+            dic["audio"] = convert_audioroom(audioroom=audioroom)
+            dic["audio_status"] = AudioRoomRecord.get_room_status(user_id=home_id)
+
+        dic["user"] = convert_user(home_user)
+        dic["personal_tags"] = personal_tags
+        dic["user"]["picture_count"] = PictureInfo.objects.filter(user_id=home_id, status=0).count()
+        dic["picture_list"] = data_pic
+        user_vip = UserVip.objects.filter(user_id=home_id).first()
+        if user_vip:
+            vip = Vip.objects.filter(id=user_vip.vip_id).first()
+            dic["vip"] = convert_vip(vip)
+
+        # 是否在线 查看心跳
+        import time
+        time = int(time.time())
+        pre_time = time - 120
+        user_beat = UserHeartBeat.objects.filter(user=home_user, last_report_time__gte=pre_time).first()
+        if user_beat:
+            is_online = 1
+        else:
+            is_online = 0
+
+        # 判断是否了黑此用户
+        black_type = BlackUser.is_black(user_id, home_id)
+
+        # 判断是否关注此用户
+        follow_type = FollowUser.is_follow_user(user_id, home_id)
+
+        dic["follow_type"] = follow_type
+        dic["black_type"] = black_type
+
+        dic["is_online"] = is_online
+
+        # 我的动态相关
+        temp_moments = UserMoment.objects.filter(user_id=home_id, show_status__ne=2, delete_status=1).order_by("-create_time")
+        count = 0
+        moment_img_list = []
+        moment_count = UserMoment.objects.filter(user_id=home_id, show_status__ne=2, delete_status=1).count()
+        for moment in temp_moments:
+            if count > 10:
+                break
+
+            imgs = moment.img_list
+            if not imgs:
+                continue
+
+            for img in imgs:
+                if img["status"] == 1:
+                    moment_img_list.append(img["url"])
+                    count += 1
+                    break
+        if not moment_img_list:
+            moment = UserMoment.objects.filter(user_id=home_id, show_status__ne=2, delete_status=1).order_by("-create_time").first()
+            if moment:
+                dic["content"] = moment.content
+            else:
+                dic["content"] = ""
+
+        dic["moment_img_list"] = moment_img_list
+        dic["moment_count"] = moment_count
+        data.update(dic)
         self.write({"status": "success", "data": data, })
 
 
@@ -1138,7 +1283,7 @@ class AUserPicture(BaseHandler):
             user = User.objects.get(id=user_id)
             if is_purchase:
                 dic = {
-                    "picture": convert_real_picture(picture),
+                    "picture": convert_picture(picture),
                     "user": convert_user(user),
                     "is_purchase": is_purchase,
                     "is_like": is_like,
@@ -1254,11 +1399,37 @@ class UpdateUserInfo(BaseHandler):
                 return self.write({'status': "fail",
                                    'param': 'nickname',
                                    'error': "Nickname length needs to be less than 16"})
-            if self.arg("nickname")!=user.nickname:
+            if self.arg("nickname")!= user.nickname:
                 is_nickname_change = True
-                user.nickname = self.arg("nickname")
+                nickname = self.arg("nickname")
 
-            is_change = True
+                # 昵称鉴黄
+                ret, duration = shumei_text_spam(text=user.nickname, timeout=1, user_id=user.id, channel=1, nickname=nickname,
+                                             phone=user.phone, ip=self.user_ip)
+
+                print ret
+                is_pass = 0
+                if ret["code"] == 1100:
+                    if ret["riskLevel"] == "PASS":
+                        is_pass = 1
+                    if ret["riskLevel"] == "REJECT":
+                        is_pass = 0
+                    if ret["riskLevel"] == "REVIEW":
+                        # todo +人工审核逻辑
+                        is_pass = 1
+                if not is_pass:
+                    # user.update(set__nickname="爱聊用户" + str(user.identity))
+                    text_detect = TextDetect()
+                    text_detect.user = user
+                    text_detect.text_channel = 1
+                    text_detect.text = user.nickname
+                    text_detect.created_time = datetime.datetime.now()
+                    text_detect.save()
+                    return self.write({'status': "fail",
+                                       'param': 'nickname',
+                                       'error': u"经系统检测,您的昵称内容涉及违规因素,请重新编辑"})
+                user.nickname = nickname
+                is_change = True
 
         if self.has_arg("area"):
             if len(self.arg("area")) > 10:
@@ -1299,14 +1470,15 @@ class UpdateUserInfo(BaseHandler):
         if is_change:
             user.save()
 
-        if is_nickname_change:
-            MessageSender.send_text_check(user.nickname, user.id, 1, self.user_ip)
+        # if is_nickname_change:
+        #     MessageSender.send_text_check(user.nickname, user.id, 1, self.user_ip)
         if is_desc_change:
             MessageSender.send_text_check(user.desc, user.id, 3, self.user_ip)
         if is_image_change:
-            MessageSender.send_picture_detect(user.image, user.id, 2)
+            MessageSender.send_picture_detect(pic_url=user.image, user_id=user.id, pic_channel=2, source=1)
         if is_cover_change:
-            MessageSender.send_picture_detect(user.cover, user.id, 1) 
+            MessageSender.send_picture_detect(pic_url=user.cover, user_id=user.id, pic_channel=1, source=1)
+
 
         self.write({'status': "success"})
 
@@ -1733,7 +1905,14 @@ class MessageSendToolV1(BaseHandler):
 
 @handler_define
 class RealNameInfoSubmit(BaseHandler):
-    @api_define("real_name_verify", r'/live/user/real_name', [], description=u"实名认证")
+    @api_define("real_name_verify", r'/live/user/real_name', [
+        Param("uid", True, str, "", "", u"用户id"),
+        Param("uName", True, str, "", "", u"姓名"),
+        Param("IdNum", True, str, "", "", u"身份证号"),
+        Param("pic_1", True, str, "", "", u"实名认证图片1"),
+        Param("pic_2", True, str, "", "", u"实名认证图片2"),
+        Param("pic_3", True, str, "", "", u"实名认证图片3"),
+    ], description=u"实名认证")
     def get(self):
         user_id = self.arg_int("uid")
         user_name = self.get_argument("uName")
@@ -1759,7 +1938,7 @@ class RealNameInfoSubmit(BaseHandler):
 
 @handler_define
 class RealNameCheck(BaseHandler):
-    @api_define("real name check", r'/live/user/real_name/check', [], description=u"实名认证检查")
+    @api_define("real name check", r'/live/user/real_name/check', [], description=u"实名认证检查 0:审核中 1:通过 2:未通过 3:未审核")
     @login_required
     def get(self):
         user = self.current_user
@@ -1921,14 +2100,17 @@ class RichUserList(BaseHandler):
             for userid in user_ids:
                 user = User.objects.filter(id=userid).first()
                 user_vip = UserVip.objects.filter(user_id=userid).first()
+                account = Account.objects.filter(user=user).first()
                 if not user_vip:
                     dic = {
-                        "user": convert_user(user)
+                        "user": convert_user(user),
+                        "diamond": account.diamond
                     }
                 else:
                     vip = Vip.objects.filter(id=user_vip.vip_id).first()
                     dic = {
                         "user": convert_user(user),
+                        "diamond": account.diamond,
                         "vip": convert_vip(vip)
                     }
                 data.append(dic)
@@ -2001,6 +2183,60 @@ class AliAuthRedirect(BaseHandler):
     @api_define("ali auth redirect", "/live/user/aliAuth",[], description=u"支付包授权回调")
     def post(self):
         pass
+
+
+#  猜你喜欢.  先从表中取,如果>3 条记录符合.直接返回. 如果不足,再重新获取,补足三条
+@handler_define
+class RecommendUserList(BaseHandler):
+    @api_define("recommend user list ", "/live/recommend_user/list", [], description=u"猜你喜欢")
+    def get(self):
+        data = []
+        user_ids = []
+        recommend_list = RecommendUser.objects.filter(is_valid=1)
+        # 获取当前时间的前五分钟
+        import time
+        time = int(time.time())
+        pre_time = time - 60 * 2
+        for recommend_user in recommend_list:
+            user_id = recommend_user.user_id
+            user = User.objects.filter(id=user_id).first()
+            user_beat = UserHeartBeat.objects.filter(user=user, last_report_time__gte=pre_time)
+            if user_beat:
+                user_vip = UserVip.objects.filter(user_id=user_id).first()
+                if not user_vip:
+                    dic = {
+                        "user": convert_user(user)
+                    }
+                else:
+                    vip = Vip.objects.filter(id=user_vip.vip_id).first()
+                    dic = {
+                        "user": convert_user(user),
+                        "vip": convert_vip(vip)
+                    }
+                data.append(dic)
+                user_ids.append(user_id)
+
+        count = len(data)
+
+        if count < 3:
+            need_count = 3 - count
+            users = User.objects.filter(is_video_auth=1, gender=2, audio_room_id__ne="", disturb_mode=0,
+                                        id__nin=user_ids).order_by("-current_score")[0:need_count]
+            for u in users:
+                user_vip = UserVip.objects.filter(user_id=u.id).first()
+                if not user_vip:
+                    dic = {
+                        "user": convert_user(u)
+                    }
+                else:
+                    vip = Vip.objects.filter(id=user_vip.vip_id).first()
+                    dic = {
+                        "user": convert_user(u),
+                        "vip": convert_vip(vip)
+                    }
+                data.append(dic)
+        return self.write({"status": "success", "data": data})
+
 
 
 

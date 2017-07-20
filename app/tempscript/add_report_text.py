@@ -35,3 +35,13 @@ def add_report_text():
             ReportText.create_report_text(label, data, i)
 
 
+def add_text2():
+    ReportText.create_report_text(401, "内容尺度过大", 4)
+    ReportText.create_report_text(402, "内容涉及敏感词汇", 4)
+    ReportText.create_report_text(403, "内容涉及人身攻击", 4)
+
+    ReportText.create_report_text(501, "内容涉及敏感词汇", 5)
+    ReportText.create_report_text(502, "内容涉及人身攻击", 5)
+    ReportText.create_report_text(503, "恶意广告宣传", 5)
+
+

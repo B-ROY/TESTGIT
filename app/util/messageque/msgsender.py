@@ -30,7 +30,7 @@ class MessageSender:
         body["from_id"] = from_id
         body["desc"] = desc
         body["gender"] = gender
-        path = "/tecent/bottle_v3"  # 记得修改url!!!!!!!!!!!!
+        path = "/tecent/bottle_v3"
         data = RequestApi.post_body_request_http(path=path, body=json.dumps(body), headers={}, host=cls.Host)
         result = json.loads(data)
         print result.get("status_code")
@@ -212,12 +212,23 @@ class MessageSender:
             return 400
 
     @classmethod
-    def send_picture_detect(cls, pic_url, user_id, pic_channel):
-        body={
-            "pic_url": pic_url,
-            "user_id": user_id,
-            "pic_channel": pic_channel
-        }
+    def send_picture_detect(cls, pic_url="", user_id=0, pic_channel=0, source=0, obj_id=None):
+        if source == 1:
+            body = {
+                "pic_url": pic_url,
+                "user_id": user_id,
+                "pic_channel": pic_channel,
+                "source": source
+            }
+        elif source == 2 or source == 3:
+            # 2: 社区动态 图片    3:个人相册
+            body = {
+                "obj_id": obj_id,
+                "source": source
+            }
+        else:
+            return 400
+
         path = "/audit/pic_check"
         data = RequestApi.post_body_request_http(path=path, body=json.dumps(body), headers={}, host=cls.Host)
         print data

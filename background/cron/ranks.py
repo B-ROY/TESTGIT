@@ -33,11 +33,11 @@ def new_anchors():
     time = int(time.time())
     pre_time = time - 60 * 5
 
-    verify_list = VideoManagerVerify.objects.filter(status=1).order_by("-verify_time")[0:200]
+    verify_list = VideoManagerVerify.objects.filter(status=1).order_by("-verify_time")[0:400]
     for verify in verify_list:
         user = User.objects.filter(id=verify.user_id).first()
         user_beat = UserHeartBeat.objects.filter(user=user, last_report_time__gte=pre_time)
-        if user_beat and user.gender == 2:
+        if user_beat and user.gender == 2 and user.disturb_mode == 0:
             if user not in user_list:
                 user_list.append(user)
 

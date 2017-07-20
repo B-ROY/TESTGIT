@@ -9,6 +9,9 @@ from app.util.messageque.msgsender import MessageSender
 from app.customer.models.bottle_message import *
 from app.customer.models.tools import *
 import international
+from app.customer.models.vip import *
+from api.convert.convert_user import *
+
 
 @handler_define
 class RankListCharm(BaseHandler):
@@ -25,18 +28,31 @@ class RankListCharm(BaseHandler):
             charm_data = []
             for charm_rank in charm_rank_list:
                 dic = {}
-                dic["user"] = charm_rank.user.get_normal_dic_info()
-                dic["charm"] = charm_rank.charm
-                dic["change_status"] = charm_rank.change_status
-                charm_data.append(dic)
+                user = charm_rank.user
+                if user:
+                    user_vip = UserVip.objects.filter(user_id=user.id).first()
+                    if user_vip:
+                        vip = Vip.objects.filter(id=user_vip.vip_id).first()
+                        dic["vip"] = convert_vip(vip)
+                    dic["user"] = charm_rank.user.get_normal_dic_info()
+                    dic["charm"] = charm_rank.charm
+                    dic["change_status"] = charm_rank.change_status
+                    charm_data.append(dic)
             wealth_rank_list = WealthRank.get_rank_list(interval=interval, count=30)
             wealth_data = []
             for wealth_rank in wealth_rank_list:
                 dic = {}
-                dic["user"] = wealth_rank.user.get_normal_dic_info()
-                dic["wealth"] = wealth_rank.wealth
-                dic["change_status"] = wealth_rank.change_status
-                wealth_data.append(dic)
+                user = wealth_rank.user
+                if user:
+                    user_vip = UserVip.objects.filter(user_id=user.id).first()
+                    if user_vip:
+                        vip = Vip.objects.filter(id=user_vip.vip_id).first()
+                        dic["vip"] = convert_vip(vip)
+
+                    dic["user"] = wealth_rank.user.get_normal_dic_info()
+                    dic["wealth"] = wealth_rank.wealth
+                    dic["change_status"] = wealth_rank.change_status
+                    wealth_data.append(dic)
             self.write({
                 "status": "success",
                 "charm_list": charm_data,

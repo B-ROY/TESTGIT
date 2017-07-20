@@ -604,3 +604,54 @@ class QCloudIM(object):
             return True, result
         else:
             return False, "%s:%s" % (result.get("ErrorInfo", ""), result.get("ErrorCode", ""))
+
+
+
+    @classmethod
+    def black_list_add(self, user, to_user):
+        """
+        加入黑名单
+        """
+        app_id = settings.QCLOUD_LIVE_SDK_APP_ID
+        sig = gen_signature(app_id, "admin")
+
+        uri = "/v4/sns/black_list_add?usersig=%s&identifier=admin&sdkappid=%s&contenttype=json" % (sig,app_id)
+        body= {
+            "From_Account": user.sid,
+            "To_Account": [to_user.sid]
+        }
+
+        body = json.dumps(body)
+        data = RequestApi.post_body_request(uri, body, headers={}, host='console.tim.qq.com')
+        result = json.loads(data)
+        print data
+
+        if result.get("ActionStatus").upper() == "OK":
+            return True, None
+        else:
+            return False, "%s:%s" % (result.get("ErrorInfo",""),result.get("ErrorCode",""))
+
+
+    @classmethod
+    def black_list_delete(self, user, to_user):
+        """
+        删除黑名单
+        """
+        app_id = settings.QCLOUD_LIVE_SDK_APP_ID
+        sig = gen_signature(app_id, "admin")
+
+        uri = "/v4/sns/black_list_delete?usersig=%s&identifier=admin&sdkappid=%s&contenttype=json" % (sig,app_id)
+        body= {
+            "From_Account": user.sid,
+            "To_Account": [to_user.sid]
+        }
+
+        body = json.dumps(body)
+        data = RequestApi.post_body_request(uri, body, headers={}, host='console.tim.qq.com')
+        result = json.loads(data)
+        print data
+
+        if result.get("ActionStatus").upper() == "OK":
+            return True, None
+        else:
+            return False, "%s:%s" % (result.get("ErrorInfo",""),result.get("ErrorCode",""))

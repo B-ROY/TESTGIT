@@ -240,13 +240,14 @@ msgid "女"
 msgstr "Kadın"
 
 msgid "未知"
-msgstr ""
+msgstr " "
 
 msgid "等待一通电话，连接你我的心。"
 msgstr ""
 
 msgid "恭喜您注册成功，快去体验我们给您带来的最新交友方式吧！！"
 msgstr "Kayıt başarılı . Artık Papa dünyasındaki yeni maceralarınıza yelken açabilirsiniz . "
+
 
 msgid "已婚"
 msgstr "Evli"
@@ -259,3 +260,9 @@ msgstr "İlişkisi var"
 
 msgid "未填写"
 msgstr "-"
+
+##### 首充
+msgid " 首充活动 "
+msgstr ""
+
+

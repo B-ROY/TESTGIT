@@ -32,3 +32,12 @@ def convert_vip(vip, with_detail=False):
 
 def convert_tools(tools, with_detail=False):
     return tools.normal_info()
+
+def convert_columns(column, with_detail=False):
+    return column.normal_info()
+
+def convert_user_moment(user_moment, with_detail=False):
+    return user_moment.normal_info()
+
+def convert_comment(comment, with_detail=False):
+    return comment.normal_info()

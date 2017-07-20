@@ -8,12 +8,14 @@ from api.convert.convert_user import *
 from app.customer.models.personal_tags import *
 from app.customer.models.hotAnchor import *
 from app.customer.models.adv import Adv
+from app.customer.models.vip import *
+from app.customer.models.index_column import *
+from app.customer.models.rank import *
 
 @handler_define
 class RecommendList(BaseHandler):
     @api_define("get recommend list", r'/home/recommend/list', [], description=u"首页各栏目推荐列表")
     def get(self):
-
         #audiorooms = AudioRoomRecord.get_online_users_v1(query_time=datetime.datetime.now(), page=1, page_count=9, gender=2, is_video=0)
         #videorooms = AudioRoomRecord.get_online_users_v1(query_time=datetime.datetime.now(), page=1, page_count=27, gender=2, is_video=1)
         now_time = int(time.time())
@@ -63,12 +65,34 @@ class RecommendList(BaseHandler):
             if not personal_tags:
                 personal_tags = []
 
-            dic = {
-                "audioroom": convert_audioroom(room),
-                "user": convert_user(user),
-                "personal_tags": personal_tags,
-                "time_stamp": int(time.time())
-            }
+            user_vip = UserVip.objects.filter(user_id=user.id).first()
+
+            # time = int(time.time())
+            # pre_time = time - 120
+            user_beat = UserHeartBeat.objects.filter(user=user, last_report_time__gte=pre_time).first()
+            if user_beat:
+                is_online = 1
+            else:
+                is_online = 0
+
+            if not user_vip:
+                dic = {
+                    "audioroom": convert_audioroom(room),
+                    "user": convert_user(user),
+                    "personal_tags": personal_tags,
+                    "time_stamp": int(time.time()),
+                    "is_online": is_online
+                }
+            else:
+                vip = Vip.objects.filter(id=user_vip.vip_id).first()
+                dic = {
+                    "audioroom": convert_audioroom(room),
+                    "user": convert_user(user),
+                    "personal_tags": personal_tags,
+                    "time_stamp": int(time.time()),
+                    "vip": convert_vip(vip),
+                    "is_online": is_online
+                }
             hot_list.append(dic)
             user_id_list.append(user.id)
         """    
@@ -98,3 +122,62 @@ class RecommendList(BaseHandler):
             "video_list": video_list,
             "hot_list": hot_list,
         })
+
+
+@handler_define
+class ColumnList(BaseHandler):
+    @api_define("home column list ", r'/home/column_list', [], description=u"首页栏目列表")
+    def get(self):
+
+        columns = IndexColumn.objects.filter(delete_status=1).order_by("-colume_type")
+        data = []
+        if columns:
+            for column in columns:
+                dic = convert_columns(column)
+                data.append(dic)
+
+        self.write({"status": "success", "columns": data})
+
+
+
+@handler_define
+class Get_Index_Column(BaseHandler):
+    @api_define("get_index_column ", r'/audio/room/get_index_column', [
+        Param('page', True, str, "1", "1", u'page'),
+        Param('page_count', True, str, "10", "10", u'page_count'),
+        Param('column_type', True, str, "2", "2", u'column_type　2:新人驾到  ')
+    ], description=u"获取首页某栏目信息")
+    def get(self):
+        column_type = self.arg_int('column_type')
+        page = self.arg_int('page')
+        page_count = self.arg_int('page_count')
+        data = []
+
+        if column_type == 2:
+            # 新人驾到
+            anchor_list = NewAnchorRank.objects.all()[(page - 1) * page_count:page * page_count]
+
+            for anchor in anchor_list:
+                user = User.objects.filter(id=anchor.user_id).first()
+                if user.id == 1 or user.id == 2:
+                    continue
+
+                audioroom = AudioRoomRecord.objects.get(id=user.audio_room_id)
+                personal_tags = UserTags.get_usertags(user_id=user.id)
+                user_vip = UserVip.objects.filter(user_id=user.id).first()
+                if user_vip:
+                    vip = Vip.objects.filter(id=user_vip.vip_id).first()
+                    dic = {
+                        "audioroom": convert_audioroom(audioroom),
+                        "user": convert_user(user),
+                        "personal_tags": personal_tags,
+                        "vip": convert_vip(vip)
+                    }
+                else:
+                    dic = {
+                        "audioroom": convert_audioroom(audioroom),
+                        "user": convert_user(user),
+                        "personal_tags": personal_tags
+                    }
+                data.append(dic)
+        return self.write({"status": "success", "data": data, })

@@ -33,11 +33,14 @@ class VersionInfo(Document):
     download_url = StringField(max_length=255, verbose_name=u'下载地址', default='')
     platform = StringField(verbose_name=u'平台,逗号分隔', max_length=255, default=0)
     created_time = DateTimeField(verbose_name=u"创建时间", default=datetime.datetime.now())
-    upgrade_type = StringField(max_length=255, verbose_name=u'升级类型')
+    upgrade_type = StringField(max_length=255, verbose_name=u'升级类型')  #0忽略， 1，强升 2， 普通升级
     delete_status = IntField(verbose_name=u'删除状态', choices=DELETE_STATUS, default=0)
     version_code = IntField(verbose_name=u'版本号',default=0)
     upgrade_info = StringField(max_length=65535, verbose_name=u'升级描述')
     channel = StringField(max_length=128, verbose_name=u"渠道名称")
+    min_version = StringField(max_length=16, verbose_name=u"最小支持版本")
+    channel_type = IntField(verbose_name=u"渠道类型")  #  1:市场渠道 6开头 2:推广渠道 8开头 3:ios暂定为3
+    record_type = IntField(verbose_name=u'记录类型')  #  1一键升级 2：非一键升级
 
     def __unicode__(self):
         return self.version

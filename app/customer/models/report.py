@@ -47,7 +47,9 @@ class ReportRecord(Document):
         (0, u"个人主页"),
         (1, u"私信聊天也"),
         (2, u"通话页主播举报用户"),
-        (3, u"通话也用户举报主播")
+        (3, u"通话也用户举报主播"),
+        (4, u"社区动态 举报"),
+        (5, u"社区评论 举报"),
     ]
 
     label = IntField(verbose_name=u"标签")

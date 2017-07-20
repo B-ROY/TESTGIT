@@ -27,6 +27,8 @@ import json
 from django.conf import settings
 from app.customer.models.vip import *
 import international
+from app.customer.models.black_user import *
+from app.customer.models.rank import *
 
 appID = settings.Agora_AppId
 appCertificate = settings.Agora_appCertificate
@@ -69,6 +71,21 @@ class GenerateChannelKey(BaseHandler):
         ruid = self.arg_int("room_user_id")
         channelname = self.arg("channel_id", "")
         is_video = self.arg_int("is_video", 0)
+
+        # 校验黑名单
+        # black_user = BlackUser.objects.filter(from_id=uid, to_id=ruid).first()
+        # if black_user:
+        #     return self.write({
+        #         "status": "failed",
+        #         "error": "to_user is on the blacklist"
+        #     })
+        #
+        # rever_black_user = BlackUser.objects.filter(from_id=ruid, to_id=uid).first()
+        # if rever_black_user:
+        #     return self.write({
+        #         "status": "failed",
+        #         "error": "you are on to_user's blacklist"
+        #     })
 
 
         room_user = User.objects.get(id=ruid)
@@ -715,7 +732,7 @@ class GetVoiceRoomListV2(BaseHandler):
         Param('time_stamp', False, str, "10", "10", u"最后一个人的时间戳(page=1不用传)"),
         Param('gender', False, int, 0, 0, u"选择性别，0:全部,1:男,2:女"),
         Param('room_type', False, int, 0, 0, u"房间类型筛选，0:全部,1:语音,2:视频")
-    ], description=u"获取挂单房间列表v1")
+    ], description=u"获取挂单房间列表v2")
     def get(self):
         page = self.arg_int('page')
         page_count = self.arg_int('page_count')
@@ -776,6 +793,17 @@ class GetVoiceRoomListV2(BaseHandler):
             if not personal_tags:
                 personal_tags = []
             user_vip = UserVip.objects.filter(user_id=user.id).first()
+
+            # 是否在线 查看心跳
+            import time
+            time = int(time.time())
+            pre_time = time - 120
+            user_beat = UserHeartBeat.objects.filter(user=user, last_report_time__gte=pre_time).first()
+            if user_beat:
+                is_online = 1
+            else:
+                is_online = 0
+
             if user_vip:
                 vip = Vip.objects.filter(id=user_vip.vip_id).first()
                 dic = {
@@ -783,14 +811,16 @@ class GetVoiceRoomListV2(BaseHandler):
                     "user": convert_user(user),
                     "personal_tags": personal_tags,
                     "time_stamp": datetime_to_timestamp(audioroom.open_time),
-                    "vip": convert_vip(vip)
+                    "vip": convert_vip(vip),
+                    "is_online": is_online
                 }
             else:
                 dic = {
                     "audioroom": convert_audioroom(audioroom),
                     "user": convert_user(user),
                     "personal_tags": personal_tags,
-                    "time_stamp": datetime_to_timestamp(audioroom.open_time)
+                    "time_stamp": datetime_to_timestamp(audioroom.open_time),
+                    "is_online": is_online
                 }
 
             data.append(dic)
@@ -839,5 +869,4 @@ class GetNewAnchorList(BaseHandler):
                 }
             data.append(dic)
         self.write({"status": "success", "data": data, })
-
 

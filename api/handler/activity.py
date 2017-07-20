@@ -6,7 +6,7 @@ from api.view.base import *
 from app.customer.models.rank import *
 from app.customer.models.activity import Activity
 from api.convert.convert_user import *
-
+from app.customer.models.vip import *
 
 @handler_define
 class InviteRankList(BaseHandler):
@@ -53,13 +53,46 @@ class GetActivity(BaseHandler):
                 [], description=u"活动图")
     def get(self):
         activity = Activity.objects.filter(status_type=1).order_by("-create_time").first()
+        data = {}
         if activity:
-            data = {
-                "activity": convert_activity(activity)
-            }
-            return self.write({"status": "success","data": data})
-        else:
-            return self.write({"status": "success"})
+            data["activity"] = convert_activity(activity)
+        user_id = self.current_user_id
+        now = datetime.datetime.now()
+        is_dialog = 0
+        starttime = now.strftime("%Y-%m-%d 00:00:00")
+        endtime = now.strftime('%Y-%m-%d 23:59:59')
+        tools_list = []
+
+        if user_id:
+            user_vip = UserVip.objects.filter(user_id=int(user_id)).first()
+            if user_vip:
+                record = VipReceiveRecord.objects.filter(user_id=int(user_id), create_time__gte=starttime,
+                                                         create_time__lte=endtime).first()
+                if not record:
+                    is_dialog = 1
+                    vip = Vip.objects.filter(id=user_vip.vip_id).first()
+                    tool_str = vip.tools_data
+                    tool_dic = eval(tool_str)
+                    for key, value in tool_dic.items():
+                        tools = Tools.objects.filter(tools_type=int(key)).first()  # 道具
+                        # 组装数据
+                        temp_tool = Tools.objects.filter(id=str(tools.id)).first()
+                        tool_info = convert_tools(temp_tool)
+                        dic = {
+                            "tool": tool_info,
+                            "count": int(value)
+                        }
+                        tools_list.append(dic)
+
+        data["is_dialog"] = is_dialog
+        data["tools_list"] = tools_list
+        return self.write({"status": "success","data": data})
+
+
+
+
+
+
 
 
 

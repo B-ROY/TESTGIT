@@ -119,20 +119,37 @@ class Buy_Vip(BaseHandler):
             return self.write({"status": "failed", "error_message": message})
 
 
-    @handler_define
-    class Buy_Vip_Adv(BaseHandler):
-        @api_define("buy vip adv ", r'/vip/buy_vip_adv', [], description="办理vip,无限加好友 (广告)")
+@handler_define
+class Buy_Vip_Adv(BaseHandler):
+    @api_define("buy vip adv ", r'/vip/buy_vip_adv', [], description="办理vip,无限加好友 (广告)")
 
-        def get(self):
-            vip_adv = VipAdv.objects.filter(adv_status=1).first()
-            data = {}
-            vips = Vip.objects.filter(is_valid=1).order_by("vip_type")
-            vip_list = []  # 会员列表
-            for v in vips:
-                vip_list.append(convert_vip(v))
+    def get(self):
+        vip_adv = VipAdv.objects.filter(adv_status=1).first()
+        data = {}
+        vips = Vip.objects.filter(is_valid=1).order_by("vip_type")
+        vip_list = []  # 会员列表
+        for v in vips:
+            vip_list.append(convert_vip(v))
 
 
-            data["adv_img_url"] = Vip.convert_http_to_https(vip_adv.img_url)
-            data["vip_list"] = vip_list
-            self.write({"status": "success", "data": data})
+        data["adv_img_url"] = Vip.convert_http_to_https(vip_adv.img_url)
+        data["vip_list"] = vip_list
+        self.write({"status": "success", "data": data})
+
+
+
+@handler_define
+class Get_User_Vip(BaseHandler):
+    @api_define("get user vip", r'/vip/get_user_vip', [
+        Param("user_id", True, str, "", "", u"user_id"),
+    ], description="获取用户vip信息")
+
+    def get(self):
+        user_id = self.arg_int("user_id")
+        user_vip = UserVip.objects.filter(user_id=user_id).first()
+        if user_vip:
+            vip = Vip.objects.filter(id=user_vip.vip_id).first()
+            return self.write({"status": "success", "vip": convert_vip(vip)})
+
+        return self.write({"status": "success"})
 

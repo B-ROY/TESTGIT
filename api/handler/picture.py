@@ -118,6 +118,39 @@ class GetPictureList(BaseHandler):
         self.write({"status": "success", "data": data, })
 
 
+# 图片列表_精简版
+@handler_define
+class GetPictureListV2(BaseHandler):
+    @api_define("Get Picture List", r'/picture/list_v2', [
+        Param('page', True, str, "1", "1", u'page'),
+        Param('page_count', True, str, "10", "10", u'page_count'),
+        Param('user_id', False, str, "", "", u' user_id'),
+    ], description=u'简版_获取图片列表V2')
+    @login_required
+    def get(self):
+        user_id = self.arg("user_id","")
+        page = self.arg_int('page')
+        page_count = self.arg_int('page_count')
+        current_user_id = self.current_user_id
+
+        if not user_id:
+            uid = current_user_id
+        else:
+            uid = user_id
+        pictures = PictureInfo.objects.filter(user_id=int(uid)).order_by('-created_at')[(page-1)*page_count:page*page_count]
+        data = []
+        for picture in pictures:
+            pic_url = picture.picture_url
+            if pic_url:
+                dic = {
+                    "id": str(picture.id),
+                    "picture_url": pic_url
+                }
+                data.append(dic)
+
+        self.write({"status": "success", "data": data, })
+
+
 # 解锁人列表
 @handler_define
 class UnlockUserList(BaseHandler):
@@ -274,3 +307,34 @@ class GetPriceList(BaseHandler):
             data.append(dic)
 
         self.write({"status": "success", "data": data, })
+
+################### 新接口  ##################
+
+@handler_define
+class UserPictureCreate(BaseHandler):
+    @api_define("Create User picture", r'/user_picture/create', [
+        Param('picture_urls', True, str, "", "", u'图片url, 多个逗号相隔')
+    ], description=u'保存用户相册图片')
+    @login_required
+    def get(self):
+        user_id = self.current_user_id
+        picture_urls = self.arg('picture_urls')
+        picture_url_list = picture_urls.split(',')
+        picture_ids = []
+
+        if picture_url_list:
+            created_at = datetime.datetime.now()
+            for temp_pic_url in picture_url_list:
+                pic_url = User.convert_http_to_https(temp_pic_url)
+                pic_info = PictureInfo()
+                pic_info.user_id = user_id
+                pic_info.lock_type = 0
+                pic_info.picture_url = pic_url
+                pic_info.created_at = created_at
+                pic_info.save()
+                picture_ids.append(str(pic_info.id))
+
+        if picture_ids:
+            self.write({"status": "success", "picture_ids": picture_ids})
+        else:
+            self.write({"status": "failed", })

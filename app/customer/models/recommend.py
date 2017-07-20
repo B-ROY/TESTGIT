@@ -49,7 +49,8 @@ class Recommend(Document):
         return audio_list, video_list, beauty_list
 
     @classmethod
-    def get_recommend_audio_list:
+    def get_recommend_audio_list(cls):
+        pass
 
 
 

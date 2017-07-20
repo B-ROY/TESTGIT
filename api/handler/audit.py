@@ -7,6 +7,8 @@ from app.util.messageque.msgsender import MessageSender
 from app.util.shumeitools.shumeitools import *
 from app.customer.models.block_user_device import BlockUserRecord
 import international
+from app.customer.models.community import *
+
 
 @handler_define
 class PornCheck(BaseHandler):
@@ -28,10 +30,7 @@ class PornCheck(BaseHandler):
         room_id = self.arg("room_id")
         room_user_id = self.arg("user_id")
         join_id = self.arg("join_id")
-
         user_id = self.current_user_id
-
-
         #PornCheckItem.create_item(file_id=file_id, pic_url=pic_url,room_id=room_id,user_id=user_id,join_id=join_id)
         MessageSender.send_porn_check(file_id=file_id, pic_url=pic_url,room_id=room_id, user_id=user_id, join_id=join_id, room_user_id=room_user_id)
         return self.write({
@@ -43,7 +42,7 @@ class PornCheck(BaseHandler):
 class ReportMessageShow(BaseHandler):
     @api_define("report message show", "/audit/report/message",
                 [
-                    Param("report_type", True, int, 0, 0, description=u"举报类型，0:个人主页举报，1：消息页面举报，2：聊天页面主播举报，3：聊天页面用户举报")
+                    Param("report_type", True, int, 0, 0, description=u"举报类型，0:个人主页举报，1：消息页面举报，2：聊天页面主播举报，3：聊天页面用户举报  4:社区动态  5:社区评论")
                 ],description=u"获取举报文案")
     @login_required
     def get(self):
@@ -67,27 +66,43 @@ class ReportMessageShow(BaseHandler):
 class ReportMessageUpload(BaseHandler):
     @api_define("report message upload", "/audit/report/upload",
                 [
-                    Param("label", True, int, 101, 101, description=u"标签"),
+                    Param("label", False, int, 101, 101, description=u"标签"),
                     Param("message", True, str, "", "色情举报", description=u"举报内容"),
-                    Param("report_id", True, int, 0, 0, description=u"举报id"),
-                    Param("pic_url", True, str, "", "", description=u"截图url"),
-                    Param("file_id", True, str, "", "", description=u"截图文件id"),
-                    Param("report_type", True, int, 0, 0, description=u"举报类型")
+                    Param("report_id", False, int, 0, 0, description=u"举报id"),
+                    Param("pic_url", False, str, "", "", description=u"截图url"),
+                    Param("file_id", False, str, "", "", description=u"截图文件id"),
+                    Param("report_type", False, int, 0, 0, description=u"举报类型(4: 社区动态举报  5:社区评论举报)"),
+                    Param("moment_id", False, int, 0, 0, description=u"社区动态_id(类型4 需要)"),
+                    Param("comment_id", False, int, 0, 0, description=u"社区评论_id(类型5 需要)"),
 
                 ],description=u"举报消息上报")
     @login_required
     def get(self):
         user_id = self.current_user_id
-        label = self.arg("label")
-        message = self.arg("message")
-        report_id = self.arg("report_id")
-        pic_url = self.arg("pic_url")
-        file_id = self.arg("file_id")
-        report_type = self.arg_int("report_type")
-
-        ReportRecord.create_report_record(user_id=user_id, label=label, report_id=report_id,
-                                          text=message, pic_url=pic_url,
-                                          file_id=file_id, report_type=report_type)
+        label = self.arg("label", "")
+        message = self.arg("message", "")
+        report_id = self.arg("report_id", "")
+        pic_url = self.arg("pic_url", "")
+        file_id = self.arg("file_id", "")
+        moment_id = self.arg("moment_id", "")
+        comment_id = self.arg("moment_id", "")
+        report_type = self.arg_int("report_type", "")
+        if report_type == 4:
+            # 社区动态举报
+            user_moment = UserMoment.objects.filter(id=moment_id).first()
+            user_moment.update(set__show_status=3)
+            UserMomentReport.create_report_record(user_moment_id=moment_id, user_id=user_id, report_text=message,
+                                                  report_id=user_moment.user_id)
+        elif report_type == 5:
+            # 社区评论举报
+            user_comment = UserComment.objects.filter(id=comment_id).first()
+            if user_comment:
+                UserCommentReport.create_report_record(comment_id=moment_id, user_id=user_id, report_text=message,
+                                                      report_id=user_comment.user_id)
+        else:
+            ReportRecord.create_report_record(user_id=user_id, label=label, report_id=report_id,
+                                              text=message, pic_url=pic_url,
+                                              file_id=file_id, report_type=report_type)
 
         desc = u"<html><p>" + _(u"%s您好，您的举报我们会及时处理，请静候佳音")% self.current_user.nickname + u"</p></br></html>"
 

@@ -24,6 +24,7 @@ class Activity(Document):
     activity_url = StringField(max_length=256, verbose_name=u'活动链接地址')
     create_time = DateTimeField(verbose_name=u"创建时间", default=datetime.datetime.now())
     is_valid = IntField(verbose_name=u'是否有效', default = 1)  # 1有效 0 无效
+    join_in_tool_activity = IntField(verbose_name=u'我的道具中是否显示平台活动', default = 1)  #  1不显示 2 显示
 
     def normal_info(self):
         return {
