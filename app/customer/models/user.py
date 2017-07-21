@@ -742,9 +742,14 @@ class PhonePassword(Document):
     @classmethod
     def update_password(cls, phone, password):
         try:
-            phone_pass = PhonePassword.objects.get(phone=phone)
-            phone_pass.password = password
-            phone_pass.save()
+            phone_pass = PhonePassword.objects.filter(phone=phone).first()
+            if phone_pass:
+                phone.update(password=password)
+            else:
+                phone_pass = PhonePassword()
+                phone_pass.phone = phone
+                phone_pass.password = password
+                phone_pass.save()
             return True
         except Exception, e:
             logging.error("update password error:{0}".format(e))
@@ -765,9 +770,6 @@ class PhonePassword(Document):
     def reset_password_check(cls, phone):
         user = User.objects.filter(phone=phone)
         if user:
-            return True
-        phone_pass = PhonePassword.objects.filter(phone=phone)
-        if phone_pass and phone_pass.first().password:
             return True
         else:
             return False
