@@ -68,37 +68,39 @@ class ReportMessageUpload(BaseHandler):
                 [
                     Param("label", False, int, 101, 101, description=u"标签"),
                     Param("message", True, str, "", "色情举报", description=u"举报内容"),
-                    Param("report_id", False, int, 0, 0, description=u"举报id"),
+                    Param("report_id", False, str, 0, 0, description=u"举报id"),
                     Param("pic_url", False, str, "", "", description=u"截图url"),
                     Param("file_id", False, str, "", "", description=u"截图文件id"),
                     Param("report_type", False, int, 0, 0, description=u"举报类型(4: 社区动态举报  5:社区评论举报)"),
-                    Param("moment_id", False, int, 0, 0, description=u"社区动态_id(类型4 需要)"),
-                    Param("comment_id", False, int, 0, 0, description=u"社区评论_id(类型5 需要)"),
+                    Param("moment_id", False, str, 0, 0, description=u"社区动态_id(类型4 需要)"),
+                    Param("comment_id", False, str, 0, 0, description=u"社区评论_id(类型5 需要)"),
 
                 ],description=u"举报消息上报")
     @login_required
     def get(self):
         user_id = self.current_user_id
-        label = self.arg("label", "")
+        label = self.arg_int("label", 0)
         message = self.arg("message", "")
-        report_id = self.arg("report_id", "")
+        report_id = self.arg("report_id", "0")
+        print report_id, "========================>"
         pic_url = self.arg("pic_url", "")
         file_id = self.arg("file_id", "")
         moment_id = self.arg("moment_id", "")
         comment_id = self.arg("moment_id", "")
-        report_type = self.arg_int("report_type", "")
+        report_type = self.arg_int("report_type", 0)
         if report_type == 4:
+            print "44444444444444444"
             # 社区动态举报
             user_moment = UserMoment.objects.filter(id=moment_id).first()
             user_moment.update(set__show_status=3)
             UserMomentReport.create_report_record(user_moment_id=moment_id, user_id=user_id, report_text=message,
-                                                  report_id=user_moment.user_id)
+                                                  report_id=int(user_moment.user_id))
         elif report_type == 5:
             # 社区评论举报
             user_comment = UserComment.objects.filter(id=comment_id).first()
             if user_comment:
                 UserCommentReport.create_report_record(comment_id=moment_id, user_id=user_id, report_text=message,
-                                                      report_id=user_comment.user_id)
+                                                      report_id=int(user_comment.user_id))
         else:
             ReportRecord.create_report_record(user_id=user_id, label=label, report_id=report_id,
                                               text=message, pic_url=pic_url,

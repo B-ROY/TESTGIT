@@ -251,7 +251,7 @@ class UserMomentReport(Document):
     user_id = IntField(verbose_name=u'举报人id', required=True)
     create_time = DateTimeField(verbose_name=u"创建时间", default=datetime.datetime.now())
     report_text = StringField(verbose_name=u"举报内容", max_length=512)
-    report_id = StringField(verbose_name=u"被举报人ID")
+    report_id = IntField(verbose_name=u"被举报人ID")
     status = IntField(verbose_name=u"处理状态", default=0)  # 0：未处理 1：已处理 2:忽略
     update_time = DateTimeField(verbose_name=u"处理时间")
     operator = StringField(verbose_name=u"操作人")
@@ -274,7 +274,7 @@ class UserCommentReport(Document):
     user_id = IntField(verbose_name=u'举报人id', required=True)
     create_time = DateTimeField(verbose_name=u"创建时间", default=datetime.datetime.now())
     report_text = StringField(verbose_name=u"举报内容", max_length=512)
-    report_id = StringField(verbose_name=u"被举报人ID")
+    report_id = IntField(verbose_name=u"被举报人ID")
     status = IntField(verbose_name=u"处理状态", default=0)  # 0：未处理 1：已处理 2:忽略
     update_time = DateTimeField(verbose_name=u"处理时间")
     operator = StringField(verbose_name=u"操作人")

@@ -156,7 +156,7 @@ def get_hm(now):
 @handler_define
 class Receive_Tools(BaseHandler):
     @api_define("receive tools", r'/tools/receive_tools', [
-        Param("type", True, str, "", "", u" 1:首页活动领取按钮  2:vip每日赠送"),
+        Param("type", False, str, "", "", u" 1:首页活动领取按钮  2:vip每日赠送"),
     ], description="领取道具")
 
     @login_required
@@ -168,7 +168,7 @@ class Receive_Tools(BaseHandler):
         hm = get_hm(now)
         activity_id = ""
 
-        type = self.arg_int("type")
+        type = self.arg_int("type", "1")
         if type == 1:
 
             if user.is_video_auth == 1:

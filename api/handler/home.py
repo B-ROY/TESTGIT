@@ -162,6 +162,16 @@ class Get_Index_Column(BaseHandler):
                 if user.id == 1 or user.id == 2:
                     continue
 
+                # 是否在线 查看心跳
+                import time
+                time = int(time.time())
+                pre_time = time - 120
+                user_beat = UserHeartBeat.objects.filter(user=user, last_report_time__gte=pre_time).first()
+                if user_beat:
+                    is_online = 1
+                else:
+                    is_online = 0
+
                 audioroom = AudioRoomRecord.objects.get(id=user.audio_room_id)
                 personal_tags = UserTags.get_usertags(user_id=user.id)
                 user_vip = UserVip.objects.filter(user_id=user.id).first()
@@ -171,12 +181,14 @@ class Get_Index_Column(BaseHandler):
                         "audioroom": convert_audioroom(audioroom),
                         "user": convert_user(user),
                         "personal_tags": personal_tags,
-                        "vip": convert_vip(vip)
+                        "vip": convert_vip(vip),
+                        "is_online": is_online
                     }
                 else:
                     dic = {
                         "audioroom": convert_audioroom(audioroom),
                         "user": convert_user(user),
+                        "is_online": is_online,
                         "personal_tags": personal_tags
                     }
                 data.append(dic)
