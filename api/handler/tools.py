@@ -107,7 +107,7 @@ class Can_Receive(BaseHandler):
 
             else:
                 # 新主播
-                can_receive = get_receive_result(2, now, user.id)
+                can_receive = get_receive_result(1, now, user.id)
 
         else:
             can_receive = get_receive_result(3, now, user.id)
