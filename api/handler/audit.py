@@ -82,14 +82,12 @@ class ReportMessageUpload(BaseHandler):
         label = self.arg_int("label", 0)
         message = self.arg("message", "")
         report_id = self.arg("report_id", "0")
-        print report_id, "========================>"
         pic_url = self.arg("pic_url", "")
         file_id = self.arg("file_id", "")
         moment_id = self.arg("moment_id", "")
         comment_id = self.arg("moment_id", "")
         report_type = self.arg_int("report_type", 0)
         if report_type == 4:
-            print "44444444444444444"
             # 社区动态举报
             user_moment = UserMoment.objects.filter(id=moment_id).first()
             user_moment.update(set__show_status=3)
