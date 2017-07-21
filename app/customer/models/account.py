@@ -190,35 +190,35 @@ class Account(Document):
             diamond_bonus = order.rule.free_diamon
             account.diamond_trade_in(order.diamon, diamond_bonus, u"充值", TradeDiamondRecord.TradeTypeExchange)
 
-            try:
-                # 首充活动
-                act = FirstChargeActivity.objects.filter(temp_activity_type=1).first()
-                now = datetime.datetime.now()
-
-                #  判断是否活动有效
-                if act:
-                    end_time = act.end_time
-                    days = (end_time - now).days
-                    if days < 0:
-                        return True
-
-                #  判断是否是后台充值
-                if order.fill_in_type == 6:
-                    return True
-
-                #判断首充
-                starttime = now.strftime("%Y-%m-%d 00:00:00")
-                endtime = now.strftime('%Y-%m-%d 23:59:59')
-                order_count = TradeBalanceOrder.objects.filter(status='1', user=user, buy_time__gte=starttime,
-                                                               buy_time__lte=endtime,).count()
-                if order_count > 1:
-                    return True
-
-                money = order.money
-                FirstChargeActivity.create_reward(user, money)
-
-            except Exception, e:
-                logging.error(" FirstChargeActivity  error:{0}".format(e))
+            # try:
+            #     # 首充活动
+            #     act = FirstChargeActivity.objects.filter(temp_activity_type=1).first()
+            #     now = datetime.datetime.now()
+            #
+            #     #  判断是否活动有效
+            #     if act:
+            #         end_time = act.end_time
+            #         days = (end_time - now).days
+            #         if days < 0:
+            #             return True
+            #
+            #     #  判断是否是后台充值
+            #     if order.fill_in_type == 6:
+            #         return True
+            #
+            #     #判断首充
+            #     starttime = now.strftime("%Y-%m-%d 00:00:00")
+            #     endtime = now.strftime('%Y-%m-%d 23:59:59')
+            #     order_count = TradeBalanceOrder.objects.filter(status='1', user=user, buy_time__gte=starttime,
+            #                                                    buy_time__lte=endtime,).count()
+            #     if order_count > 1:
+            #         return True
+            #
+            #     money = order.money
+            #     FirstChargeActivity.create_reward(user, money)
+            #
+            # except Exception, e:
+            #     logging.error(" FirstChargeActivity  error:{0}".format(e))
 
             return True
         elif order.status == TradeBalanceOrder.STATUS_FIIL_IN_CANCEL:
