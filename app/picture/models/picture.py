@@ -282,8 +282,7 @@ class PictureInfo(Document):
         try:
             picture = PictureInfo.objects.get(id=picture_id)
             if picture.user_id == int(user_id):
-                picture.status = 1
-                picture.save()
+                picture.update(set__status=1)
             else:
                 return False
         except Exception,e:

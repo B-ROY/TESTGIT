@@ -73,11 +73,6 @@ class Initial(BaseHandler):
         else:
             switches["review"] = 1
 
-        if switches['review'] == 0:
-            version_info['version'] = '2.2.1'
-            version_info["upgrade_type"] = 0
-            version_info['download_url'] = ''
-
 
         share_url = settings.SHARE_URL
         invite_url = settings.INVITE_URL
