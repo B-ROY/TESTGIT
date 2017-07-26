@@ -274,7 +274,7 @@ def compute_7_rank_list_first():
 
     CharmRank.drop_collection()
     WealthRank.drop_collection()
-    now_time = datetime.datetime(2017, 6, 18)
+    now_time = datetime.datetime.now()
 
     end_time = datetime.datetime(now_time.year, now_time.month, now_time.day, 3,0,0)
     start_time = end_time - datetime.timedelta(days=7)
