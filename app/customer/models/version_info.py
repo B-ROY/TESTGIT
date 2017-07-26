@@ -93,10 +93,10 @@ class VersionInfo(Document):
     def get_version_info(cls, platform, app_name, channel=None):
         platform = platform.upper()
         if channel:
-            version_info = cls.objects.filter(app_name=app_name, platform=platform, channel=channel).order_by(
+            version_info = cls.objects.filter(app_name=app_name, platform=platform, channel=channel, delete_status=0).order_by(
                 "-version").first()
         else:
-            version_info = cls.objects.filter(app_name=app_name, platform=platform).order_by(
+            version_info = cls.objects.filter(app_name=app_name, platform=platform, delete_status=0).order_by(
                 "-version").first()
 
         """之前代码， 留作参考， 一会删掉
