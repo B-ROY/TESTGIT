@@ -14,7 +14,7 @@ class UserMoment(Document):
     img_list = ListField(verbose_name=u"图片列表")
     content = StringField(verbose_name=u"用户动态的文字内容")
     create_time = DateTimeField(verbose_name=u"创建时间", default=datetime.datetime.now())
-    show_status = IntField(verbose_name=u"是否展示", default=1)  # 1:展示  2:数美屏蔽  3:举报  4:数美部分屏蔽
+    show_status = IntField(verbose_name=u"是否展示", default=1)  # 1:展示  2:数美屏蔽  3:举报  4:数美部分屏蔽  5:数美鉴定中
     delete_status = IntField(verbose_name=u"删除状态", default=1)  # 1:未删除  2:删除
     ispass = IntField(verbose_name=u"是否忽略")  # 1:忽略  2:未忽略
 
@@ -36,7 +36,7 @@ class UserMoment(Document):
                     }
                     user_moment.img_list.append(dict)
         user_moment.content = content
-        user_moment.show_status = 1
+        user_moment.show_status = 5
         user_moment.delete_status = 1
         user_moment.ispass = 2
         user_moment.create_time = datetime.datetime.now()

@@ -101,10 +101,14 @@ class MomentList(BaseHandler):
                     if fr_uid not in user_ids:
                         user_ids.append(fr_uid)
 
-            moments = UserMoment.objects.filter(user_id__in=user_ids, show_status__ne=2, delete_status=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
+            moments = UserMoment.objects.filter(user_id__in=user_ids, show_status__in=[1, 3, 4], delete_status=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
         elif list_type == 3:
-            # 其他用户动态
-            moments = UserMoment.objects.filter(user_id=show_user_id, show_status__ne=2, delete_status=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
+            # 临时加一个 判断我的. 稍后客户端把lsit_type修复
+            if show_user_id == int(user_id):
+                moments = UserMoment.objects.filter(user_id=user.id, show_status__ne=2, delete_status=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
+            else:
+                # 其他用户动态
+                moments = UserMoment.objects.filter(user_id=show_user_id, show_status__in=[1, 3, 4], delete_status=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
 
         if moments:
             for moment in moments:
@@ -132,7 +136,7 @@ class MomentList(BaseHandler):
         user_id = self.current_user_id
 
         page_count = self.arg_int('page_count')
-        moments = UserMoment.objects.filter(show_status__ne=2, delete_status=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
+        moments = UserMoment.objects.filter(show_status__in=[1, 3, 4], delete_status=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
         if moments:
             for moment in moments:
                 if moment:
@@ -294,6 +298,113 @@ class UserHomeMoments(BaseHandler):
         if moments:
             for moment in moments:
                 data.append(convert_user_moment(moment))
+        self.write({"status": "success", "data": data})
+
+
+@handler_define
+class MomentList_V2(BaseHandler):
+    @api_define("index community list V2", r'/community/index_list_v2', [
+        Param('page', True, str, "1", "1", u'page'),
+        Param('page_count', True, str, "10", "10", u'page_count'),
+    ], description=u'首页社区动态列表_带两条评论')
+    def get(self):
+        data = []
+        page = self.arg_int('page')
+        user_id = self.current_user_id
+
+        page_count = self.arg_int('page_count')
+        moments = UserMoment.objects.filter(show_status__in=[1, 3, 4], delete_status=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
+        if moments:
+            for moment in moments:
+                if moment:
+                    dic = convert_user_moment(moment)
+
+                    # 添加评论
+                    comments = UserComment.objects.filter(user_moment_id=str(moment.id), delete_status=1).order_by("-create_time")[0:2]
+                    comment_list = []
+                    if comments:
+                        for comment in comments:
+                            comment_list.append(convert_comment(comment))
+                    dic["comment_list"] = comment_list
+
+                    if user_id:
+                        like_user_list = moment.like_user_list
+                        if int(user_id) in like_user_list:
+                            is_liked = 1
+                        else:
+                            is_liked = 0
+                        dic["is_liked"] = is_liked
+                        data.append(dic)
+                    else:
+                        dic["is_liked"] = 0
+                        data.append(dic)
+        self.write({"status": "success", "data": data})
+
+
+@handler_define
+class MomentList_V2(BaseHandler):
+    @api_define("community list_v2", r'/community/list_v2', [
+        Param('list_type', True, str, "", "", u'1: 我的动态   2:我的关注动态   3:其他用户动态'),
+        Param('show_user_id', False, str, "", "", u'展示的用户id (list_type = 3 时需要传入)'),
+        Param('page', True, str, "1", "1", u'page'),
+        Param('page_count', True, str, "10", "10", u'page_count'),
+    ], description=u'(我的/关注/其他用户)社区动态列表_带两条评论')
+    @login_required
+    def get(self):
+        user = self.current_user
+        user_id = self.current_user_id
+        list_type = self.arg_int("list_type")
+        show_user_id = self.arg_int("show_user_id", 0)
+        page = self.arg_int('page')
+        page_count = self.arg_int('page_count')
+        data = []
+
+        if list_type == 1:
+            # 我的动态
+            moments = UserMoment.objects.filter(user_id=user.id, show_status__ne=2, delete_status=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
+        elif list_type == 2:
+            # 我的关注动态
+            follow_users = FollowUser.objects.filter(from_id=user.id)
+            friend_users = FriendUser.objects.filter(from_id=user.id)
+            user_ids = []
+            if follow_users:
+                for follow_user in follow_users:
+                    fo_uid = follow_user.to_id
+                    if fo_uid not in user_ids:
+                        user_ids.append(fo_uid)
+            if friend_users:
+                for friend_user in friend_users:
+                    fr_uid = friend_user.to_id
+                    if fr_uid not in user_ids:
+                        user_ids.append(fr_uid)
+
+            moments = UserMoment.objects.filter(user_id__in=user_ids, show_status__in=[1, 3, 4], delete_status=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
+        elif list_type == 3:
+            # 其他用户动态
+            moments = UserMoment.objects.filter(user_id=show_user_id, show_status__in=[1, 3, 4], delete_status=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
+        else:
+            moments = None
+
+        if moments:
+            for moment in moments:
+                like_user_list = moment.like_user_list
+                dic = convert_user_moment(moment)
+
+                # 添加评论
+                comments = UserComment.objects.filter(user_moment_id=str(moment.id), delete_status=1).order_by("-create_time")[0:2]
+                comment_list = []
+                if comments:
+                    for comment in comments:
+                        comment_list.append(convert_comment(comment))
+                dic["comment_list"] = comment_list
+
+                if int(user_id) in like_user_list:
+                    is_liked = 1
+                else:
+                    is_liked = 0
+                dic["is_liked"] = is_liked
+                data.append(dic)
+
         self.write({"status": "success", "data": data})
 
 
