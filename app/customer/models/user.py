@@ -156,6 +156,8 @@ class User(Document):
     #个人封面
     cover = StringField(verbose_name=u"个人封面")
 
+    online_time = IntField(verbose_name=u"在线时长", default=0)
+
     #上次登录设备
     last_guid = StringField(verbose_name=u"上次登录guid")
 

@@ -61,8 +61,16 @@ class OnlineUser(Document):
                 MessageSender.send_system_message(user_id, desc)
                 return OnlineUser.create_online_user(user_id=user_id)
             if action == "Login":
+                logintime = int(time.time())
+                UserRedis.set_user_login(str(user_id),logintime)
                 status = 1
             else:
+                logouttime = int(time.time())
+                logintime = UserRedis.get_user_login(str(user_id))
+                if logintime:
+                    onlinetime = logouttime - int(logintime)
+                    user.update(inc__online_time = onlinetime)
+                UserRedis.remove_user_login(str(user_id))
                 status = 0
             online_user.update(set__status=status, set__update_time=datetime.datetime.now())
             return True

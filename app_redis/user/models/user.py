@@ -7,6 +7,7 @@ class UserRedis():
 
     __KEY_USER_ID = "user_id"
     __KEY_USER_IDENTITY = "user_identity"
+    __KEY_USER_LOGIN = "user_login"
 
     @classmethod
     def pop_user_id(cls):
@@ -28,3 +29,14 @@ class UserRedis():
         print a
         return a
 
+    @classmethod
+    def set_user_login(cls,userid,value):
+        RQueueClient.getInstance().redis.set(cls.__KEY_USER_LOGIN+"_"+userid,value)
+
+    @classmethod
+    def remove_user_login(cls,userid):
+        return RQueueClient.getInstance().redis.delete(cls.__KEY_USER_LOGIN+"_"+userid)
+
+    @classmethod
+    def get_user_login(cls,userid):
+        RQueueClient.getInstance().redis.get(cls.__KEY_USER_LOGIN+"_"+userid)
