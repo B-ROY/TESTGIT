@@ -52,6 +52,8 @@ class PictureInfo(Document):
     like_count = IntField(verbose_name=u'点赞数', default=0)
     view_count = IntField(verbose_name=u'浏览次数', default=0)
     status = IntField(verbose_name=u'状态', default=0)
+    type = IntField(verbose_name=u'相册类型', default=0)   # 1: 普通相册照片  2:精华相册照片
+    show_status = IntField(verbose_name=u'显示状态', default=0)   # 1: 数美通过  2:数美屏蔽  3:数美鉴定中
 
     class Meta:
         app_label = "picture"

@@ -331,6 +331,7 @@ class UserPictureCreate(BaseHandler):
                 pic_info.lock_type = 0
                 pic_info.picture_url = pic_url
                 pic_info.created_at = created_at
+                pic_info.type = 1
                 pic_info.save()
                 picture_ids.append(str(pic_info.id))
 
