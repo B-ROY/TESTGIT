@@ -330,13 +330,18 @@ class BlockList(BaseHandler):
         data = []
 
         for record in block_list:
-            if not record.block_user_id:
-                str_users = record.block_user_dev
-            elif not record.block_user_dev:
-                str_users = record.block_user_id
-            else:
-                str_users = record.block_user_id + "," + record.block_user_dev
 
+            names = []
+            for name in record.block_user_dev.split(","):
+                if name and name not in names:
+                    names.append(name)
+            for name in record.block_user_id.split(","):
+                if name and name not in names:
+                    names.append(name)
+            if names:
+                str_users = reduce(lambda x, y: x+","+y, names)
+            else:
+                str_users = ""
             record_date_1 = record.block_date.strftime(u"%m月%d日")
             title = record_date_1 + u"违规公告"
 

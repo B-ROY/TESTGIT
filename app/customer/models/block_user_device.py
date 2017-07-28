@@ -81,7 +81,7 @@ class BlockUserRecord(Document):
             id_record = ""
             dev_record = ""
             for record in block_record:
-                block_user = User.objects(id=record)
+                block_user = User.objects().get(id=record.block_user)
                 if record.block_type == 1:
                     id_record += block_user.nickname + ","
                 elif record.block_type == 2:
