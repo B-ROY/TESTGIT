@@ -68,6 +68,8 @@ def shumei_text_spam(text, timeout, user_id, channel, nickname,phone,ip):
         channel_desc = "HEAD_IMG"
     elif channel == 3:
         channel_desc = "CHAT_IMG"
+    else:
+        channel_desc = channel
     data = {"text": text, "tokenId": str(user_id), "channel": channel_desc, "nickname": nickname, "phone":phone, "ip":ip, }
     playload = {"accessKey": ACCESS_KEY, "type": TEXT_TYPE, "data": data}
     body = json.dumps(playload)
