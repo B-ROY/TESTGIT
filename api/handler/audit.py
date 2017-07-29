@@ -160,13 +160,20 @@ class TextCheck(BaseHandler):
     def get(self):
         text = self.arg("text")
         guid = self.arg("guid")
-        check_type = self.arg("type")
+        check_type = self.arg_int("type")
+        channel = ""
+        if check_type == 1:
+            channel = "NICKNAME"
+        if check_type == 2:
+            channel = "MESSAGE"
+        if check_type == 3:
+            channel = "SIGNATURE"
 
         ip = self.user_ip
 
         user = self.current_user
 
-        ret = shumei_text_spam(text=text, timeout=1, user_id=user.id, channel=check_type, nickname=user.nickname, phone=user.phone, ip=ip)
+        ret = shumei_text_spam(text=text, timeout=1, user_id=user.id, channel=channel, nickname=user.nickname, phone=user.phone, ip=ip)
 
         is_pass = 0
         if ret["code"] == 1100:
