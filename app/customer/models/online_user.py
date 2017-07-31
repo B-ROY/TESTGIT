@@ -69,7 +69,8 @@ class OnlineUser(Document):
                 logintime = UserRedis.get_user_login(str(user_id))
                 if logintime:
                     onlinetime = logouttime - int(logintime)
-                    user.update(inc__online_time = onlinetime)
+                    user.online_time += onlinetime
+                    user.save()
                 UserRedis.remove_user_login(str(user_id))
                 status = 0
             online_user.update(set__status=status, set__update_time=datetime.datetime.now())
