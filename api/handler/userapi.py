@@ -1053,6 +1053,11 @@ class AUserInfo(BaseHandler):
         dic["audio_status"] = AudioRoomRecord.get_room_status(user_id=user.id)
         dic["check_real_name"] = RealNameVerify.check_user_verify(user_id=user.id)
 
+        ua = self.request.headers.get('User-Agent')
+        uas = ua.split(";")
+        if uas[2] != "Android":
+            dic["now_price"] = dic["video_price"]
+
         # 判断是否是vip
         user_vip = UserVip.objects.filter(user_id=user.id).first()
         if user_vip:
