@@ -36,9 +36,9 @@ class ThridPardLogin(BaseHandler):
             userinfo["nickname"] = RegisterInfo.make_nickname()
             gender = userinfo.get("sex", 1)
             if gender == 1:
-                img_url = "https://hdlive-10048692.image.myqcloud.com/head_1497413045"
+                img_url = "https://heydopic-10048692.image.myqcloud.com/icon_1501468004"
             else:
-                img_url = "https://hdlive-10048692.image.myqcloud.com/head_1497413074"
+                img_url = "https://heydopic-10048692.image.myqcloud.com/icon_1501468154"
             is_new,user= User.create_user(
                 openid=openid,
                 source=source,
@@ -77,9 +77,9 @@ class ThridPardLogin(BaseHandler):
         guid = self.arg("guid")
         gender = userinfo.get("sex", 1)
         if gender == 1:
-            img_url = "https://hdlive-10048692.image.myqcloud.com/head_1497413045"
+            img_url = "https://heydopic-10048692.image.myqcloud.com/icon_1501468004"
         else:
-            img_url = "https://hdlive-10048692.image.myqcloud.com/head_1497413074"
+            img_url = "https://heydopic-10048692.image.myqcloud.com/icon_1501468154"
         #创建新用户
         # openid, source, nickname, platform=0, image="", channel=""
         is_new, user = User.create_user2(
