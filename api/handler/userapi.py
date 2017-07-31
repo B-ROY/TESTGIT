@@ -42,9 +42,9 @@ class ThridPardLogin(BaseHandler):
             userinfo["nickname"] = RegisterInfo.make_nickname()
             gender = userinfo.get("sex", 1)
             if gender == 1:
-                img_url = "https://hdlive-10048692.image.myqcloud.com/head_1497413045"
+                img_url = "https://heydopic-10048692.image.myqcloud.com/icon_1501468004"
             else:
-                img_url = "https://hdlive-10048692.image.myqcloud.com/head_1497413074"
+                img_url = "https://heydopic-10048692.image.myqcloud.com/icon_1501468154"
             is_new,user= User.create_user(
                 openid=openid,
                 source=source,
@@ -60,14 +60,19 @@ class ThridPardLogin(BaseHandler):
         else:
             #创建新用户
             # openid, source, nickname, platform=0, image="", channel=""
+            gender = userinfo.get("gender", 1)
+            if gender==1:
+                img_url = userinfo.get("headimgurl", "https://heydopic-10048692.image.myqcloud.com/icon_1501468004")
+            else:
+                img_url = userinfo.get("headimgurl", "https://heydopic-10048692.image.myqcloud.com/icon_1501468154")
             is_new, user = User.create_user(
                 openid=openid,
                 source=source,
                 nickname=userinfo.get("nickname")[0:18],
-                gender=userinfo.get("gender", 1),
+                gender=gender,
                 phone=phone,
                 ip=self.user_ip,
-                image=userinfo.get("headimgurl", "https://hdlive-10048692.image.myqcloud.com/5c8ff8bdc5a3645edcd8d4f9313f29e7"),
+                image=img_url,
                 channel=channel,
                 guid = guid
             )
@@ -83,9 +88,9 @@ class ThridPardLogin(BaseHandler):
         guid = self.arg("guid")
         gender = userinfo.get("sex", 1)
         if gender == 1:
-            img_url = "https://hdlive-10048692.image.myqcloud.com/head_1497413045"
+            img_url = "https://heydopic-10048692.image.myqcloud.com/icon_1501468004"
         else:
-            img_url = "https://hdlive-10048692.image.myqcloud.com/head_1497413074"
+            img_url = "https://heydopic-10048692.image.myqcloud.com/icon_1501468154"
         #创建新用户
         # openid, source, nickname, platform=0, image="", channel=""
         is_new, user = User.create_user2(
