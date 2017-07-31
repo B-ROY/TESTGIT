@@ -1053,11 +1053,6 @@ class AUserInfo(BaseHandler):
         dic["audio_status"] = AudioRoomRecord.get_room_status(user_id=user.id)
         dic["check_real_name"] = RealNameVerify.check_user_verify(user_id=user.id)
 
-        ua = self.request.headers.get('User-Agent')
-        uas = ua.split(";")
-        if uas[2] != "Android":
-            dic["now_price"] = dic["video_price"]
-
         # 判断是否是vip
         user_vip = UserVip.objects.filter(user_id=user.id).first()
         if user_vip:
@@ -1196,7 +1191,6 @@ class UserHomepageV2(BaseHandler):
         else:
             audioroom = None
 
-        dic["user"] = convert_user(home_user)
         if not audioroom:
             dic["audio"] = []
             dic["audio_status"] = 0
@@ -1205,6 +1199,10 @@ class UserHomepageV2(BaseHandler):
             dic["audio_status"] = AudioRoomRecord.get_room_status(user_id=home_id)
 
         dic["user"] = convert_user(home_user)
+        ua = self.request.headers.get('User-Agent')
+        uas = ua.split(";")
+        if uas[2] != "Android":
+            dic["user"]["now_price"] = dic["user"]["video_price"]
         dic["personal_tags"] = personal_tags
         dic["user"]["picture_count"] = PictureInfo.objects.filter(user_id=home_id, status=0).count()
         dic["picture_list"] = data_pic
