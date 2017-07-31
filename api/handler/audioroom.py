@@ -952,7 +952,7 @@ class GetVoiceRoomListV3(BaseHandler):
                 is_online = 0
 
             # 相册(最多六张)
-            pictures = PictureInfo.objects.filter(user_id=int(user.id), status=0).order_by('-created_at')[0:6]
+            pictures = PictureInfo.objects.filter(user_id=int(user.id), status=0, type__ne=2, show_status__ne=2).order_by('-created_at')[0:6]
             pics = []
             for picture in pictures:
                 pic_url = picture.picture_url
@@ -985,5 +985,63 @@ class GetVoiceRoomListV3(BaseHandler):
                 }
             data.append(dic)
 
+        self.write({"status": "success", "data": data, })
+
+
+# 新人驾到  (在线的, 认证主播 认证时间倒序)
+@handler_define
+class GetNewAnchorListV2(BaseHandler):
+    @api_define("Get new anchor online list v2 ", r'/audio/room/new_anchor_list_v2', [
+        Param('page', True, str, "1", "1", u'page'),
+        Param('page_count', True, str, "10", "10", u'page_count')
+    ], description=u"新人驾到v2")
+    def get(self):
+
+        from app.customer.models.rank import NewAnchorRank
+        page = self.arg_int('page')
+        page_count = self.arg_int('page_count')
+
+        anchor_list = NewAnchorRank.objects.all()[(page - 1) * page_count:page * page_count]
+        data = []
+        for anchor in anchor_list:
+            user = User.objects.filter(id=anchor.user_id).first()
+            if user.id == 1 or user.id == 2:
+                continue
+
+            audioroom = AudioRoomRecord.objects.get(id=user.audio_room_id)
+            personal_tags = UserTags.get_usertags(user_id=user.id)
+            user_vip = UserVip.objects.filter(user_id=user.id).first()
+
+            # 相册(最多六张)
+            pictures = PictureInfo.objects.filter(user_id=int(user.id), status=0, type__ne=2, show_status__ne=2).order_by('-created_at')[0:6]
+            pics = []
+            for picture in pictures:
+                pic_url = picture.picture_url
+                if pic_url:
+                    pic_dic = {
+                        "id": str(picture.id),
+                        "picture_url": pic_url
+                    }
+                    pics.append(pic_dic)
+
+            if user_vip:
+                vip = Vip.objects.filter(id=user_vip.vip_id).first()
+                dic = {
+                    "audioroom": convert_audioroom(audioroom),
+                    "user": convert_user(user),
+                    "personal_tags": personal_tags,
+                    "vip": convert_vip(vip),
+                    "pictures": pics
+                }
+            else:
+                # 测试
+                # vip = Vip.objects.filter(id="5928e5ee2040e4079fff2322").first()
+                dic = {
+                    "audioroom": convert_audioroom(audioroom),
+                    "user": convert_user(user),
+                    "personal_tags": personal_tags,
+                    "pictures": pics
+                }
+            data.append(dic)
         self.write({"status": "success", "data": data, })
 

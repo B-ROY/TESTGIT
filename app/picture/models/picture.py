@@ -2,8 +2,9 @@
 from mongoengine import *
 import logging
 import datetime
-from app.picture.models.comment import *
-from app.customer.models.user import *
+from app.picture.models.comment import CommentInfo
+from app.customer.models.user import User, UploadImage
+from base.core.util.dateutils import datetime_to_timestamp
 from django.db import models
 from PIL import Image, ImageFilter
 import multiprocessing
