@@ -89,28 +89,29 @@ class UserMoment(Document):
         if moment_look:
             look_user_ids = moment_look.user_id_list
             look_count = len(look_user_ids)
-        data = {
-            "moment_id": str(self.id),
-            "user_id": user.id,
-            "gender": user.gender_desc,
-            "head_image": head_image,
-            "nickname": user.nickname,
-            "age": age,
-            "create_time": create_time,
-            "img_list": img_list,
-            "comment_count": self.comment_count,
-            "like_count": self.like_count,
-            "type": self.type,
-            "look_count": look_count,
-            "content": self.content,
-            "date_time": date_time
-        }
-        user_vip = UserVip.objects.filter(user_id=user_id).first()
-        if user_vip:
-            vip = Vip.objects.filter(id=user_vip.vip_id).first()
-            data["vip_icon"] = vip.icon_url
+        if user:
+            data = {
+                "moment_id": str(self.id),
+                "user_id": user.id,
+                "gender": user.gender_desc,
+                "head_image": head_image,
+                "nickname": user.nickname,
+                "age": age,
+                "create_time": create_time,
+                "img_list": img_list,
+                "comment_count": self.comment_count,
+                "like_count": self.like_count,
+                "type": self.type,
+                "look_count": look_count,
+                "content": self.content,
+                "date_time": date_time
+            }
+            user_vip = UserVip.objects.filter(user_id=user_id).first()
+            if user_vip:
+                vip = Vip.objects.filter(id=user_vip.vip_id).first()
+                data["vip_icon"] = vip.icon_url
 
-        return data
+            return data
 
     #  动态发布规则
     @classmethod
@@ -256,33 +257,34 @@ class UserComment(Document):
 
     def normal_info(self):
         user = User.objects.filter(id=self.user_id).first()
-        nickname = user.nickname
-        head_image = user.image
-        create_time = UserMoment.get_time(self.create_time)
-        data = {
-            "moment_id": self.user_moment_id,
-            "comment_id": str(self.id),
-            "user_id": user.id,
-            "nickname": nickname,
-            "head_image": head_image,
-            "create_time": create_time,
-            "comment_content": self.content,
-            "comment_type": self.comment_type
-        }
-        user_vip = UserVip.objects.filter(user_id=user.id).first()
-        if user_vip:
-            vip = Vip.objects.filter(id=user_vip.vip_id).first()
-            data["vip_icon"] = vip.icon_url
+        if user:
+            nickname = user.nickname
+            head_image = user.image
+            create_time = UserMoment.get_time(self.create_time)
+            data = {
+                "moment_id": self.user_moment_id,
+                "comment_id": str(self.id),
+                "user_id": user.id,
+                "nickname": nickname,
+                "head_image": head_image,
+                "create_time": create_time,
+                "comment_content": self.content,
+                "comment_type": self.comment_type
+            }
+            user_vip = UserVip.objects.filter(user_id=user.id).first()
+            if user_vip:
+                vip = Vip.objects.filter(id=user_vip.vip_id).first()
+                data["vip_icon"] = vip.icon_url
 
-        if self.comment_type == 2:
-            reply_user = User.objects.filter(id=self.reply_user_id).first()
-            if reply_user:
-                reply_nickname = reply_user.nickname
-            else:
-                reply_nickname = ""
-            data["reply_user_id"] = self.reply_user_id
-            data["reply_nickname"] = reply_nickname
-        return data
+            if self.comment_type == 2:
+                reply_user = User.objects.filter(id=self.reply_user_id).first()
+                if reply_user:
+                    reply_nickname = reply_user.nickname
+                else:
+                    reply_nickname = ""
+                data["reply_user_id"] = self.reply_user_id
+                data["reply_nickname"] = reply_nickname
+            return data
 
 
 class UserMomentLook(Document):

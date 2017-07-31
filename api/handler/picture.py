@@ -139,7 +139,7 @@ class GetPictureListV2(BaseHandler):
             uid = current_user_id
         else:
             uid = user_id
-        pictures = PictureInfo.objects.filter(user_id=int(uid), status=0).order_by('-created_at')[(page-1)*page_count:page*page_count]
+        pictures = PictureInfo.objects.filter(user_id=int(uid), status=0, type__ne=2, show_status__ne=2).order_by('-created_at')[(page-1)*page_count:page*page_count]
         data = []
         for picture in pictures:
             pic_url = picture.picture_url

@@ -1183,13 +1183,13 @@ class UserHomepageV2(BaseHandler):
         essence_data_pic = []
         # 如果是本人的主页.可以看到鉴定中的相册
         current_user_id = self.current_user_id
-        normal_pictures = PictureInfo.objects.filter(user_id=int(home_id), status=1, type=1, show_status=1)
-        essence_pictures = PictureInfo.objects.filter(user_id=int(home_id), status=1, type=2, show_status=1)
+        normal_pictures = PictureInfo.objects.filter(user_id=int(home_id), status=0, type=1, show_status=1)
+        essence_pictures = PictureInfo.objects.filter(user_id=int(home_id), status=0, type=2, show_status=1)
 
         if current_user_id:
             if int(current_user_id) == int(home_id):
-                normal_pictures = PictureInfo.objects.filter(user_id=int(home_id), status=1, type=1, show_status__ne=2)
-                essence_pictures = PictureInfo.objects.filter(user_id=int(home_id), status=1, type=2, show_status__ne=2)
+                normal_pictures = PictureInfo.objects.filter(user_id=int(home_id), status=0, type=1, show_status__ne=2)
+                essence_pictures = PictureInfo.objects.filter(user_id=int(home_id), status=0, type=2, show_status__ne=2)
 
         for normal_picture in normal_pictures:
             pic_url = normal_picture.picture_url
