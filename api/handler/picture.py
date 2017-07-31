@@ -130,10 +130,40 @@ class GetPictureListV2(BaseHandler):
     ], description=u'简版_获取图片列表V2')
     @login_required
     def get(self):
-        user_id = self.arg("user_id","0")
+        user_id = self.arg("user_id","")
         page = self.arg_int('page')
         page_count = self.arg_int('page_count')
         current_user_id = self.current_user_id
+
+        if not user_id:
+            uid = current_user_id
+        else:
+            uid = user_id
+        pictures = PictureInfo.objects.filter(user_id=int(uid), status=0).order_by('-created_at')[(page-1)*page_count:page*page_count]
+        data = []
+        for picture in pictures:
+            pic_url = picture.picture_url
+            if pic_url:
+                dic = {
+                    "id": str(picture.id),
+                    "picture_url": pic_url
+                }
+                data.append(dic)
+
+        self.write({"status": "success", "data": data, })
+
+
+# 图片列表_精简版_V3
+@handler_define
+class GetPictureListV2(BaseHandler):
+    @api_define("Get Picture List", r'/picture/list_v3', [
+        Param('user_id', False, str, "", "", u' user_id'),
+    ], description=u'简版_获取图片列表V3')
+    @login_required
+    def get(self):
+        user_id = self.arg("user_id","0")
+        current_user_id = self.current_user_id
+        user = self.current_user
 
         user_vip = UserVip.objects.filter(user_id=current_user_id).first()
         if not user_id:
@@ -167,7 +197,12 @@ class GetPictureListV2(BaseHandler):
         if int(uid) == int(current_user_id):
             # 普通相册总剩余张数:
             normal_count = PictureInfo.objects.filter(user_id=int(current_user_id), status=0, type=1, show_status__ne=2).count()
-            normal_rest_count = 20 - normal_count
+
+            is_video = user.is_video_auth
+            if not user_vip and is_video != 1:
+                normal_rest_count = 10 - normal_count
+            else:
+                normal_rest_count = 20 - normal_count
 
             # 精华相册今天剩余张数:
             if user_vip:

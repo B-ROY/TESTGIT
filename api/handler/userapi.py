@@ -1185,6 +1185,7 @@ class UserHomepageV2(BaseHandler):
 
         data = {}
         normal_data_pic = []
+        essence_data_pic = []
         # 如果是本人的主页.可以看到鉴定中的相册
         current_user_id = self.current_user_id
         normal_pictures = PictureInfo.objects.filter(user_id=int(home_id), status=1, type=1, show_status=1)
@@ -1197,12 +1198,7 @@ class UserHomepageV2(BaseHandler):
 
         for normal_picture in normal_pictures:
             pic_url = normal_picture.picture_url
-            dic = {
-                "id": str(normal_picture.id),
-                "picture_url": pic_url,
-                "type": normal_picture.type
-            }
-            normal_data_pic.append(dic)
+            normal_data_pic.append(pic_url)
 
         for essence_picture in essence_pictures:
             if current_user_id:
@@ -1213,13 +1209,7 @@ class UserHomepageV2(BaseHandler):
                     pic_url = ""
             else:
                 pic_url = ""
-
-            dic = {
-                "id": str(essence_picture.id),
-                "picture_url": pic_url,
-                "type": essence_picture.type
-            }
-            data_pic.append(dic)
+            essence_data_pic.append(pic_url)
 
         dic = {}
         if home_user.audio_room_id:
@@ -1238,7 +1228,8 @@ class UserHomepageV2(BaseHandler):
         dic["user"] = convert_user(home_user)
         dic["personal_tags"] = personal_tags
         dic["user"]["picture_count"] = PictureInfo.objects.filter(user_id=home_id, status=0).count()
-        dic["picture_list"] = data_pic
+        dic["picture_list"] = normal_data_pic
+        dic["essence_picture_list"] = essence_data_pic
         user_vip = UserVip.objects.filter(user_id=home_id).first()
         if user_vip:
             vip = Vip.objects.filter(id=user_vip.vip_id).first()
