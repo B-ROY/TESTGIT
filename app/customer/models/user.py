@@ -12,6 +12,8 @@ import random
 from app.util.messageque.msgsender import MessageSender
 from app_redis.user.models.user import UserRedis
 from django.conf import settings
+from redis_model.redis_client import RQueueClient
+from app.redis_key_settings import RedisKeys
 
 connect(CHATPAMONGO.db, host=CHATPAMONGO.host, port=CHATPAMONGO.port, username=CHATPAMONGO.username,password=CHATPAMONGO.password)
 
@@ -613,9 +615,36 @@ class User(Document):
             user.complete_info = 1
             user.save()
             return True
-        except Exception,e:
+        except Exception, e:
             logging.error("complete personal info error:{0}".format(e))
             return False
+
+    @classmethod
+    def chat_check(cls, user_id, current_user_id):
+        key = RedisKeys.USER_CHAT_LIST + str(current_user_id)
+        # 检查key是否存在
+        is_exist = RQueueClient.getInstance().redis.exists(key)
+        if not is_exist:
+            RQueueClient.getInstance().redis.sadd(key, str(user_id))
+            # 过期时间
+            now = datetime.datetime.now()
+            now_start = datetime.datetime(now.year, now.month, now.day)
+            date_time = now_start.timedelta(days=1)
+            second = time.mktime(date_time.timetuple()) - time.mktime(now.timetuple()) - 1
+            RQueueClient.getInstance().redis.expire(key, second)
+            return 1
+
+        flag = RQueueClient.getInstance().redis.sismember(key, str(user_id))
+        print flag
+        if not flag:
+            count = RQueueClient.getInstance().redis.scard(key)
+            if count >= 10:
+                return 2  # 已经聊天的有10个了
+            else:
+                RQueueClient.getInstance().redis.sadd(key, str(user_id))
+                return 1
+        else:
+            return 1  # 可以聊天
 
 
 

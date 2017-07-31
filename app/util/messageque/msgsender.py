@@ -220,11 +220,18 @@ class MessageSender:
                 "pic_channel": pic_channel,
                 "source": source
             }
-        elif source == 2 or source == 3:
-            # 2: 社区动态 图片    3:个人相册
+        elif source == 2:
+            # 2: 社区动态 图片
             body = {
                 "obj_id": obj_id,
                 "source": source
+            }
+        elif source == 3:
+            #  3:个人相册
+            body = {
+                "pic_urls": pic_url,  # 多个用逗号分隔
+                "source": source,
+                "user_id": user_id
             }
         else:
             return 400

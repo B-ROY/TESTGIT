@@ -40,3 +40,4 @@ class UserRedis():
     @classmethod
     def get_user_login(cls,userid):
         RQueueClient.getInstance().redis.get(cls.__KEY_USER_LOGIN+"_"+userid)
+

@@ -22,16 +22,17 @@ from app.customer.models.personal_tags import *
 from app.customer.models.rank import *
 from app.customer.models.share import *
 from app.customer.models.user import UserAppealRecord
-from app.customer.models.vip import *
-from app.picture.models.picture import *
+from app.customer.models.vip import UserVip, Vip
+from app.picture.models.picture import PictureInfo
 from app.redismodel.onlinecount import OnlineCount
 import international
+from app.customer.models.tools import UserTools, Tools, SendToolsRecord
 # from background.audit_handler.audit_handler import *
 from app.util.shumeitools.shumeitools import *
 from app.customer.models.shumeidetect import *
-from app.customer.models.follow_user import *
-from app.customer.models.black_user import *
-from app.customer.models.community import *
+from app.customer.models.follow_user import FollowUser, FollowUserRecord
+from app.customer.models.black_user import BlackUser, BlackUserRecord
+from app.customer.models.community import UserMoment
 
 class ThridPardLogin(BaseHandler):
     def create_user(self, openid, access_token, phone, userinfo, source, channel, site_openid=''):
@@ -1178,12 +1179,42 @@ class UserHomepageV2(BaseHandler):
             personal_tags = []
 
         data = {}
-        data_pic = []
-        pictures = PictureInfo.objects.filter(user_id=home_id, status=0).order_by('-created_at')
-        for picture in pictures:
-            pic_url = picture.picture_url
-            if pic_url:
-                data_pic.append(pic_url)
+        normal_data_pic = []
+        # 如果是本人的主页.可以看到鉴定中的相册
+        current_user_id = self.current_user_id
+        normal_pictures = PictureInfo.objects.filter(user_id=int(home_id), status=1, type=1, show_status=1)
+        essence_pictures = PictureInfo.objects.filter(user_id=int(home_id), status=1, type=2, show_status=1)
+
+        if current_user_id:
+            if int(current_user_id) == int(home_id):
+                normal_pictures = PictureInfo.objects.filter(user_id=int(home_id), status=1, type=1, show_status__ne=2)
+                essence_pictures = PictureInfo.objects.filter(user_id=int(home_id), status=1, type=2, show_status__ne=2)
+
+        for normal_picture in normal_pictures:
+            pic_url = normal_picture.picture_url
+            dic = {
+                "id": str(normal_picture.id),
+                "picture_url": pic_url,
+                "type": normal_picture.type
+            }
+            normal_data_pic.append(dic)
+
+        for essence_picture in essence_pictures:
+            if current_user_id:
+                user_vip = UserVip.objects.filter(user_id=current_user_id).first()
+                if user_vip:
+                    pic_url = essence_picture.picture_url
+                else:
+                    pic_url = ""
+            else:
+                pic_url = ""
+
+            dic = {
+                "id": str(essence_picture.id),
+                "picture_url": pic_url,
+                "type": essence_picture.type
+            }
+            data_pic.append(dic)
 
         dic = {}
         if home_user.audio_room_id:
@@ -2241,6 +2272,28 @@ class RecommendUserList(BaseHandler):
                     }
                 data.append(dic)
         return self.write({"status": "success", "data": data})
+
+
+@handler_define
+class UserChatCheck(BaseHandler):
+    @api_define("user chat check ", "/live/user/chat_check", [
+        Param("user_id", True, int, 0, 1, description=u"用户id")
+    ], description=u"聊天规则检查")
+    @login_required
+    def get(self):
+        user_id = self.arg_int("user_id")
+        current_user_id = int(self.current_user_id)
+        user_vip = UserVip.objects.filter(user_id=current_user_id).first()
+        if user_vip:
+            return self.write({"status": "success"})
+
+        result = User.chat_check(user_id, current_user_id)
+        if result == 2:
+            return self.write({"status": "failed", "error": _(u"非VIP用户每天免费文字聊天10个人")})
+
+        if result == 1:
+            return self.write({"status": "success"})
+
 
 
 

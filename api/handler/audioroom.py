@@ -29,7 +29,7 @@ from app.customer.models.vip import *
 import international
 from app.customer.models.black_user import *
 from app.customer.models.rank import *
-
+from app.picture.models.picture import PictureInfo
 appID = settings.Agora_AppId
 appCertificate = settings.Agora_appCertificate
 
@@ -868,5 +868,122 @@ class GetNewAnchorList(BaseHandler):
                     "personal_tags": personal_tags
                 }
             data.append(dic)
+        self.write({"status": "success", "data": data, })
+
+
+@handler_define
+class GetVoiceRoomListV3(BaseHandler):
+    @api_define("Get voice room list v3", r'/audio/room/list_v3', [
+        Param('page', True, str, "1", "1", u'page'),
+        Param('page_count', True, str, "10", "10", u'page_count'),
+        Param('time_stamp', False, str, "10", "10", u"最后一个人的时间戳(page=1不用传)"),
+        Param('gender', False, int, 0, 0, u"选择性别，0:全部,1:男,2:女"),
+        Param('room_type', False, int, 0, 0, u"房间类型筛选，0:全部,1:语音,2:视频")
+    ], description=u"获取挂单房间列表v3(带相册图片)")
+    def get(self):
+        page = self.arg_int('page')
+        page_count = self.arg_int('page_count')
+        room_type = self.arg_int('room_type', 0)
+
+
+        if room_type == 0:
+            is_video = 2
+        elif room_type == 1:
+            is_video = 0
+        else:
+            is_video = 1
+        """
+        if self.current_user:
+            gender = self.current_user.gender
+        else:
+            gender = 0
+        """
+        gender = self.arg_int("gender",0)
+        if page == 1:
+            query_time = datetime.datetime.now()
+        else:
+            time_stamp = float(self.arg('time_stamp'))
+            query_time = datetime.datetime.fromtimestamp(time_stamp)
+
+        data = []
+
+        if gender!=0:
+            if is_video == 1:
+                users = User.objects.filter(is_video_auth=1,gender=gender,audio_room_id__ne="", disturb_mode=0).order_by("-current_score")[
+                        (page - 1) * page_count:page * page_count]
+            elif is_video == 0:
+                users = User.objects.filter(is_video_auth__ne=1,gender=gender,audio_room_id__ne="", disturb_mode=0).order_by("-current_score")[
+                        (page - 1) * page_count:page * page_count]
+            else:
+                users = User.objects.filter(gender=gender,audio_room_id__ne="", disturb_mode=0).order_by("-current_score")[(page - 1) * page_count:page * page_count]
+        else:
+            if is_video == 1:
+                users = User.objects.filter(is_video_auth=1, audio_room_id__ne="", disturb_mode=0).order_by(
+                    "-current_score")[
+                        (page - 1) * page_count:page * page_count]
+            elif is_video == 0:
+                users = User.objects.filter(is_video_auth__ne=1, audio_room_id__ne="", disturb_mode=0).order_by(
+                    "-current_score")[
+                        (page - 1) * page_count:page * page_count]
+            else:
+                users = User.objects.filter(audio_room_id__ne="", disturb_mode=0).order_by("-current_score")[
+                        (page - 1) * page_count:page * page_count]
+
+
+        for user in users:
+            #if not user.audio_room_id:
+            #   continue
+            if user.id == 1 or user.id == 2:
+                continue
+            audioroom = AudioRoomRecord.objects.get(id=user.audio_room_id)
+            personal_tags = UserTags.get_usertags(user_id=user.id)
+            if not personal_tags:
+                personal_tags = []
+            user_vip = UserVip.objects.filter(user_id=user.id).first()
+
+            # 是否在线 查看心跳
+            import time
+            time = int(time.time())
+            pre_time = time - 120
+            user_beat = UserHeartBeat.objects.filter(user=user, last_report_time__gte=pre_time).first()
+            if user_beat:
+                is_online = 1
+            else:
+                is_online = 0
+
+            # 相册(最多六张)
+            pictures = PictureInfo.objects.filter(user_id=int(user.id), status=0).order_by('-created_at')[0:6]
+            pics = []
+            for picture in pictures:
+                pic_url = picture.picture_url
+                if pic_url:
+                    pic_dic = {
+                        "id": str(picture.id),
+                        "picture_url": pic_url
+                    }
+                    pics.append(pic_dic)
+
+            if user_vip:
+                vip = Vip.objects.filter(id=user_vip.vip_id).first()
+                dic = {
+                    "audioroom": convert_audioroom(audioroom),
+                    "user": convert_user(user),
+                    "personal_tags": personal_tags,
+                    "time_stamp": datetime_to_timestamp(audioroom.open_time),
+                    "vip": convert_vip(vip),
+                    "is_online": is_online,
+                    "pictures": pics
+                }
+            else:
+                dic = {
+                    "audioroom": convert_audioroom(audioroom),
+                    "user": convert_user(user),
+                    "personal_tags": personal_tags,
+                    "time_stamp": datetime_to_timestamp(audioroom.open_time),
+                    "is_online": is_online,
+                    "pictures": pics
+                }
+            data.append(dic)
+
         self.write({"status": "success", "data": data, })
 

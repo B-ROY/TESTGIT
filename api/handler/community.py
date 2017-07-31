@@ -28,6 +28,11 @@ class CreateMoment(BaseHandler):
         if not picture_urls and not content:
             return self.write({'status': "fail", 'error': u"内容图片均为空."})
 
+        code, message = UserMoment.check_moment_count(user)
+        if code == 2:
+            return self.write({'status': "fail", 'error': _(message)})
+
+
         if content:
             # 文本内容鉴黄
             ret, duration = shumei_text_spam(text=content, timeout=1, user_id=user.id, channel="DYNAMIC_COMMENT", nickname=user.nickname,

@@ -17,6 +17,7 @@ class UserMoment(Document):
     show_status = IntField(verbose_name=u"是否展示", default=1)  # 1:展示  2:数美屏蔽  3:举报  4:数美部分屏蔽  5:数美鉴定中
     delete_status = IntField(verbose_name=u"删除状态", default=1)  # 1:未删除  2:删除
     ispass = IntField(verbose_name=u"是否忽略")  # 1:忽略  2:未忽略
+    type = IntField(verbose_name=u"动态的类型")  # 1:普通动态  2:精华照片动态  3:私房视频
 
     @classmethod
     def create(cls, user_id, picture_urls, content):
@@ -39,6 +40,7 @@ class UserMoment(Document):
         user_moment.show_status = 5
         user_moment.delete_status = 1
         user_moment.ispass = 2
+        user_moment.type = 1
         user_moment.create_time = datetime.datetime.now()
         user_moment.save()
 
@@ -71,12 +73,17 @@ class UserMoment(Document):
         imgs = self.img_list
         img_list = []
 
-
-        if imgs:
-            for img in imgs:
-                for k,v in img.items():
-                    if v == 1:
-                        img_list.append(img["url"])
+        if self.type == 2:
+            count = len(imgs)
+            if count:
+                for i in range(count):
+                    img_list.append("")
+        else:
+            if imgs:
+                for img in imgs:
+                    for k,v in img.items():
+                            if v == 1:
+                                img_list.append(img["url"])
         moment_look = UserMomentLook.objects.filter(user_moment_id=str(self.id)).first()
         look_count = 0
         if moment_look:
@@ -93,6 +100,7 @@ class UserMoment(Document):
             "img_list": img_list,
             "comment_count": self.comment_count,
             "like_count": self.like_count,
+            "type": self.type,
             "look_count": look_count,
             "content": self.content,
             "date_time": date_time
@@ -104,6 +112,57 @@ class UserMoment(Document):
 
         return data
 
+    #  动态发布规则
+    @classmethod
+    def check_moment_count(cls, user):
+        """
+        VIP：
+        1）动态：每日发布5条
+        播主VIP：
+        1）动态：每日发布15条
+        播主：
+        1）动态：每日发布10条
+        普通用户：
+        1）动态：每日发布3条
+        """
+        vip_count = 5
+        anchor_vip_count = 15
+        anchor_count = 10
+        user_count = 3
+        is_video = user.is_video_auth
+        user_vip = UserVip.objects.filter(user_id=user.id).first()
+
+        now = datetime.datetime.now()
+        starttime = now.strftime("%Y-%m-%d 00:00:00")
+        endtime = now.strftime('%Y-%m-%d 23:59:59')
+        today_moment_count = UserMoment.objects.filter(user_id=user.id, show_status__ne=2, delete_status=1,
+                                                       create_time__gte=starttime, create_time__lte=endtime).count()
+        code = 1
+        message = ""
+        if user_vip:
+            if int(is_video) == 1:
+                # 播住vip
+                if today_moment_count >= anchor_vip_count:
+                    code = 2
+                    message = u"播主VIP,每日动态发布最多15条"
+            else:
+                # 用户vip
+                if today_moment_count >= vip_count:
+                    code = 2
+                    message = u"用户VIP,每日动态发布最多5条"
+        else:
+            if int(is_video) == 1:
+                # 播主:
+                if today_moment_count >= anchor_count:
+                    code = 2
+                    message = u"播主每日动态发布最多10条"
+            else:
+                # 普通用户
+                if today_moment_count >= user_count:
+                    code = 2
+                    message = u"普通用户每日动态发布最多3条"
+
+        return code, message
 
     @classmethod
     def get_time(cls, date_time):
