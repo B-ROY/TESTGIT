@@ -3,10 +3,8 @@
 ### Example user template
 
 # IntelliJ project files
-.idea
-*.iml
+.idea/*
 *.xml
 out
 gen
-*.pyc
 *.py[cod]
