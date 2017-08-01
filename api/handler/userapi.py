@@ -1412,7 +1412,7 @@ class UpdateUserInfo(BaseHandler):
                 nickname = self.arg("nickname")
 
                 # 昵称鉴黄
-                ret, duration = shumei_text_spam(text=user.nickname, timeout=1, user_id=user.id, channel="NICKNAME", nickname=nickname,
+                ret, duration = shumei_text_spam(text=nickname, timeout=1, user_id=user.id, channel="NICKNAME", nickname=user.nickname,
                                              phone=user.phone, ip=self.user_ip)
 
                 print ret
