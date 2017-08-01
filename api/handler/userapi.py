@@ -1923,8 +1923,8 @@ class RealNameInfoSubmit(BaseHandler):
         Param("pic_3", True, str, "", "", u"实名认证图片3"),
     ], description=u"实名认证")
     def get(self):
-        uid = self.arg_int("uid", "0")
-        temp_user_id = self.arg_int("user_id", "0")
+        uid = self.arg_int("uid", 0)
+        temp_user_id = self.arg_int("user_id", 0)
         if uid:
             user_id = uid
         else:
