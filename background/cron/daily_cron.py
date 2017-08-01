@@ -51,40 +51,40 @@ def clear_send_tools():
     print "old_tools deleted ...."
 
     # 自动发放 会员的 限时道具, 创建道具记录
-    user_vips = UserVip.objects.all()
-    if user_vips:
-        for user_vip in user_vips:
-            # 会员发放限时道具
-            vip = Vip.objects.filter(id=user_vip.vip_id).first()
-            tool_str = vip.tools_data
-            tool_dic = eval(tool_str)
-            for key, value in tool_dic.items():
-                tools = Tools.objects.filter(tools_type=int(key)).first()  # 道具
-
-                # if int(key) == 2:  # 千里眼
-                #     continue
-
-                # 限时的
-                user_tools = UserTools()
-                user_tools.user_id = user_vip.user_id
-                user_tools.tools_id = str(tools.id)
-                user_tools.tools_count = int(value)
-                user_tools.time_type = 0  # 限时
-                user_tools.get_type = 1  # 会员自动发放
-                invalid_time = now + datetime.timedelta(days=1)
-                user_tools.invalid_time = invalid_time
-                user_tools.save()
-
-                # 道具记录
-                tools_record = UserToolsRecord()
-                tools_record.user_id = user_vip.user_id
-                tools_record.tools_id = str(tools.id)
-                tools_record.tools_count = int(value)
-                tools_record.time_type = 0
-                tools_record.oper_type = 3
-                tools_record.create_time = now
-                tools_record.save()
-    print "tools send success..."
+    # user_vips = UserVip.objects.all()
+    # if user_vips:
+    #     for user_vip in user_vips:
+    #         # 会员发放限时道具
+    #         vip = Vip.objects.filter(id=user_vip.vip_id).first()
+    #         tool_str = vip.tools_data
+    #         tool_dic = eval(tool_str)
+    #         for key, value in tool_dic.items():
+    #             tools = Tools.objects.filter(tools_type=int(key)).first()  # 道具
+    #
+    #             # if int(key) == 2:  # 千里眼
+    #             #     continue
+    #
+    #             # 限时的
+    #             user_tools = UserTools()
+    #             user_tools.user_id = user_vip.user_id
+    #             user_tools.tools_id = str(tools.id)
+    #             user_tools.tools_count = int(value)
+    #             user_tools.time_type = 0  # 限时
+    #             user_tools.get_type = 1  # 会员自动发放
+    #             invalid_time = now + datetime.timedelta(days=1)
+    #             user_tools.invalid_time = invalid_time
+    #             user_tools.save()
+    #
+    #             # 道具记录
+    #             tools_record = UserToolsRecord()
+    #             tools_record.user_id = user_vip.user_id
+    #             tools_record.tools_id = str(tools.id)
+    #             tools_record.tools_count = int(value)
+    #             tools_record.time_type = 0
+    #             tools_record.oper_type = 3
+    #             tools_record.create_time = now
+    #             tools_record.save()
+    # print "tools send success..."
 
     # 删除会员到期的
     user_vips = UserVip.objects.filter(end_time__lte=yesterday_end)
