@@ -1946,7 +1946,8 @@ class MessageSendToolV1(BaseHandler):
 @handler_define
 class RealNameInfoSubmit(BaseHandler):
     @api_define("real_name_verify", r'/live/user/real_name', [
-        Param("uid", True, str, "", "", u"用户id"),
+        Param("uid", False, str, "", "", u"用户id"),
+        Param("user_id", False, str, "", "", u"用户user_id"),
         Param("uName", True, str, "", "", u"姓名"),
         Param("IdNum", True, str, "", "", u"身份证号"),
         Param("pic_1", True, str, "", "", u"实名认证图片1"),
@@ -1954,7 +1955,12 @@ class RealNameInfoSubmit(BaseHandler):
         Param("pic_3", True, str, "", "", u"实名认证图片3"),
     ], description=u"实名认证")
     def get(self):
-        user_id = self.arg_int("uid")
+        uid = self.arg_int("uid", 0)
+        temp_user_id = self.arg_int("user_id", 0)
+        if uid:
+            user_id = uid
+        else:
+            user_id = temp_user_id
         user_name = self.get_argument("uName")
         id_num = self.get_argument("IdNum")
 

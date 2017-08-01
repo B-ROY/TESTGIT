@@ -35,9 +35,10 @@ class UserRedis():
 
     @classmethod
     def remove_user_login(cls,userid):
-        return RQueueClient.getInstance().redis.delete(cls.__KEY_USER_LOGIN+"_"+userid)
+        RQueueClient.getInstance().redis.delete(cls.__KEY_USER_LOGIN+"_"+userid)
+        a =RQueueClient.getInstance().redis.get(cls.__KEY_USER_LOGIN+"_"+userid)
 
     @classmethod
     def get_user_login(cls,userid):
-        RQueueClient.getInstance().redis.get(cls.__KEY_USER_LOGIN+"_"+userid)
-
+        a =RQueueClient.getInstance().redis.get(cls.__KEY_USER_LOGIN+"_"+userid)
+        return a
