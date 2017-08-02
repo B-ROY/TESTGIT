@@ -131,7 +131,7 @@ class AliPayHandler(BaseHandler):
     @login_required
     @api_define("Play Url", r'/api/live/do/pay', [
         Param('amount', True, int, "str", "1", u'支付金额，单位分'),
-        Param('trade_type', True, int, "str", "0", u'0-支付宝 1-微信 2-苹果，3-微信JSAPI，7-谷歌'),
+        Param('trade_type', True, int, "str", "0", u'0-支付宝 1-微信 2-苹果，3-微信JSAPI，7-谷歌，8-微信扫码'),
         Param('platform', True, int, "str", "1", u"平台：(1, u'Android'),(2, u'IOS'),(3, u'WP'),(4, u'其他')"),
         Param('good_name', True, str, "商品名称", "商品名称", u'商品名称'),
         Param('desc', True, str, "商品描述", "商品描述", u'商品描述'),
@@ -200,8 +200,17 @@ class AliPayHandler(BaseHandler):
         elif trade_type == 7:
             pay = GooglePayDoPay()
             params = pay.do_pay_params()
-            pass
+        elif trade_type == 8:
+            pay = WePayDoPay(
+                out_trade_no=str(order.id),
+                subject=good_name,
+                total_fee=amount,
+                body=good_name,
+                ip=self.user_ip,
+            )
+            params = pay.do_create_qrcode()
 
+        return self.write({"params": params})
         data = {'order_id': str(order.id)}
         data.update(params)
         r = {'status': "success", "data": data, "ip":self.user_ip}

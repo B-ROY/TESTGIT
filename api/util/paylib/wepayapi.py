@@ -169,6 +169,23 @@ class WePayDoPay(WePayBase):
         }
         return data
 
+    def do_create_qrcode(self):
+        self.trade_type = "NATIVE"
+        result = self.xml_to_dict(self.post_xml())
+        print result
+        result_code = result.get('result_code')
+        err_code = result.get('err_code')
+        if result_code != "SUCCESS":
+            e = apiexception.WePayException(err_code)
+            e.desc = result.get("return_msg", "")
+            raise e
+        self.prepay_id = result.get('prepay_id')
+        self.nonce_str = result.get("nonce_str")
+        self.code_url = result.get('code_url')
+
+        return {"code_url":self.code_url}
+
+
     def verify_notice_sign(self,xml):
         """
         校验签名
