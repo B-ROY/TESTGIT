@@ -7,10 +7,12 @@ from django.conf import settings
 from api.convert.convert_user import *
 import time
 from app.customer.models.user import *
-from app.customer.models.community import *
+from app.customer.models.community import UserMoment, UserMomentLook, UserComment
 from app.util.shumeitools.shumeitools import *
 from app.customer.models.shumeidetect import *
-from app.customer.models.follow_user import *
+from app.customer.models.follow_user import FollowUser, FriendUser
+from app.customer.models.black_user import BlackUser
+from app.customer.models.vip import UserVip, Vip
 
 
 # 发布社区动态
@@ -231,6 +233,13 @@ class CreateComment(BaseHandler):
         user = self.current_user
 
         if status == 1:
+            user_moment = UserMoment.objects.filter(id=str(moment_id)).first()
+            black_type = BlackUser.is_black(user.id, user_moment.user_id)
+            if black_type == 1 or black_type == 0:
+                return self.write({'status': "fail", 'error': _(u"您已把对方拉黑")})
+            elif black_type == 2:
+                return self.write({'status': "fail", 'error': _(u"对方已把您拉黑")})
+
             if content:
                 # 文本内容鉴黄
                 ret, duration = shumei_text_spam(text=content, timeout=1, user_id=user.id, channel="COMMENT", nickname=user.nickname,
@@ -247,10 +256,16 @@ class CreateComment(BaseHandler):
                         is_pass = 1
                 if not is_pass:
                     return self.write({'status': "fail",
-                                       'param': 'nickname',
-                                       'error': u"经系统检测,您的内容涉及违规因素,请重新编辑"})
+                                       'error': _(u"经系统检测,您的内容涉及违规因素,请重新编辑")})
             comment = UserComment.create_comment(moment_id, user.id, content, comment_type, reply_user_id)
-            return self.write({"status": "success", "comment_id": str(comment.id)})
+            user_vip = UserVip.objects.filter(user_id=user.id).first()
+            vip_icon = ""
+            if user_vip:
+                vip = Vip.objects.filter(id=user_vip.vip_id).first()
+                vip_icon = vip.icon_url
+
+
+            return self.write({"status": "success", "comment_id": str(comment.id), "vip_icon": vip_icon})
 
         else:
             status = UserComment.delete_comment(comment_id, user.id)
@@ -412,6 +427,67 @@ class MomentList_V2(BaseHandler):
 
         self.write({"status": "success", "data": data})
 
+
+@handler_define
+class MomentCheck(BaseHandler):
+    @api_define("community check", r'/community/moment_check', [], description=u'动态发布检查')
+    @login_required
+    def get(self):
+        user = self.current_user
+
+        vip_count = 5
+        anchor_vip_count = 15
+        anchor_count = 10
+        user_count = 3
+        is_video = user.is_video_auth
+        user_vip = UserVip.objects.filter(user_id=user.id).first()
+
+        now = datetime.datetime.now()
+        starttime = now.strftime("%Y-%m-%d 00:00:00")
+        endtime = now.strftime('%Y-%m-%d 23:59:59')
+        today_moment_count = UserMoment.objects.filter(user_id=user.id, show_status__ne=2, delete_status=1,
+                                                       create_time__gte=starttime, create_time__lte=endtime).count()
+
+        dic = {
+            "code": 1,
+            "msg": "可以发布"
+        }
+
+        if user_vip:
+            if is_video == 1:
+                if today_moment_count >= anchor_vip_count:
+                    dic = {
+                        "code": 3,
+                        "msg": "今日动态已到达上限"
+                    }
+            else:
+                if today_moment_count >= vip_count:
+                    if int(user.gender) != 2:
+                        dic = {
+                            "code": 4,
+                            "msg": "进行播主认证,可以发布更多动态"
+                        }
+                    else:
+                        dic = {
+                            "code": 3,
+                            "msg": "今日动态已到达上限"
+                        }
+
+        else:
+            if is_video == 1:
+                if today_moment_count >= anchor_count:
+                    dic = {
+                        "code": 2,
+                        "msg": "办理VIP,可以发布更多动态"
+                    }
+            else:
+                if today_moment_count >= user_count:
+                    dic = {
+                        "code": 2,
+                        "msg": "办理VIP,可以发布更多动态"
+                    }
+
+        return self.write({"status": "success", "data": dic})
 
 
 

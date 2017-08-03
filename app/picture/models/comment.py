@@ -4,7 +4,7 @@ import logging
 import datetime
 from app.customer.models.user import *
 from django.db import models
-from app.picture.models.picture import *
+from app.picture.models.picture import PictureInfo
 from base.settings import CHATPAMONGO
 
 

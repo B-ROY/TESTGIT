@@ -269,7 +269,7 @@ class UserComment(Document):
                 "head_image": head_image,
                 "create_time": create_time,
                 "comment_content": self.content,
-                "comment_type": self.comment_type
+                "comment_type": self.comment_type,
             }
             user_vip = UserVip.objects.filter(user_id=user.id).first()
             if user_vip:
