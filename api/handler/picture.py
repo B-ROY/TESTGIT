@@ -443,36 +443,40 @@ class UserPictureCreate(BaseHandler):
         MessageSender.send_picture_detect(pic_url=picture_urls, user_id=user_id, pic_channel=0, source=3, obj_id=None)
 
         # 同步到动态
-        if publish_status == 2:
-            picture_url_list = []
-            for moment_pic_id in moment_pic_ids:
-                moment_pic = PictureInfo.objects.filter(id=moment_pic_id, show_status__ne=2).first()
-                if moment_pic:
-                    picture_url_list.append(moment_pic.picture_real_url)
-
-            user_moment = UserMoment()
-            user_moment.user_id = user_id
-            user_moment.like_count = 0
-            user_moment.like_user_list = []
-            user_moment.comment_count = 0
-
-            if picture_url_list:
-                for picture_url in picture_url_list:
-                    if picture_url:
-                        pic_url = User.convert_http_to_https(picture_url)
-                        dict = {
-                            "url": pic_url,
-                            "status": 1,
-                            "is_essence": 1,
-                        }
-                        user_moment.img_list.append(dict)
-            user_moment.content = "待定文案"
-            user_moment.show_status = 1
-            user_moment.delete_status = 1
-            user_moment.ispass = 2
-            user_moment.type = 2
-            user_moment.create_time = datetime.datetime.now()
-            user_moment.save()
+        # if publish_status == 2:
+        #     picture_url_list = []
+        #     for moment_pic_id in moment_pic_ids:
+        #         moment_pic = PictureInfo.objects.filter(id=moment_pic_id, show_status__ne=2).first()
+        #         if moment_pic:
+        #             picture_url_list.append(moment_pic.picture_real_url)
+        #
+        #     code, message = UserMoment.check_moment_count(user)
+        #     if code == 2:
+        #         return self.write({'status': "fail", 'error': _(message)})
+        #
+        #     user_moment = UserMoment()
+        #     user_moment.user_id = user_id
+        #     user_moment.like_count = 0
+        #     user_moment.like_user_list = []
+        #     user_moment.comment_count = 0
+        #
+        #     if picture_url_list:
+        #         for picture_url in picture_url_list:
+        #             if picture_url:
+        #                 pic_url = User.convert_http_to_https(picture_url)
+        #                 dict = {
+        #                     "url": pic_url,
+        #                     "status": 1,
+        #                     "is_essence": 1,
+        #                 }
+        #                 user_moment.img_list.append(dict)
+        #     user_moment.content = "待定文案"
+        #     user_moment.show_status = 1
+        #     user_moment.delete_status = 1
+        #     user_moment.ispass = 2
+        #     user_moment.type = 2
+        #     user_moment.create_time = datetime.datetime.now()
+        #     user_moment.save()
 
         if picture_ids:
             self.write({"status": "success", "picture_ids": picture_ids})
