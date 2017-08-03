@@ -20,20 +20,19 @@ from app.customer.models.vip import UserVip, Vip
 class CreateMoment(BaseHandler):
     @api_define("Create community", r'/community/create', [
         Param('picture_urls', False, str, "", "", u'图片url, 多个逗号相隔'),
-        Param('content', True, str, "", "", u'社区动态文字内容')
+        Param('content', False, str, "", "", u'社区动态文字内容')
     ], description=u'发布社区动态')
     @login_required
     def post(self):
         user = self.current_user
         picture_urls = self.arg('picture_urls', "")
-        content = self.arg('content')
+        content = self.arg('content', "")
         if not picture_urls and not content:
             return self.write({'status': "fail", 'error': u"内容图片均为空."})
 
         code, message = UserMoment.check_moment_count(user)
         if code == 2:
             return self.write({'status': "fail", 'error': _(message)})
-
 
         if content:
             # 文本内容鉴黄
