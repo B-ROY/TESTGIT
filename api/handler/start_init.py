@@ -55,8 +55,10 @@ class Initial(BaseHandler):
             # 强升
             if ua_version < version.min_version:
                 version_info["upgrade_type"] = 1
-            else:
+            elif version.min_version <= ua_version < version.version_code:
                 version_info["upgrade_type"] = version.upgrade_type
+            else:
+                version_info["upgrade_type"] = 0
 
             downloads_url = version.download_url
             version_info["download_url"] = downloads_url
