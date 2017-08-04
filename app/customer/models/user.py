@@ -81,6 +81,8 @@ class User(Document):
         (2, u'离线')
     ]
 
+
+
     # 用户id信息
     id = IntField(verbose_name=u'id', primary_key=True)
     identity = IntField(verbose_name=u"用户id", unique=True)
@@ -775,7 +777,7 @@ class PhonePassword(Document):
         try:
             phone_pass = PhonePassword.objects.filter(phone=phone).first()
             if phone_pass:
-                phone.update(password=password)
+                phone_pass.update(password=password)
             else:
                 phone_pass = PhonePassword()
                 phone_pass.phone = phone

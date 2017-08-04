@@ -209,8 +209,8 @@ class AliPayHandler(BaseHandler):
                 ip=self.user_ip,
             )
             params = pay.do_create_qrcode()
+            return self.write({"params": params})
 
-        return self.write({"params": params})
         data = {'order_id': str(order.id)}
         data.update(params)
         r = {'status': "success", "data": data, "ip":self.user_ip}
@@ -540,6 +540,7 @@ class PayRulesV2(BaseHandler):
         wepay_rule_list = []
         applepay_rule_list = []
         googlepay_rule_list = []
+        wepay_qrcode_rule_list = []
 
         if not rules:
             return self.write({'status': "fail", "error": _(u"获取列表失败")})
@@ -553,17 +554,21 @@ class PayRulesV2(BaseHandler):
                 applepay_rule_list.append(rule.normal_info())
             elif rule.trade_type == 7:
                 googlepay_rule_list.append(rule.normal_info())
+            elif rule.trade_type == 8:
+                wepay_qrcode_rule_list.append(rule.normal_info())
 
         # todo 做到redis中 CMS可调配
         is_wechat_show = 1 #1: 显示 0:隐藏
+
 
         self.write({'status': "success", "data": {
             "alipay_rules": alipay_rule_list,
             "wepay_rules": wepay_rule_list,
             "applepay_rules": applepay_rule_list,
-            "googlepay_rules":googlepay_rule_list
+            "googlepay_rules":googlepay_rule_list,
+            "wepay_qrcode_rules": wepay_qrcode_rule_list,
         },
-            "is_wechat_show": is_wechat_show, "default_pay": 1})
+            "is_wechat_show": is_wechat_show, "default_pay": 1})# 1 微信 2 支付宝
 
 
 @handler_define
@@ -574,7 +579,7 @@ class OderCheck(BaseHandler):
                 ], description=u"检查订单是否支付成功")
     @login_required
     def get(self):
-        order_id = self.arg("order_id")
+        order_id = self.arg("order_id")s
         try:
             order = TradeBalanceOrder.objects.get(id=order_id)
             user_id = self.current_user_id
