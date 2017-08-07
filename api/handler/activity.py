@@ -56,6 +56,17 @@ class GetActivity(BaseHandler):
         data = {}
         if activity:
             data["activity"] = convert_activity(activity)
+        else:
+            #  注意!!!! 临时修改 2.3.0 ios, 由于ios 领取VIP道具判断了活动.
+            ua = self.request.headers.get('User-Agent')
+            uas = ua.split(";")
+            if uas[2] == "iPhone" or uas[2] == "iPad":
+                data["activity"] = {
+                    "name": "aaaaa",
+                    "img_url": "aaaaa",
+                    "activity_url": "aaaaaa"
+                }
+
         user_id = self.current_user_id
         now = datetime.datetime.now()
         is_dialog = 0
