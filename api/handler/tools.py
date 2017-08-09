@@ -90,6 +90,11 @@ class Can_Receive(BaseHandler):
         user = self.current_user
         now = datetime.datetime.now()
 
+        # 注册24小时以内不可以领取
+        days = (now - user.created_at).days
+        if days < 1:
+            return self.write({"status": "success", "can_receive": can_receive})
+
         if user.is_video_auth == 1:
             verify = VideoManagerVerify.objects.filter(user_id=user_id).first()
             if not verify:

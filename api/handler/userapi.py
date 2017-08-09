@@ -1138,7 +1138,7 @@ class UserHomepageV1(BaseHandler):
         # 是否在线 查看心跳
         import time
         time = int(time.time())
-        pre_time = time - 120
+        pre_time = time - 3600
         user_beat = UserHeartBeat.objects.filter(user=home_user, last_report_time__gte=pre_time).first()
         if user_beat:
             is_online = 1
@@ -1236,7 +1236,7 @@ class UserHomepageV2(BaseHandler):
         # 是否在线 查看心跳
         import time
         time = int(time.time())
-        pre_time = time - 120
+        pre_time = time - 3600
         user_beat = UserHeartBeat.objects.filter(user=home_user, last_report_time__gte=pre_time).first()
         if user_beat:
             is_online = 1
