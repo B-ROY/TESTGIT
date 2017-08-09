@@ -422,3 +422,52 @@ class GooglePayVeriry(Document):
         else:
             raise Exception("trado order error")
         return True
+
+
+class HeliPayVerify(Document):
+    rt1_customerNumber = StringField(verbose_name=u"商户号", max_length=256)
+    rt2_orderId = StringField(verbose_name=u"订单号", max_length=256)
+    rt3_systemSerial = StringField(verbose_name=u"平台流水号", max_length=256)
+    rt4_status = StringField(verbose_name=u"订单状态", max_length=256)
+    rt5_orderAmount = FloatField(verbose_name=u"订单金额")
+    rt6_currency = StringField(verbose_name=u"币种", max_length=256)
+    rt7_timestamp = StringField(verbose_name=u"通知时间", max_length=256)
+    rt8_desc = StringField(verbose_name=u"备注", max_length=256)
+    sign = StringField(verbose_name=u"签名", max_length=256)
+    created_at = DateTimeField(verbose_name=u"创建时间", default=datetime.datetime.now())
+
+    @classmethod
+    def create_order(cls, rt1_customerNumber, rt2_orderId, rt3_systemSerial, rt4_status,
+                     rt5_orderAmount, rt6_currency, rt7_timestamp, rt8_desc, sign):
+
+        db_verify = HeliPayVerify.objects.filter(rt4_status="SUCCESS", rt2_orderId=rt2_orderId).first()
+        if db_verify:
+            return True
+
+        verify = HeliPayVerify()
+        verify.rt1_customerNumber = rt1_customerNumber
+        verify.rt2_orderId = rt2_orderId
+        verify.rt3_systemSerial = rt3_systemSerial
+        verify.rt4_status = rt4_status
+        verify.rt5_orderAmount = float(rt5_orderAmount)
+        verify.rt6_currency = rt6_currency
+        verify.rt7_timestamp = rt7_timestamp
+        verify.rt8_desc = rt8_desc
+        verify.sign = sign
+        verify.created_at = datetime.datetime.now()
+
+        return cls.fill_in(verify)
+
+
+    @classmethod
+    def fill_in(cls, verify):
+        success = Account.fill_in(verify.rt2_orderId)
+        if success:
+            print "fill in...helipay"
+            verify.save()
+            return True
+        else:
+            raise Exception("trado order error")
+
+
+

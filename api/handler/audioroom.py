@@ -202,8 +202,8 @@ class GenerateChannelKey(BaseHandler):
 
 @handler_define
 class IsVideoRoom(BaseHandler):
-    @api_define("Is Video Room", r'/audio/room/type',[
-                Param('channel_id', False, str, "","",u'房间号')
+    @api_define("Is Video Room", r'/audio/room/type', [
+                Param('channel_id', False, str, "", "", u'房间号')
     ], description=u'根据房间号获取房间类型')
     @login_required
     def get(self):

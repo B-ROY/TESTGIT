@@ -10,28 +10,27 @@ from api.handler.thridpard.weibo import WeiBoAPI
 from api.handler.thridpard.weixin import WexinAPI
 from api.util.tencenttools.signature import gen_signature
 from api.view.base import *
-# from PIL import Image
-# from app.customer.models.rank import *
-# from app.customer.models.account import *
 from app.customer.models.adv import Adv
 from app.customer.models.block_user_device import *
 from app.customer.models.feedback import *
 from app.customer.models.message import *
-from app.customer.models.online_user import *
+from app.customer.models.online_user import OnlineUser
 from app.customer.models.personal_tags import *
 from app.customer.models.rank import *
 from app.customer.models.share import *
 from app.customer.models.user import UserAppealRecord
-from app.customer.models.vip import *
-from app.picture.models.picture import *
+from app.customer.models.vip import Vip, UserVip
+from app.picture.models.picture import PictureInfo
 from app.redismodel.onlinecount import OnlineCount
 import international
 # from background.audit_handler.audit_handler import *
+from app.customer.models.tools import UserToolsRecord, UserTools, Tools, SendToolsRecord
 from app.util.shumeitools.shumeitools import *
 from app.customer.models.shumeidetect import *
-from app.customer.models.follow_user import *
-from app.customer.models.black_user import *
-from app.customer.models.community import *
+from app.customer.models.follow_user import FollowUser
+from app.customer.models.black_user import BlackUser
+from app.customer.models.community import UserMoment
+from app.customer.models.real_video_verify import RealVideoVerify
 
 class ThridPardLogin(BaseHandler):
     def create_user(self, openid, access_token, phone, userinfo, source, channel, site_openid=''):
@@ -1040,7 +1039,7 @@ class AUserInfo(BaseHandler):
             user = User.objects.filter(id=self.arg('uid')).first()
 
         if self.current_user.is_blocked:
-            return self.write({"status":"fail","error":_(u"您已被封号！请遵守用户协议！"),"errcode":"2001"})
+            return self.write({"status": "fail", "error": _(u"您已被封号！请遵守用户协议！"),"errcode":"2001"})
 
         data = {"status": "success"}
 
@@ -1052,6 +1051,15 @@ class AUserInfo(BaseHandler):
         dic["picture_count"] = PictureInfo.objects.filter(user_id=user.id, status=0).count()
         dic["audio_status"] = AudioRoomRecord.get_room_status(user_id=user.id)
         dic["check_real_name"] = RealNameVerify.check_user_verify(user_id=user.id)
+        # dic["check_real_video"] = RealVideoVerify.check_user_verify(user_id=user.id)
+        real_video = RealVideoVerify.objects(user_id=user.id).order_by("-verify_time").first()
+        if real_video:
+            dic["check_real_video"] = real_video.status
+            dic["cover_url"] = real_video.cover_url
+            dic["video_url"] = real_video.video_url
+        else:
+            dic["check_real_video"] = 3
+
 
         # 判断是否是vip
         user_vip = UserVip.objects.filter(user_id=user.id).first()
@@ -1162,7 +1170,7 @@ class UserHomepageV1(BaseHandler):
 # 新版个人主页_new
 @handler_define
 class UserHomepageV2(BaseHandler):
-    @api_define("User homepage v1", r'/live/user/homepage_v2', [
+    @api_define("User homepage v2", r'/live/user/homepage_v2', [
         Param('home_id', True, str, "", "", u'个人主页用户id'),
     ], description=u"精简_新版个人主页v2 <br>"
                    u"black_type    0:互相拉黑   1:已把对方拉黑  2:对方把您拉黑  3:均未拉黑<br>"
@@ -1231,6 +1239,17 @@ class UserHomepageV2(BaseHandler):
         dic["black_type"] = black_type
 
         dic["is_online"] = is_online
+
+        # 视频认证,实名认证
+        dic["check_real_name"] = RealNameVerify.check_user_verify(user_id=user_id)
+        real_video = RealVideoVerify.objects(user_id=user_id).order_by("-verify_time").first()
+        if real_video:
+            dic["check_real_video"] = real_video.status
+            if real_video.status == 1:
+                dic["cover_url"] = real_video.cover_url
+                dic["video_url"] = real_video.video_url
+        else:
+            dic["check_real_video"] = 3
 
         # 我的动态相关
         temp_moments = UserMoment.objects.filter(user_id=home_id, show_status__ne=2, delete_status=1).order_by("-create_time")
@@ -1952,13 +1971,16 @@ class RealNameInfoSubmit(BaseHandler):
 
 @handler_define
 class RealNameCheck(BaseHandler):
-    @api_define("real name check", r'/live/user/real_name/check', [], description=u"实名认证检查 0:审核中 1:通过 2:未通过 3:未审核")
+    @api_define("real name check", r'/live/user/real_name/check', [], description=u"实名认证检查 0:审核中 1:通过 2:未通过 3:未审核<br>"
+                    u"check_real_name:实名认证, real_video_verify:视频认证, vieo_auth_status:播主认证")
     @login_required
     def get(self):
         user = self.current_user
         status = RealNameVerify.check_user_verify(user_id=user.id)
-
-        self.write({"status": "success", "check_real_name": status, })
+        real_video_verify = RealVideoVerify.check_user_verify(user_id=user.id)
+        video_auth_status = VideoManagerVerify.check_video_manager_verify(user_id=user.id)
+        self.write({"status": "success", "check_real_name": status, "real_video_verify": real_video_verify,
+                    "video_auth_status": video_auth_status})
 
 #@handler_define
 #class H5VideoCheck(BaseHandler):

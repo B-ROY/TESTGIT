@@ -17,6 +17,7 @@ from django.conf import settings
 import logging
 from app.customer.models.promotion import *
 import international
+from api.util.paylib.helipayapi import HeliDoPay
 
 def parser_receipt(receipt):
     if not receipt:
@@ -131,7 +132,7 @@ class AliPayHandler(BaseHandler):
     @login_required
     @api_define("Play Url", r'/api/live/do/pay', [
         Param('amount', True, int, "str", "1", u'支付金额，单位分'),
-        Param('trade_type', True, int, "str", "0", u'0-支付宝 1-微信 2-苹果，3-微信JSAPI，7-谷歌'),
+        Param('trade_type', True, int, "str", "0", u'0-支付宝 1-微信 2-苹果，3-微信JSAPI，7-谷歌 9-合利宝'),
         Param('platform', True, int, "str", "1", u"平台：(1, u'Android'),(2, u'IOS'),(3, u'WP'),(4, u'其他')"),
         Param('good_name', True, str, "商品名称", "商品名称", u'商品名称'),
         Param('desc', True, str, "商品描述", "商品描述", u'商品描述'),
@@ -146,6 +147,7 @@ class AliPayHandler(BaseHandler):
         good_name = self.arg('good_name',self.arg("amount"))
         trade_type = self.arg_int('trade_type')
         ua = self.request.headers.get('User-Agent')
+        desc = self.arg("desc")
 
 
         #创建本地订单
@@ -201,11 +203,49 @@ class AliPayHandler(BaseHandler):
             pay = GooglePayDoPay()
             params = pay.do_pay_params()
             pass
+        elif trade_type == 9:
+            # 合利宝
+            pay = HeliDoPay(str(order.id), amount, self.user_ip, good_name, desc)
+            params = pay.post_submit()
 
         data = {'order_id': str(order.id)}
         data.update(params)
         r = {'status': "success", "data": data, "ip":self.user_ip}
         self.write(r)
+
+@handler_define
+class HeliPayNotifyHandler(BaseHandler):
+    @api_define("helipay Callback Url", r'/api/live/helipay/notify', [
+    ], description=u"合利宝通知接口",)
+    def post(self):
+        body = self.request.body
+        if not body:
+            return self.write("fail")
+
+        rt1_customerNumber = self.arg("rt1_customerNumber")
+        rt2_orderId = self.arg("rt2_orderId")
+        rt3_systemSerial = self.arg("rt3_systemSerial")
+        rt4_status = self.arg("rt4_status")
+        rt5_orderAmount = self.arg("rt5_orderAmount")
+        rt6_currency = self.arg("rt6_currency")
+        rt7_timestamp = self.arg("rt7_timestamp")
+        rt8_desc = self.arg("rt8_desc")
+        sign = self.arg("sign")
+
+        verify_status = HeliDoPay.verify_notice_sign(urllib.unquote(rt1_customerNumber), urllib.unquote(rt2_orderId), urllib.unquote(rt3_systemSerial), urllib.unquote(rt4_status),
+                                                     urllib.unquote(rt5_orderAmount), urllib.unquote(rt6_currency), urllib.unquote(rt7_timestamp), urllib.unquote(rt8_desc), sign)
+
+        if not verify_status:
+            print "fail!!!!!!!!!!!!!!!!!!verify_status"
+            return self.write("fail")
+
+        success = HeliPayVerify.create_order(urllib.unquote(rt1_customerNumber), urllib.unquote(rt2_orderId), urllib.unquote(rt3_systemSerial), urllib.unquote(rt4_status),
+                                             urllib.unquote(rt5_orderAmount), urllib.unquote(rt6_currency), urllib.unquote(rt7_timestamp), urllib.unquote(rt8_desc), sign)
+
+        if success:
+            self.write("success")
+        else:
+            self.write("fail")
 
 @handler_define
 class AliPayNoticeHandler(BaseHandler):
@@ -531,6 +571,7 @@ class PayRulesV2(BaseHandler):
         wepay_rule_list = []
         applepay_rule_list = []
         googlepay_rule_list = []
+        helipay_rule_list = []
 
         if not rules:
             return self.write({'status': "fail", "error": _(u"获取列表失败")})
@@ -544,6 +585,13 @@ class PayRulesV2(BaseHandler):
                 applepay_rule_list.append(rule.normal_info())
             elif rule.trade_type == 7:
                 googlepay_rule_list.append(rule.normal_info())
+            elif rule.trade_type == 9:
+                helipay_rule_list.append(rule.normal_info())
+
+        if len(helipay_rule_list) > 0:
+            use_helipay = 1
+        else:
+            use_helipay = 0
 
         # todo 做到redis中 CMS可调配
         is_wechat_show = 1 #1: 显示 0:隐藏
@@ -554,7 +602,7 @@ class PayRulesV2(BaseHandler):
             "applepay_rules": applepay_rule_list,
             "googlepay_rules":googlepay_rule_list
         },
-            "is_wechat_show": is_wechat_show, "default_pay": 1})
+            "is_wechat_show": is_wechat_show, "default_pay": 1, "use_helipay": use_helipay})
 
 
 @handler_define
@@ -590,3 +638,5 @@ class GooglePayCancel(BaseHandler):
         order_id = self.arg("order_id")
         order = TradeBalanceOrder.objects.get(id=order_id)
         order.update(status=TradeBalanceOrder.STATUS_FIIL_IN_CANCEL)
+
+
