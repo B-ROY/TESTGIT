@@ -29,9 +29,42 @@ from app.customer.models.vip import *
 import international
 from app.customer.models.black_user import *
 from app.customer.models.rank import *
+from redis_model.redis_client import *
 from app.picture.models.picture import PictureInfo
 appID = settings.Agora_AppId
 appCertificate = settings.Agora_appCertificate
+
+def get_area_by_ip(ip):
+    """
+    In redis IP Library is preserverd as key-list
+
+    key is the ip's the top three
+    list's memeber is like  a_b_city
+    a and b is the ip's fourth number
+    for example 1.2.4.0 - 1.2.4.2 is Beijing
+                1.2.4.3 - 1.2.4.5 is Shanghai
+            In Redis, they are preserverd as 1.2.4 : [0_2_Beijing, 3_5_Shanghai]
+    This method is used to resolve the city by ip and return the city.
+
+    :param ip: user's ip
+    :return: city if city else None
+    """
+    ips = ip.split(".")
+    k = str(ips[0]) + "." + str(ips[1]) + "." + str(ips[2])
+
+    ip4_list = RQueueClient.getInstance().redis.lrange(k, 0, 100)
+    if ip4_list:
+        for ip4 in ip4_list:
+            ip4s = ip4.split("_")
+
+            min_ip4 = int(ip4s[0])
+            max_ip4 = int(ip4s[1])
+            print min_ip4,max_ip4, ips[3]
+            if min_ip4 <= int(ips[3]) <= max_ip4:
+                city = ip4s[2]
+                return city
+        return None
+    return None
 
 
 #声网登录
@@ -146,10 +179,14 @@ class GenerateChannelKey(BaseHandler):
                 AudioRoomRecord.set_room_status(user_id=uid, status=3)
             channelkey = generate_media_channel_key(appID, appCertificate, channelname, unixts, randomint, uid, expiredts)
             #AudioRoomRecord.set_room_status(user_id=ruid, status=3)
+            area = get_area_by_ip(self.user_ip)
+            print self.user_ip
+            print "area is " , area
             room = AudioRoomRecord.objects.get(id=channelname)
             room.status = 3
             room.report_join = datetime.datetime.now()
             room.is_video = is_video
+            room.join_area = area
             if is_video == 1:
                 room.now_price = room_user.video_price
             else:
