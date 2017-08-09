@@ -2158,19 +2158,25 @@ class OnlineChargeCount(BaseHandler):
             else:
                 online_delta = random.randint(-20, 20)
                 charge_delta = random.randint(-10, 10)
+                change = False
+                if 500 < count.online_count < 1000 or (count.online_count <= 500 and online_delta > 0) or (
+                        count.online_count >= 1000 and online_delta < 0):
+                    count.update(inc__online_count=online_delta)
+                    change = True
 
-                count.update(inc__online_count=online_delta)
-                count.update(inc__charge_count=charge_delta)
+                if 200 < count.charge_count < 500 or (count.charge_count <= 200 and charge_delta > 0) or (
+                        count.charge_count >= 500 and charge_delta < 0):
+                    count.update(inc__charge_count=charge_delta)
+                    change = True
                 online_count = count.online_count
                 charge_count = count.charge_count
-                count.update(set__update_time=now)
-
+                if change:
+                    count.update(set__update_time=now)
         return self.write({
             "status": "success",
             "online_count": online_count,
             "charge_count": charge_count
         })
-
 
 #Post 需要测试负载均衡
 @handler_define
