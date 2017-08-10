@@ -55,8 +55,11 @@ class AddGeTui(BaseHandler):
                     tuser = User.objects.filter(id=int(user_id)).first()
                     if tuser:
                         #tiantianyouliao;2.3.1;iPhone;10.3.2;iPhone 6 Plus;tiantianyouliao
-                        tuser.devname = ua.split(";")[4]
-                        tuser.osver = ua.split(";")[3]
+                        uainfo = ua.split(";")
+                        tuser.devname = uainfo[4]
+                        tuser.osver = uainfo[3]
+                        tuser.app_version = uainfo[1]
+                        tuser.app_name = uainfo[0]
                         tuser.save()
                     return self.write({"status": "success"})
                 except Exception,e:

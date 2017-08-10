@@ -134,6 +134,7 @@ class User(Document):
     osver = StringField(verbose_name=u'设备系统版本号', max_length=10, default='')
     devname = StringField(verbose_name=u'设备名称', max_length=30, default='')
     app_name = StringField(verbose_name=u'app name', max_length=20, default='')
+    app_version = StringField(verbose_name=u'app version', max_length=20, default='')
     ip = StringField(verbose_name=u"注册ip", max_length=255, default='')
     channel = StringField(verbose_name=u"渠道", max_length=32)
     platform = IntField(verbose_name=u'平台', choices=PLATFORM)
