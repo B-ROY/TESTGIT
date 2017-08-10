@@ -430,6 +430,7 @@ class TradeBalanceRule(Document):
         (5, u'其他'),
         (6, u'后台添加'),
         (7, u'google pay'),
+        (8, u'扫码支付'),
         (9, u'helipay'),
     ]
 
