@@ -302,7 +302,7 @@ class GiftManager(object):
 
             cost = price*times
 
-            if from_user_account.diamond < (price * times):
+            if from_user_account.diamond < price:
                 return False, from_user_account.diamond
             from_user_account.diamond_trade_out(price=cost, desc=u"语音聊天id=%s" % room_id,trade_type=TradeDiamondRecord.TradeTypeAudio)
 
