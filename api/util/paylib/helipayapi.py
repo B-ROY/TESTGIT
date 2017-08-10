@@ -36,7 +36,7 @@ class HeliDoPay():
 
     def get_sign(self):
         """生成签名"""
-        sign_key = settings.sign_key
+        sign_key = settings.helipay_sign_key
         # sign_key = "zP6UOCVkfm5DQQJR988eCsGhL1zrPJnF"
         sign_content = "&" + self.P1_bizType + "&" + self.P2_customerNumber + "&" + str(self.P3_orderId) + "&" + self.P4_goodsName + "&" + str(self.P5_orderAmount) + "&" + self.P6_currency + "&" + str(self.P7_orderIp) + "&" + self.P8_notifyUrl + "&" + self.P9_isRaw + "&" + self.P10_appPayType + "&" + self.P11_limitCreditPay + "&" + self.P12_deviceInfo + "&" + self.P13_appid + "&" + self.P14_desc + "&" + sign_key
         print sign_content
@@ -93,7 +93,7 @@ class HeliDoPay():
     def verify_notice_sign(cls, rt1_customerNumber, rt2_orderId, rt3_systemSerial, rt4_status,
                            rt5_orderAmount, rt6_currency, rt7_timestamp, rt8_desc, sign):
         # sign_key = "zP6UOCVkfm5DQQJR988eCsGhL1zrPJnF"
-        sign_key = settings.sign_key
+        sign_key = settings.helipay_sign_key
         sign_content = "&" + rt1_customerNumber + "&" + rt2_orderId + "&" + rt3_systemSerial + "&" + rt4_status + "&" + rt5_orderAmount + "&" + rt6_currency + "&" + rt7_timestamp + "&" + rt8_desc + "&" + sign_key
         smd5 = hashlib.md5()
         smd5.update(sign_content)

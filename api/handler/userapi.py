@@ -1052,7 +1052,7 @@ class AUserInfo(BaseHandler):
         dic["audio_status"] = AudioRoomRecord.get_room_status(user_id=user.id)
         dic["check_real_name"] = RealNameVerify.check_user_verify(user_id=user.id)
         # dic["check_real_video"] = RealVideoVerify.check_user_verify(user_id=user.id)
-        real_video = RealVideoVerify.objects(user_id=user.id).order_by("-verify_time").first()
+        real_video = RealVideoVerify.objects(user_id=user.id, status__ne=2).order_by("-update_time").first()
         if real_video:
             dic["check_real_video"] = real_video.status
             dic["cover_url"] = real_video.cover_url
@@ -1241,8 +1241,8 @@ class UserHomepageV2(BaseHandler):
         dic["is_online"] = is_online
 
         # 视频认证,实名认证
-        dic["check_real_name"] = RealNameVerify.check_user_verify(user_id=user_id)
-        real_video = RealVideoVerify.objects(user_id=user_id).order_by("-verify_time").first()
+        dic["check_real_name"] = RealNameVerify.check_user_verify(user_id=home_id)
+        real_video = RealVideoVerify.objects(user_id=home_id, status__ne=2).order_by("-update_time").first()
         if real_video:
             dic["check_real_video"] = real_video.status
             if real_video.status == 1:

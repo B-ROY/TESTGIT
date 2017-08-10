@@ -25,11 +25,13 @@ class RealVideoVerifyUpload(BaseHandler):
         video_url = self.arg("video_url")
         user_id = self.current_user_id
         video_verify = RealVideoVerify()
+        now = datetime.datetime.now()
         video_verify.user_id = int(user_id)
         video_verify.cover_url = cover_url
         video_verify.video_url = video_url
         video_verify.feedback_reason = ""
-        video_verify.create_time = datetime.datetime.now()
+        video_verify.create_time = now
+        video_verify.update_time = now
         video_verify.status = 0
         video_verify.is_valid = 1
         video_verify.save()

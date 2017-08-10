@@ -24,6 +24,7 @@ class RealVideoVerify(Document):
     video_url = StringField(verbose_name=u"视频地址", max_length=256)
     feedback_reason = StringField(verbose_name=u"审核反馈", max_length=256)
     create_time = DateTimeField(verbose_name=u"创建时间", default=datetime.datetime.now())
+    update_time = DateTimeField(verbose_name=u"更新时间")
     status = IntField(verbose_name=u"审核状态", choices=VERIFY_STATUS)
     is_valid = IntField(verbose_name=u"是否移除", default=1)  # 1.不移除 2.移除
 
@@ -34,7 +35,7 @@ class RealVideoVerify(Document):
 
     @classmethod
     def check_user_verify(cls, user_id):
-        verify = RealVideoVerify.objects(user_id=user_id).order_by("-verify_time").first()
+        verify = RealVideoVerify.objects(user_id=user_id, status__ne=2).order_by("-create_time").first()
         if verify:
             return verify.status
         else:

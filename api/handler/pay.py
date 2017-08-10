@@ -204,6 +204,7 @@ class AliPayHandler(BaseHandler):
             params = pay.do_pay_params()
             pass
         elif trade_type == 9:
+            print "type-------------------- 999999"
             # 合利宝
             pay = HeliDoPay(str(order.id), amount, self.user_ip, good_name, desc)
             params = pay.post_submit()
