@@ -132,6 +132,7 @@ class User(Document):
     created_at = DateTimeField(verbose_name=u"创建时间", default=datetime.datetime.now())
     cid = StringField(verbose_name=u"client_id(push)", max_length=128, default='')
     osver = StringField(verbose_name=u'设备系统版本号', max_length=10, default='')
+    devname = StringField(verbose_name=u'设备名称', max_length=30, default='')
     app_name = StringField(verbose_name=u'app name', max_length=20, default='')
     ip = StringField(verbose_name=u"注册ip", max_length=255, default='')
     channel = StringField(verbose_name=u"渠道", max_length=32)

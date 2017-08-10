@@ -52,6 +52,9 @@ class AddGeTui(BaseHandler):
                     if platform != "":
                         record.platform = platform
                     record.save()
+                    tuser = User.objects.filter(id=int(user_id)).first()
+                    if tuser:
+                        tuser.update(set__osver =ua.split(";")[3],set__devname=ua.split(";")[2])
                     return self.write({"status": "success"})
                 except Exception,e:
                     logging.error("create Getui error:{0}".format(e))
