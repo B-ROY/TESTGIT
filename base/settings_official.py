@@ -222,7 +222,13 @@ def load_settings(settings, debug=False, **kwargs):
         "INTERNATIONAL_TYPE": 86,
         "SHARE_URL": "http://www.iwala.cn/shar/",
         "INVITE_URL": "http://www.iwala.cn/invitte/liaopa_invite_.html",
-        "INS_IMAGE_URL": ""
+        "INS_IMAGE_URL": "",
+
+        # 合利宝相关配置
+        "helipay_customerNumber": "C1800001347",
+        "helipay_sign_key": "zP6UOCVkfm5DQQJR988eCsGhL1zrPJnF",
+        "helipay_url": "http://pay.trx.helipay.com/trx/app/interface.action",
+        "notify_url":  "https://api.v1.iwala.cn/api/live/helipay/notify"
     },
 
 
