@@ -52,6 +52,15 @@ class AddGeTui(BaseHandler):
                     if platform != "":
                         record.platform = platform
                     record.save()
+                    tuser = User.objects.filter(id=int(user_id)).first()
+                    if tuser:
+                        #tiantianyouliao;2.3.1;iPhone;10.3.2;iPhone 6 Plus;tiantianyouliao
+                        uainfo = ua.split(";")
+                        tuser.devname = uainfo[4]
+                        tuser.osver = uainfo[3]
+                        tuser.app_version = uainfo[1]
+                        tuser.app_name = uainfo[0]
+                        tuser.save()
                     return self.write({"status": "success"})
                 except Exception,e:
                     logging.error("create Getui error:{0}".format(e))

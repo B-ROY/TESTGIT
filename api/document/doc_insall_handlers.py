@@ -23,6 +23,7 @@ INSTALL_HANDLERS = [
     "api.handler.black_user",  # 拉黑接口
     "api.handler.getui_controller",
     "api.handler.community",
+    "api.handler.videos",
 ]
 
 INSTALL_HANDLERS_NAME = {
@@ -49,4 +50,5 @@ INSTALL_HANDLERS_NAME = {
     "api.handler.follow_user": "关注用户接口",
     "api.handler.black_user": "拉黑用户接口",
     "api.handler.community": "社区接口",
+    "api.handler.videos": "视频相关接口",
 }

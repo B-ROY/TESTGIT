@@ -31,6 +31,8 @@ from app.customer.models.black_user import *
 from app.customer.models.rank import *
 from redis_model.redis_client import *
 from app.picture.models.picture import PictureInfo
+from app.customer.models.real_video_verify import RealVideoVerify
+
 appID = settings.Agora_AppId
 appCertificate = settings.Agora_appCertificate
 
@@ -202,8 +204,8 @@ class GenerateChannelKey(BaseHandler):
 
 @handler_define
 class IsVideoRoom(BaseHandler):
-    @api_define("Is Video Room", r'/audio/room/type',[
-                Param('channel_id', False, str, "","",u'房间号')
+    @api_define("Is Video Room", r'/audio/room/type', [
+                Param('channel_id', False, str, "", "", u'房间号')
     ], description=u'根据房间号获取房间类型')
     @login_required
     def get(self):
@@ -841,6 +843,10 @@ class GetVoiceRoomListV2(BaseHandler):
             else:
                 is_online = 0
 
+            # 视频认证状态
+            real_video = RealVideoVerify.objects(user_id=user.id, status__ne=2).order_by("-update_time").first()
+            show_video = RealVideoVerify.objects(user_id=user.id, status=1).order_by("-update_time").first()
+
             if user_vip:
                 vip = Vip.objects.filter(id=user_vip.vip_id).first()
                 dic = {
@@ -859,6 +865,14 @@ class GetVoiceRoomListV2(BaseHandler):
                     "time_stamp": datetime_to_timestamp(audioroom.open_time),
                     "is_online": is_online
                 }
+
+            if show_video:
+                dic["check_real_video"] = show_video.status
+            else:
+                if real_video:
+                    dic["check_real_video"] = real_video.status
+                else:
+                    dic["check_real_video"] = 3
 
             data.append(dic)
 
