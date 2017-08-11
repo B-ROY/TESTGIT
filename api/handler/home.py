@@ -144,7 +144,8 @@ class Get_Index_Column(BaseHandler):
                 user = User.objects.filter(id=anchor.user_id).first()
                 if user.id == 1 or user.id == 2:
                     continue
-
+                if not user.audio_room_id:
+                    continue
                 # 是否在线 查看心跳
                 import time
                 time = int(time.time())
