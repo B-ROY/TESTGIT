@@ -26,47 +26,11 @@ from api.handler.thridpard.qcloud.im import QCloudIM
 import json
 from django.conf import settings
 from app.customer.models.vip import *
-import international
-from app.customer.models.black_user import *
-from app.customer.models.rank import *
-from redis_model.redis_client import *
-from app.customer.models.real_video_verify import RealVideoVerify
+import random
 
-appID = settings.Agora_AppId
-appCertificate = settings.Agora_appCertificate
-
-def get_area_by_ip(ip):
-    """
-    In redis IP Library is preserverd as key-list
-
-    key is the ip's the top three
-    list's memeber is like  a_b_city
-    a and b is the ip's fourth number
-    for example 1.2.4.0 - 1.2.4.2 is Beijing
-                1.2.4.3 - 1.2.4.5 is Shanghai
-            In Redis, they are preserverd as 1.2.4 : [0_2_Beijing, 3_5_Shanghai]
-    This method is used to resolve the city by ip and return the city.
-
-    :param ip: user's ip
-    :return: city if city else None
-    """
-    ips = ip.split(".")
-    k = str(ips[0]) + "." + str(ips[1]) + "." + str(ips[2])
-
-    ip4_list = RQueueClient.getInstance().redis.lrange(k, 0, 100)
-    if ip4_list:
-        for ip4 in ip4_list:
-            ip4s = ip4.split("_")
-
-            min_ip4 = int(ip4s[0])
-            max_ip4 = int(ip4s[1])
-            print min_ip4,max_ip4, ips[3]
-            if min_ip4 <= int(ips[3]) <= max_ip4:
-                city = ip4s[2]
-                return city
-        return None
-    return None
-
+from app.picture.models.picture import PictureInfo
+appID = "0927d1c4bb914c658b4a1a8ba7a88a96"
+appCertificate = "ed1b88f080b644ebb24e60d18439c6ad"
 
 #声网登录
 @handler_define
@@ -106,25 +70,12 @@ class GenerateChannelKey(BaseHandler):
         channelname = self.arg("channel_id", "")
         is_video = self.arg_int("is_video", 0)
 
-        # 校验黑名单
-        # black_user = BlackUser.objects.filter(from_id=uid, to_id=ruid).first()
-        # if black_user:
-        #     return self.write({
-        #         "status": "failed",
-        #         "error": "to_user is on the blacklist"
-        #     })
-        #
-        # rever_black_user = BlackUser.objects.filter(from_id=ruid, to_id=uid).first()
-        # if rever_black_user:
-        #     return self.write({
-        #         "status": "failed",
-        #         "error": "you are on to_user's blacklist"
-        #     })
-
 
         room_user = User.objects.get(id=ruid)
         if room_user.user_type == 2:
-            return self.write({'status': "success", 'channelKey': "", 'channel_id': channelname})
+            channelkey = generate_media_channel_key(appID, appCertificate, channelname, unixts, randomint, uid,
+                                                    expiredts)
+            return self.write({'status': "success", 'channelKey': channelkey, 'channel_id': channelname})
         if room_user.disturb_mode != 0:
             return self.write({
                 'status': "failed",
@@ -137,7 +88,7 @@ class GenerateChannelKey(BaseHandler):
                         user_id=ruid,
                         is_video=0,
                         is_video_auth=1 if room_user.is_video_auth == 1 else 0,
-                        user_gender=room_user.gender,
+                        user_gender= room_user.gender,
                         open_time=datetime.datetime.now(),
                         now_price=room_user.now_price,
                         status=1,
@@ -150,9 +101,10 @@ class GenerateChannelKey(BaseHandler):
                 room_user.audio_room_id = str(room.id)
                 room_user.save()
                 channelname = str(room.id)
-
+                #todo 之后修改逻辑
+                return self.write({'status': "failed", 'room_status': 3 + 10000})
             except Exception, e:
-                logging.error("create room2 record error:{0}".format(e))
+                logging.error("create room record error:{0}".format(e))
                 return self.write({"status": "failed", "error": str(e)})
         else:
             room = AudioRoomRecord.objects.get(id=channelname)
@@ -166,7 +118,7 @@ class GenerateChannelKey(BaseHandler):
 
         user_account = Account.objects.get(user=User.objects.get(id=uid))
         if uid != ruid and user_account.diamond < room.now_price:
-            return self.write({"status": "failed", "error": _(u"余额不足一分钟"), })
+            return self.write({"status": "failed", "error": u"余额不足一分钟", })
 
         room_status = AudioRoomRecord.get_room_status(user_id=ruid)
 
@@ -184,7 +136,6 @@ class GenerateChannelKey(BaseHandler):
             room.status = 3
             room.report_join = datetime.datetime.now()
             room.is_video = is_video
-            room.join_ip = self.user_ip
             if is_video == 1:
                 room.now_price = room_user.video_price
             else:
@@ -200,8 +151,8 @@ class GenerateChannelKey(BaseHandler):
 
 @handler_define
 class IsVideoRoom(BaseHandler):
-    @api_define("Is Video Room", r'/audio/room/type', [
-                Param('channel_id', False, str, "", "", u'房间号')
+    @api_define("Is Video Room", r'/audio/room/type',[
+                Param('channel_id', False, str, "","",u'房间号')
     ], description=u'根据房间号获取房间类型')
     @login_required
     def get(self):
@@ -409,7 +360,7 @@ class CreateOneToOneOrder(BaseHandler):
         user_id = self.current_user_id
         user = self.current_user
         if not user.listen_url or user.now_price == None:
-            self.write({"status": "failed", "error": _(u"请录制声音并上传挂单价格"), })
+            self.write({"status": "failed", "error": u"请录制声音并上传挂单价格", })
 
         create_time = datetime.datetime.now()
         order_id = str(AudioRoomRecord.create_roomrecord(user_id=user_id, open_time=create_time))
@@ -417,7 +368,7 @@ class CreateOneToOneOrder(BaseHandler):
         if order_id:
             self.write({"status": "success", "order_id": order_id})
         else:
-            self.write({"status": "failed", "error": _(u"开启挂单失败"), })
+            self.write({"status": "failed", "error": u"开启挂单失败", })
 
 
 #价格列表
@@ -515,7 +466,9 @@ class AudioRoomReject(BaseHandler):
         user_id = self.arg_int("user_id")
         join_id = self.arg_int("join_id")
         AudioRoomRecord.set_room_status(user_id=user_id, status=1)
-        AudioRoomRecord.set_room_status(user_id=join_id, status=1)
+        join_status = AudioRoomRecord.get_room_status(user_id=join_id)
+        if join_status == 3:
+            AudioRoomRecord.set_room_status(user_id=join_id, status=1)
 
         self.write({'status': "success", })
 
@@ -553,14 +506,8 @@ class ReportAudioRoom(BaseHandler):
         room = AudioRoomRecord.objects.get(id=room_id)
         user_id = self.current_user_id
         end_time = datetime.datetime.now()
-
-        if room.audit_status == 1:
-            AudioRoomRecord.finish_roomrecord(room_id, end_time=datetime.datetime.now())
-            return self.write({'status': "failed", "error": "huangaaa", 'errcode': '4001', "audit_status":1, "room_operation":0, "message":"huang"})
-
         if room.status != 2:
             AudioRoomRecord.finish_roomrecord(room_id=room_id, end_time=end_time)
-            logging.error("/audio/report errcode 3001")
             return self.write({'status': "fail", "error": "房间已经关闭", 'errcode': '3001'})
 
         current_time = datetime.datetime.now()
@@ -574,13 +521,11 @@ class ReportAudioRoom(BaseHandler):
                 room.save()
             else:
                 AudioRoomRecord.finish_roomrecord(room_id=room_id, end_time=end_time)
-                logging.error("/audio/report errcode 3002")
-                return self.write({'status': "fail", "error": _(u"用户未找到"), 'errcode':'3002'})
+                return self.write({'status': "fail", "error": "用户未找到", 'errcode':'3002'})
 
         else:
             AudioRoomRecord.finish_roomrecord(room_id=room_id, end_time=end_time)
-            logging.error("/audio/report errcode 3003")
-            return self.write({'status': 'fail', "error": _(u"房间异常"), 'errcode': '3003'})
+            return self.write({'status': 'fail', "error": "房间异常", 'errcode': '3003'})
 
         return self.write({'status': "success"})
 
@@ -630,7 +575,6 @@ class PayAudioBill(BaseHandler):
         room_id = self.arg("room_id")
         audio_status, times = GiftManager.audio_check(room_id=room_id)
         if not audio_status:
-            logging.error("paybill status 4")
             return self.write({'status': 'failed', 'status_code': 4, })
 
         status, account_money = GiftManager.audio_bill(room_id=room_id, times=times)
@@ -644,7 +588,6 @@ class PayAudioBill(BaseHandler):
             else:
                 self.write({'status': 'success', 'status_code': 2, })  # 付费成功，用户余额不足3分钟
         else:
-            logging.error("paybill status 3")
             self.write({'status': 'failed', 'status_code': 3, })  # 付费失败
 
 
@@ -703,8 +646,6 @@ class UpdateNowPrice(BaseHandler):
     def get(self):
         user_id = self.current_user_id
         now_price = self.arg("price")
-        if not now_price or int(now_price)==0:
-            now_price = 10
         result = AudioRoomRecord.update_now_price(user_id, now_price, 0)
         if result:
             self.write({'status': 'success', })
@@ -734,11 +675,24 @@ class UpdateListenUrlV1(BaseHandler):
     ], description=u'更新listen_url v1')
     def get(self):
         user_id = self.current_user_id
+        # listen_url = self.arg("listen_url")
         listen_url = User.convert_http_to_https(self.arg("listen_url"))
         url_duration = self.arg_int('url_duration')
         result = AudioRoomRecord.update_listen_url(user_id, listen_url, url_duration)
-
         if result:
+            user = self.current_user
+            if user.gender == 2 and user.bottle_switch == 1:
+                to_list = []
+                online_users = OnlineUser.get_list()
+                for online_user in online_users:
+                    if online_user.user.bottle_switch == 1 and online_user.user.gender == 1:
+                        to_list.append(online_user.user.sid)
+
+                if to_list:
+                    random_int = int(time.mktime(datetime.datetime.now().timetuple()))
+                    bottle_result = QCloudIM.voice_in_bottle(user=user, to_list=to_list, random_int=random_int, listen_url=listen_url, url_duration=url_duration)
+                    print bottle_result
+
             self.write({'status': 'success', })
         else:
             self.write({'status': 'failed', })
@@ -767,7 +721,242 @@ class GetVoiceRoomListV2(BaseHandler):
         Param('time_stamp', False, str, "10", "10", u"最后一个人的时间戳(page=1不用传)"),
         Param('gender', False, int, 0, 0, u"选择性别，0:全部,1:男,2:女"),
         Param('room_type', False, int, 0, 0, u"房间类型筛选，0:全部,1:语音,2:视频")
-    ], description=u"获取挂单房间列表v2")
+    ], description=u"获取挂单房间列表v1")
+    def get(self):
+        page = self.arg_int('page')
+        page_count = self.arg_int('page_count')
+        room_type = self.arg_int('room_type', 0)
+
+        if room_type == 0:
+            is_video = 2
+        elif room_type == 1:
+            is_video = 0
+        else:
+            is_video = 1
+        """
+        if self.current_user:
+            gender = self.current_user.gender
+        else:
+            gender = 0
+        """
+        ids = {
+            2: [
+                3078734,
+                3078733,
+                3078732,
+                3078731,
+                3078730,
+                3078729,
+                3078728,
+                3078727,
+                3078726,
+                3078725,
+                3078724,
+                3078723,
+                3078722,
+                3078721,
+                3078719,
+                3078718,
+                3078717,
+                3078716,
+                3078715,
+                3078714,
+                3078713,
+                3078712,
+                3078711,
+                3078710,
+                3078709,
+                3078708,
+                3078707,
+                3078706,
+                3078705,
+                ],
+            1: [
+                3078761,
+                3012010,
+                3014151,
+                3012694,
+                3020174,
+                3014372,
+                3002127,
+                3004655,
+                3011170,
+                3012349,
+                3008618,
+                3002192,
+                3014207,
+                3013780,
+                3013408,
+                3013281,
+                3014195,
+                3014208,
+                3013449,
+                3014206,
+                3011658,
+                3011033,
+                3013099,
+                3000542,
+                3000469,
+                3000490,
+                3000549,
+                3000545,
+                3000579,
+                3000575,
+                3000629,
+            ]
+        }
+        ua = self.request.headers.get('User-Agent')
+        uas = ua.split(";")
+        app_name = uas[0]
+
+        if app_name == "reliaozaixian":
+            ids = {
+                2: [
+                    3078705,
+                    3078706,
+                    3078707,
+                    3078708,
+                    3078709,
+                    3078710,
+                    3078711,
+                    3078712,
+                    3080101,
+                    3080102,
+                    3080100,
+                    3080097,
+                    3080096,
+                    3080095,
+                    3080093,
+                    3080094,
+                    3080092,
+                    3080091,
+                    3080087,
+                    3080089,
+                    3080086,
+                    3080085,
+                    3080082,
+                    3080083,
+                    3080081,
+
+                ],
+                1: [
+                    3066517,
+                    3066563,
+                    3066564,
+                    3066560,
+                    3066561,
+                    3066549,
+                    3066548,
+                    3066547,
+                    3066545,
+                    3066546,
+                    3066544,
+                    3066540,
+                    3066538,
+                    3066537,
+                    3066534,
+                    3066536,
+                    3066532,
+                    3066564,
+                    3066530,
+                    3066526,
+                    3066527,
+                    3066525,
+                    3066522,
+                    3066520,
+                    3066519,
+                ]
+
+            }
+        gender = self.arg_int("gender", 0)
+
+        data = []
+        if page ==1 :
+            if gender == 1:
+                users = User.objects.filter(identity__in=ids[1])
+            elif gender == 2:
+                users = User.objects.filter(identity__in=ids[2])
+            else:
+                users = User.objects.filter(identity__in=ids[1] + ids[2])
+            for user in users:
+                #if not user.audio_room_id:
+                #   continue
+                if user.id == 1 or user.id == 2:
+                    continue
+                if not user.audio_room_id:
+                    continue
+                audioroom = AudioRoomRecord.objects.get(id=user.audio_room_id)
+                personal_tags = UserTags.get_usertags(user_id=user.id)
+                if not personal_tags:
+                    personal_tags = []
+                dic = {
+                    "audioroom": convert_audioroom(audioroom),
+                    "user": convert_user(user),
+                    "personal_tags":personal_tags,
+                    "time_stamp":datetime_to_timestamp(audioroom.open_time)
+                }
+                data.append(dic)
+	random.shuffle(data)
+        self.write({"status": "success", "data": data, })
+
+
+# 新人驾到  (在线的, 认证主播 认证时间倒序)
+@handler_define
+class GetNewAnchorList(BaseHandler):
+    @api_define("Get new anchor online list ", r'/audio/room/new_anchor_list', [
+        Param('page', True, str, "1", "1", u'page'),
+        Param('page_count', True, str, "10", "10", u'page_count')
+    ], description=u"新人驾到")
+    def get(self):
+
+        from app.customer.models.rank import NewAnchorRank
+        page = self.arg_int('page')
+        page_count = self.arg_int('page_count')
+
+        ids = [
+            3078724,
+            3078723,
+            3078722,
+            3078721,
+        ]
+        random.shuffle(ids)
+        data = []
+        if page == 1:
+            for id in ids:
+                user = User.objects.filter(identity=id).first()
+                if user.id == 1 or user.id == 2:
+                    continue
+
+                audioroom = AudioRoomRecord.objects.get(id=user.audio_room_id)
+                personal_tags = UserTags.get_usertags(user_id=user.id)
+                user_vip = UserVip.objects.filter(user_id=user.id).first()
+                if user_vip:
+                    vip = Vip.objects.filter(id=user_vip.vip_id).first()
+                    dic = {
+                        "audioroom": convert_audioroom(audioroom),
+                        "user": convert_user(user),
+                        "personal_tags": personal_tags,
+                        "vip": convert_vip(vip)
+                    }
+                else:
+                    # 测试
+                    # vip = Vip.objects.filter(id="5928e5ee2040e4079fff2322").first()
+                    dic = {
+                        "audioroom": convert_audioroom(audioroom),
+                        "user": convert_user(user),
+                        "personal_tags": personal_tags
+                    }
+                data.append(dic)
+        self.write({"status": "success", "data": data, })
+@handler_define
+class GetVoiceRoomListV3(BaseHandler):
+    @api_define("Get voice room list v3", r'/audio/room/list_v3', [
+        Param('page', True, str, "1", "1", u'page'),
+        Param('page_count', True, str, "10", "10", u'page_count'),
+        Param('time_stamp', False, str, "10", "10", u"最后一个人的时间戳(page=1不用传)"),
+        Param('gender', False, int, 0, 0, u"选择性别，0:全部,1:男,2:女"),
+        Param('room_type', False, int, 0, 0, u"房间类型筛选，0:全部,1:语音,2:视频")
+    ], description=u"获取挂单房间列表v3(带相册图片)")
     def get(self):
         page = self.arg_int('page')
         page_count = self.arg_int('page_count')
@@ -795,29 +984,169 @@ class GetVoiceRoomListV2(BaseHandler):
 
         data = []
 
-        if gender!=0:
-            if is_video == 1:
-                users = User.objects.filter(is_video_auth=1,gender=gender,audio_room_id__ne="", disturb_mode=0).order_by("-current_score")[
-                    (page - 1) * page_count:page * page_count]
-            elif is_video == 0:
-                users = User.objects.filter(is_video_auth__ne=1,gender=gender,audio_room_id__ne="", disturb_mode=0).order_by("-current_score")[
-                        (page - 1) * page_count:page * page_count]
-            else:
-                users = User.objects.filter(gender=gender,audio_room_id__ne="", disturb_mode=0).order_by("-current_score")[(page - 1) * page_count:page * page_count]
-        else:
-            if is_video == 1:
-                users = User.objects.filter(is_video_auth=1, audio_room_id__ne="", disturb_mode=0).order_by(
-                    "-current_score")[
-                        (page - 1) * page_count:page * page_count]
-            elif is_video == 0:
-                users = User.objects.filter(is_video_auth__ne=1, audio_room_id__ne="", disturb_mode=0).order_by(
-                    "-current_score")[
-                        (page - 1) * page_count:page * page_count]
-            else:
-                users = User.objects.filter(audio_room_id__ne="", disturb_mode=0).order_by("-current_score")[
-                        (page - 1) * page_count:page * page_count]
+        # if gender!=0:
+        #     if is_video == 1:
+        #         users = User.objects.filter(is_video_auth=1,gender=gender,audio_room_id__ne="", disturb_mode=0).order_by("-current_score")[
+        #                 (page - 1) * page_count:page * page_count]
+        #     elif is_video == 0:
+        #         users = User.objects.filter(is_video_auth__ne=1,gender=gender,audio_room_id__ne="", disturb_mode=0).order_by("-current_score")[
+        #                 (page - 1) * page_count:page * page_count]
+        #     else:
+        #         users = User.objects.filter(gender=gender,audio_room_id__ne="", disturb_mode=0).order_by("-current_score")[(page - 1) * page_count:page * page_count]
+        # else:
+        #     if is_video == 1:
+        #         users = User.objects.filter(is_video_auth=1, audio_room_id__ne="", disturb_mode=0).order_by(
+        #             "-current_score")[
+        #                 (page - 1) * page_count:page * page_count]
+        #     elif is_video == 0:
+        #         users = User.objects.filter(is_video_auth__ne=1, audio_room_id__ne="", disturb_mode=0).order_by(
+        #             "-current_score")[
+        #                 (page - 1) * page_count:page * page_count]
+        #     else:
+        #         users = User.objects.filter(audio_room_id__ne="", disturb_mode=0).order_by("-current_score")[
+        #                 (page - 1) * page_count:page * page_count]
+
+        ids = {
+            2: [
+                3078734,
+                3078733,
+                3078732,
+                3078731,
+                3078730,
+                3078729,
+                3078728,
+                3078727,
+                3078726,
+                3078725,
+                3078724,
+                3078723,
+                3078722,
+                3078721,
+                3078719,
+                3078718,
+                3078717,
+                3078716,
+                3078715,
+                3078714,
+                3078713,
+                3078712,
+                3078711,
+                3078710,
+                3078709,
+                3078708,
+                3078707,
+                3078706,
+                3078705,
+            ],
+            1: [
+                3078761,
+                3012010,
+                3014151,
+                3012694,
+                3020174,
+                3014372,
+                3002127,
+                3004655,
+                3011170,
+                3012349,
+                3008618,
+                3002192,
+                3014207,
+                3013780,
+                3013408,
+                3013281,
+                3014195,
+                3014208,
+                3013449,
+                3014206,
+                3011658,
+                3011033,
+                3013099,
+                3000542,
+                3000469,
+                3000490,
+                3000549,
+                3000545,
+                3000579,
+                3000575,
+                3000629,
+            ]
+        }
+        ua = self.request.headers.get('User-Agent')
+        uas = ua.split(";")
+        app_name = uas[0]
+
+        if app_name == "reliaozaixian":
+            ids = {
+                2: [
+                    3078705,
+                    3078706,
+                    3078707,
+                    3078708,
+                    3078709,
+                    3078710,
+                    3078711,
+                    3078712,
+                    3080101,
+                    3080102,
+                    3080100,
+                    3080097,
+                    3080096,
+                    3080095,
+                    3080093,
+                    3080094,
+                    3080092,
+                    3080091,
+                    3080087,
+                    3080089,
+                    3080086,
+                    3080085,
+                    3080082,
+                    3080083,
+                    3080081,
+
+                ],
+                1: [
+                    3066517,
+                    3066563,
+                    3066564,
+                    3066560,
+                    3066561,
+                    3066549,
+                    3066548,
+                    3066547,
+                    3066545,
+                    3066546,
+                    3066544,
+                    3066540,
+                    3066538,
+                    3066537,
+                    3066534,
+                    3066536,
+                    3066532,
+                    3066564,
+                    3066530,
+                    3066526,
+                    3066527,
+                    3066525,
+                    3066522,
+                    3066520,
+                    3066519,
+                ]
+
+            }
 
 
+        gender = self.arg_int("gender", 0)
+
+        data = []
+        if page ==1 :
+            if gender == 1:
+                users = User.objects.filter(identity__in=ids[1])
+            elif gender == 2:
+                users = User.objects.filter(identity__in=ids[2])
+            else:
+                users = User.objects.filter(identity__in=ids[1] + ids[2])
         for user in users:
             #if not user.audio_room_id:
             #   continue
@@ -832,16 +1161,24 @@ class GetVoiceRoomListV2(BaseHandler):
             # 是否在线 查看心跳
             import time
             time = int(time.time())
-            pre_time = time - 3600
+            pre_time = time - 120
             user_beat = UserHeartBeat.objects.filter(user=user, last_report_time__gte=pre_time).first()
             if user_beat:
                 is_online = 1
             else:
                 is_online = 0
 
-            # 视频认证状态
-            real_video = RealVideoVerify.objects(user_id=user.id, status__ne=2).order_by("-update_time").first()
-            show_video = RealVideoVerify.objects(user_id=user.id, status=1).order_by("-update_time").first()
+            # 相册(最多六张)
+            pictures = PictureInfo.objects.filter(user_id=int(user.id), status=0, type__ne=2, show_status__ne=2).order_by('-created_at')[0:6]
+            pics = []
+            for picture in pictures:
+                pic_url = picture.picture_url
+                if pic_url:
+                    pic_dic = {
+                        "id": str(picture.id),
+                        "picture_url": pic_url
+                    }
+                    pics.append(pic_dic)
 
             if user_vip:
                 vip = Vip.objects.filter(id=user_vip.vip_id).first()
@@ -851,7 +1188,8 @@ class GetVoiceRoomListV2(BaseHandler):
                     "personal_tags": personal_tags,
                     "time_stamp": datetime_to_timestamp(audioroom.open_time),
                     "vip": convert_vip(vip),
-                    "is_online": is_online
+                    "is_online": is_online,
+                    "pictures": pics
                 }
             else:
                 dic = {
@@ -859,17 +1197,9 @@ class GetVoiceRoomListV2(BaseHandler):
                     "user": convert_user(user),
                     "personal_tags": personal_tags,
                     "time_stamp": datetime_to_timestamp(audioroom.open_time),
-                    "is_online": is_online
+                    "is_online": is_online,
+                    "pictures": pics
                 }
-
-            if show_video:
-                dic["check_real_video"] = show_video.status
-            else:
-                if real_video:
-                    dic["check_real_video"] = real_video.status
-                else:
-                    dic["check_real_video"] = 3
-
             data.append(dic)
 
         self.write({"status": "success", "data": data, })
@@ -877,11 +1207,11 @@ class GetVoiceRoomListV2(BaseHandler):
 
 # 新人驾到  (在线的, 认证主播 认证时间倒序)
 @handler_define
-class GetNewAnchorList(BaseHandler):
-    @api_define("Get new anchor online list ", r'/audio/room/new_anchor_list', [
+class GetNewAnchorListV2(BaseHandler):
+    @api_define("Get new anchor online list v2 ", r'/audio/room/new_anchor_list_v2', [
         Param('page', True, str, "1", "1", u'page'),
         Param('page_count', True, str, "10", "10", u'page_count')
-    ], description=u"新人驾到")
+    ], description=u"新人驾到v2")
     def get(self):
 
         from app.customer.models.rank import NewAnchorRank
@@ -898,13 +1228,27 @@ class GetNewAnchorList(BaseHandler):
             audioroom = AudioRoomRecord.objects.get(id=user.audio_room_id)
             personal_tags = UserTags.get_usertags(user_id=user.id)
             user_vip = UserVip.objects.filter(user_id=user.id).first()
+
+            # 相册(最多六张)
+            pictures = PictureInfo.objects.filter(user_id=int(user.id), status=0, type__ne=2, show_status__ne=2).order_by('-created_at')[0:6]
+            pics = []
+            for picture in pictures:
+                pic_url = picture.picture_url
+                if pic_url:
+                    pic_dic = {
+                        "id": str(picture.id),
+                        "picture_url": pic_url
+                    }
+                    pics.append(pic_dic)
+
             if user_vip:
                 vip = Vip.objects.filter(id=user_vip.vip_id).first()
                 dic = {
                     "audioroom": convert_audioroom(audioroom),
                     "user": convert_user(user),
                     "personal_tags": personal_tags,
-                    "vip": convert_vip(vip)
+                    "vip": convert_vip(vip),
+                    "pictures": pics
                 }
             else:
                 # 测试
@@ -912,7 +1256,8 @@ class GetNewAnchorList(BaseHandler):
                 dic = {
                     "audioroom": convert_audioroom(audioroom),
                     "user": convert_user(user),
-                    "personal_tags": personal_tags
+                    "personal_tags": personal_tags,
+                    "pictures": pics
                 }
             data.append(dic)
         self.write({"status": "success", "data": data, })

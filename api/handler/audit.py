@@ -160,20 +160,13 @@ class TextCheck(BaseHandler):
     def get(self):
         text = self.arg("text")
         guid = self.arg("guid")
-        check_type = self.arg_int("type")
-        channel = ""
-        if check_type == 1:
-            channel = "NICKNAME"
-        if check_type == 2:
-            channel = "MESSAGE"
-        if check_type == 3:
-            channel = "SIGNATURE"
+        check_type = self.arg("type")
 
         ip = self.user_ip
 
         user = self.current_user
 
-        ret = shumei_text_spam(text=text, timeout=1, user_id=user.id, channel=channel, nickname=user.nickname, phone=user.phone, ip=ip)
+        ret = shumei_text_spam(text=text, timeout=1, user_id=user.id, channel=check_type, nickname=user.nickname, phone=user.phone, ip=ip)
 
         is_pass = 0
         if ret["code"] == 1100:
@@ -337,18 +330,13 @@ class BlockList(BaseHandler):
         data = []
 
         for record in block_list:
-
-            names = []
-            for name in record.block_user_dev.split(","):
-                if name and name not in names:
-                    names.append(name)
-            for name in record.block_user_id.split(","):
-                if name and name not in names:
-                    names.append(name)
-            if names:
-                str_users = reduce(lambda x, y: x+","+y, names)
+            if not record.block_user_id:
+                str_users = record.block_user_dev
+            elif not record.block_user_dev:
+                str_users = record.block_user_id
             else:
-                str_users = ""
+                str_users = record.block_user_id + "," + record.block_user_dev
+
             record_date_1 = record.block_date.strftime(u"%m月%d日")
             title = record_date_1 + u"违规公告"
 
