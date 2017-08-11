@@ -11,6 +11,7 @@ from app.customer.models.adv import Adv
 from app.customer.models.vip import *
 from app.customer.models.index_column import *
 from app.customer.models.rank import *
+from app.customer.models.real_video_verify import RealVideoVerify
 
 @handler_define
 class RecommendList(BaseHandler):
@@ -44,21 +45,6 @@ class RecommendList(BaseHandler):
         hot_list = []
 
         user_id_list=[]
-        """
-        for audioroom in audiorooms:
-            user = AudioRoomRecord.get_audio_user(audioroom.user_id)
-            personal_tags = UserTags.get_usertags(user_id=audioroom.user_id)
-            if not personal_tags:
-                personal_tags = []
-            dic = {
-                "audioroom": convert_audioroom(audioroom),
-                "user": convert_user(user),
-                "personal_tags": personal_tags,
-                "time_stamp": datetime_to_timestamp(audioroom.open_time),
-            }
-            audio_list.append(dic)
-            user_id_list.append(user.id)
-        """
         for user in hots:
             room = AudioRoomRecord.objects.get(id=user.audio_room_id)
             personal_tags = UserTags.get_usertags(user_id=room.user_id)
@@ -93,23 +79,20 @@ class RecommendList(BaseHandler):
                     "vip": convert_vip(vip),
                     "is_online": is_online
                 }
+
+            show_video = RealVideoVerify.objects(user_id=user.id, status=1).order_by("-update_time").first()
+            if show_video:
+                dic["check_real_video"] = show_video.status
+            else:
+                real_video = RealVideoVerify.objects(user_id=user.id, status__ne=2).order_by("-update_time").first()
+                if real_video:
+                    dic["check_real_video"] = real_video.status
+                else:
+                    dic["check_real_video"] = 3
+
             hot_list.append(dic)
             user_id_list.append(user.id)
-        """    
-        for videoroom in videorooms:
-            user = AudioRoomRecord.get_audio_user(videoroom.user_id)
-            if user.id not in user_id_list:
-                personal_tags = UserTags.get_usertags(user_id=videoroom.user_id)
-                if not personal_tags:
-                    personal_tags = []
-                dic = {
-                    "audioroom": convert_audioroom(videoroom),
-                    "user": convert_user(user),
-                    "personal_tags": personal_tags,
-                    "time_stamp": datetime_to_timestamp(videoroom.open_time),
-                }
-                video_list.append(dic)
-        """
+
         result_advs = []
         advs = Adv.get_list()
         for adv in advs or []:
@@ -191,5 +174,15 @@ class Get_Index_Column(BaseHandler):
                         "is_online": is_online,
                         "personal_tags": personal_tags
                     }
+                # 视频认证状态
+                real_video = RealVideoVerify.objects(user_id=user.id, status__ne=2).order_by("-update_time").first()
+                show_video = RealVideoVerify.objects(user_id=user.id, status=1).order_by("-update_time").first()
+                if show_video:
+                    dic["check_real_video"] = show_video.status
+                else:
+                    if real_video:
+                        dic["check_real_video"] = real_video.status
+                    else:
+                        dic["check_real_video"] = 3
                 data.append(dic)
         return self.write({"status": "success", "data": data, })
