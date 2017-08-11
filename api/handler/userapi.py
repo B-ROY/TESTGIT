@@ -1052,11 +1052,12 @@ class AUserInfo(BaseHandler):
         dic["audio_status"] = AudioRoomRecord.get_room_status(user_id=user.id)
         dic["check_real_name"] = RealNameVerify.check_user_verify(user_id=user.id)
         # dic["check_real_video"] = RealVideoVerify.check_user_verify(user_id=user.id)
+        # 当前认证状态:
         real_video = RealVideoVerify.objects(user_id=user.id, status__ne=2).order_by("-update_time").first()
+        show_video = RealVideoVerify.objects(user_id=user.id, status=1).order_by("-update_time").first()
+
         if real_video:
             dic["check_real_video"] = real_video.status
-            dic["cover_url"] = real_video.cover_url
-            dic["video_url"] = real_video.video_url
         else:
             dic["check_real_video"] = 3
 
@@ -1066,6 +1067,19 @@ class AUserInfo(BaseHandler):
         if user_vip:
             vip = Vip.objects.filter(id=user_vip.vip_id).first()
             dic["vip"] = convert_vip(vip)
+
+        temp_uid = self.arg_int('uid', 0)
+        current_id = int(self.current_user_id)
+        if temp_uid == current_id:
+            # 本人的话可以显示认证中的
+            show_video = RealVideoVerify.objects(user_id=user.id, status__ne=2).order_by("-update_time").first()
+            pass
+        else:
+            show_video = RealVideoVerify.objects(user_id=user.id, status=1).order_by("-update_time").first()
+
+        if show_video:
+            dic["cover_url"] = show_video.cover_url
+            dic["video_url"] = show_video.video_url
 
         data.update(dic)
 
@@ -1243,13 +1257,19 @@ class UserHomepageV2(BaseHandler):
         # 视频认证,实名认证
         dic["check_real_name"] = RealNameVerify.check_user_verify(user_id=home_id)
         real_video = RealVideoVerify.objects(user_id=home_id, status__ne=2).order_by("-update_time").first()
-        if real_video:
-            dic["check_real_video"] = real_video.status
-            if real_video.status == 1:
-                dic["cover_url"] = real_video.cover_url
-                dic["video_url"] = real_video.video_url
+
+        show_video = RealVideoVerify.objects(user_id=home_id, status=1).order_by("-update_time").first()
+
+        if show_video:
+            dic["check_real_video"] = show_video.status
+            dic["cover_url"] = show_video.cover_url
+            dic["video_url"] = show_video.video_url
         else:
-            dic["check_real_video"] = 3
+            if real_video:
+                dic["check_real_video"] = real_video.status
+            else:
+                dic["check_real_video"] = 3
+
 
         # 我的动态相关
         temp_moments = UserMoment.objects.filter(user_id=home_id, show_status__ne=2, delete_status=1).order_by("-create_time")
