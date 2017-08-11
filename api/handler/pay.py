@@ -171,15 +171,17 @@ class AliPayHandler(BaseHandler):
             params = pay.do_pay_params()
         #微信支付
         elif trade_type == 1:
-            pay = WePayDoPay(
-                out_trade_no=str(order.id),
-                subject=good_name,
-                total_fee=amount,
-                body=good_name,
-                ip=self.user_ip,
-            )
-
-            params = pay.do_pay_params()
+            # pay = WePayDoPay(
+            #     out_trade_no=str(order.id),
+            #     subject=good_name,
+            #     total_fee=amount,
+            #     body=good_name,
+            #     ip=self.user_ip,
+            # )
+            #
+            # params = pay.do_pay_params()
+            pay = HeliDoPay(str(order.id), amount, self.user_ip, good_name, desc)
+            params = pay.post_submit()
         #苹果支付只创建一个订单 返回订单号
         elif trade_type == 2:
             pay = ApplePayDoPay()
@@ -572,11 +574,8 @@ class PayRulesV2(BaseHandler):
         wepay_rule_list = []
         applepay_rule_list = []
         googlepay_rule_list = []
-        helipay_rule_list = []
-
         if not rules:
             return self.write({'status': "fail", "error": _(u"获取列表失败")})
-
         for rule in rules:
             if rule.trade_type == 0:
                 alipay_rule_list.append(rule.normal_info())
@@ -586,13 +585,6 @@ class PayRulesV2(BaseHandler):
                 applepay_rule_list.append(rule.normal_info())
             elif rule.trade_type == 7:
                 googlepay_rule_list.append(rule.normal_info())
-            elif rule.trade_type == 9:
-                helipay_rule_list.append(rule.normal_info())
-
-        if len(helipay_rule_list) > 0:
-            use_helipay = 1
-        else:
-            use_helipay = 0
 
         # todo 做到redis中 CMS可调配
         is_wechat_show = 1 #1: 显示 0:隐藏
@@ -603,7 +595,7 @@ class PayRulesV2(BaseHandler):
             "applepay_rules": applepay_rule_list,
             "googlepay_rules":googlepay_rule_list
         },
-            "is_wechat_show": is_wechat_show, "default_pay": 1, "use_helipay": use_helipay})
+            "is_wechat_show": is_wechat_show, "default_pay": 1})
 
 
 @handler_define
