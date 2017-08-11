@@ -10,6 +10,7 @@ class MessageSender:
 
     @classmethod
     def send_bottle_message(cls, from_id, desc):
+        return 200
         body = {}
         body["from_id"] = from_id
         body["desc"] = desc
@@ -26,6 +27,7 @@ class MessageSender:
 
     @classmethod
     def send_bottle_message_v3(cls, from_id, desc, gender):
+        return 200
         body = {}
         body["from_id"] = from_id
         body["desc"] = desc
@@ -43,6 +45,7 @@ class MessageSender:
 
     @classmethod
     def send_block_user_message(cls, user_id, desc):
+        return 200
         body = {}
         body["block_id"] = user_id
         body["desc"] = desc
@@ -59,6 +62,7 @@ class MessageSender:
 
     @classmethod
     def send_charge_bottle_message(cls, from_id):
+        return 200
         body = {}
         body["from_id"] = from_id
         desc = u"我已经成为土豪,快来撩我吧～"
@@ -76,6 +80,7 @@ class MessageSender:
 
     @classmethod
     def send_system_message(cls, to_user_id, desc):
+        return 200
         body = {}
         body["to_user_id"] = to_user_id
         body["desc"] = desc
@@ -94,6 +99,7 @@ class MessageSender:
     @classmethod
     def send_big_gift_info_message(cls, sender_id, sender_name, receiver_id, receiver_name, gift_id, gift_name,
                                    gift_count):
+        return 200
         body = {
             "sender_id": sender_id,
             "sender_name": sender_name,
@@ -117,6 +123,7 @@ class MessageSender:
 
     @classmethod
     def send_charge_info_message(cls, user_id, user_name, money):
+        return 200
         body = {
             "user_id": user_id,
             "user_name": user_name,
@@ -136,6 +143,7 @@ class MessageSender:
 
     @classmethod
     def send_video_auth_info_message(cls, user_id, user_name):
+        return 200
         body = {
             "user_id": user_id,
             "user_name": user_name,
@@ -154,6 +162,7 @@ class MessageSender:
 
     @classmethod
     def send_activity_info_message(cls, user_id, user_name, desc):
+        return 200
         body = {
             "user_id": user_id,
             "user_name": user_name,
@@ -173,6 +182,7 @@ class MessageSender:
 
     @classmethod
     def send_withdraw_info_message(cls, user_id, user_name, money):
+        return 200
         body = {
             "user_id": user_id,
             "user_name": user_name,
@@ -192,6 +202,7 @@ class MessageSender:
 
     @classmethod
     def send_porn_check(cls, file_id, pic_url, room_id, user_id, join_id, room_user_id):
+        return 200
         body = {
             "file_id": file_id,
             "pic_url": pic_url,
@@ -213,6 +224,7 @@ class MessageSender:
 
     @classmethod
     def send_picture_detect(cls, pic_url="", user_id=0, pic_channel=0, source=0, obj_id=None):
+        return 200
         if source == 1:
             body = {
                 "pic_url": pic_url,
@@ -242,6 +254,7 @@ class MessageSender:
 
     @classmethod
     def send_text_check(cls, text, user_id, text_channel, ip):
+        return 200
         body = {
             "text": text,
             "user_id": user_id,

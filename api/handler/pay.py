@@ -351,12 +351,8 @@ class ApplePayVerifyHandler(BaseHandler):
         user_id = self.current_user_id
 
         if int(user_id) == 504 or int(user_id) == 3411:
-            status = Account.fill_in(order_id=order_id)
-            if status:
-                return self.write({"status": "success"})
-            else:
-                return self.write({"status": "fail", "error": "need receipt"})
-
+            Account.fill_in(order_id=order_id)
+            return self.write({"status": "success"})
 
         av = AppleVerify.create_verify(order_id,reciept)
         if av == -1:
