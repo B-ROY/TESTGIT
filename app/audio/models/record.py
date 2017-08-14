@@ -59,7 +59,7 @@ class AudioRoomRecord(Document):
     pay_times = IntField(verbose_name=u'实际扣费次数')
     gift_value = IntField(verbose_name=u'房间送礼礼物价值')
     audit_status = IntField(verbose_name=u"鉴黄等房间审查结果", default=0, choices=AUDIT_STATUS)
-    join_area = StringField(verbose_name=u"加入者地域")
+    join_ip = StringField(verbose_name=u"加入者地域")
     class Meta:
         app_label = "audio"
         verbose_name = u"记录"

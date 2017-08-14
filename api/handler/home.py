@@ -144,11 +144,12 @@ class Get_Index_Column(BaseHandler):
                 user = User.objects.filter(id=anchor.user_id).first()
                 if user.id == 1 or user.id == 2:
                     continue
-
+                if not user.audio_room_id:
+                    continue
                 # 是否在线 查看心跳
                 import time
                 time = int(time.time())
-                pre_time = time - 120
+                pre_time = time - 3600
                 user_beat = UserHeartBeat.objects.filter(user=user, last_report_time__gte=pre_time).first()
                 if user_beat:
                     is_online = 1

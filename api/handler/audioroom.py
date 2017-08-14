@@ -181,14 +181,11 @@ class GenerateChannelKey(BaseHandler):
                 AudioRoomRecord.set_room_status(user_id=uid, status=3)
             channelkey = generate_media_channel_key(appID, appCertificate, channelname, unixts, randomint, uid, expiredts)
             #AudioRoomRecord.set_room_status(user_id=ruid, status=3)
-            area = get_area_by_ip(self.user_ip)
-            print self.user_ip
-            print "area is " , area
             room = AudioRoomRecord.objects.get(id=channelname)
             room.status = 3
             room.report_join = datetime.datetime.now()
             room.is_video = is_video
-            room.join_area = area
+            room.join_ip = self.user_ip
             if is_video == 1:
                 room.now_price = room_user.video_price
             else:
@@ -898,7 +895,8 @@ class GetNewAnchorList(BaseHandler):
             user = User.objects.filter(id=anchor.user_id).first()
             if user.id == 1 or user.id == 2:
                 continue
-
+            if not user.audio_room_id:
+                continue
             audioroom = AudioRoomRecord.objects.get(id=user.audio_room_id)
             personal_tags = UserTags.get_usertags(user_id=user.id)
             user_vip = UserVip.objects.filter(user_id=user.id).first()
