@@ -878,7 +878,7 @@ class SmsCode(ThridPardLogin):
             return self.write({"status": "fail", "error": _(u"获取验证码失败"), "message_code": 3, })
         if sms_type == 0:
             print 0
-            usms = SMS()
+            usms = SMS(sms_type=1)
         else:
             print 1
             usms = SMS(sms_type=1)
