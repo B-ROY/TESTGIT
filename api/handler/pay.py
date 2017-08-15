@@ -19,6 +19,7 @@ from app.customer.models.promotion import *
 import international
 from api.util.paylib.helipayapi import HeliDoPay
 
+
 def parser_receipt(receipt):
     if not receipt:
         return None
@@ -616,7 +617,7 @@ class OderCheck(BaseHandler):
                 ], description=u"检查订单是否支付成功")
     @login_required
     def get(self):
-        order_id = self.arg("order_id")s
+        order_id = self.arg("order_id")
         try:
             order = TradeBalanceOrder.objects.get(id=order_id)
             user_id = self.current_user_id

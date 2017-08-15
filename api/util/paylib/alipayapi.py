@@ -15,6 +15,7 @@ from Crypto.Signature import PKCS1_v1_5
 from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
 from django.conf import settings
+import urllib2
 
 
 __author__ = 'biwei'
@@ -197,6 +198,79 @@ class AliPayDoPay(AliPayBase):
             "pay_params": content
         }
         return data
+
+
+class AliPayWithdraw(AliPayBase):
+    Host = "https://openapi.alipay.com/gateway.do"
+
+    def __init__(self, out_trade_no, payee_account, payee_realname, amount, sign_type="RSA2"):
+        self.method = "alipay.fund.trans.toaccount.transfer"
+        self.out_trade_no = out_trade_no
+        self.payee_account = payee_account
+        self.amount = amount
+        self.sign_type = sign_type
+        self.payee_real_name = payee_realname
+
+
+    def create_request_data(self):
+        biz_content = {
+            "out_biz_no": self.out_trade_no,
+            "payee_type": "ALIPAY_LOGONID",
+            "payee_account": self.payee_account,
+            "amount": self.amount,
+            "payer_show_name": u"天天有聊",
+            "payee_real_name": self.payee_real_name,
+            "remark":u"天天有聊提取收益%s元" % self.amount
+        }
+
+        param_map = {
+            "app_id": AliPayConfig.APP_ID,
+            "method": self.method,
+            "charset": "utf-8",
+            "sign_type": "RSA2",
+            "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "version": "1.0",
+            "biz_content": json.dumps(biz_content)
+        }
+        return param_map
+
+
+    def do_withdraw(self):
+        params = self.create_request_data()
+
+        _sign = self.get_sign(param_map=params)
+        params["sign"] = _sign
+
+        sort_param = sorted(
+            [(key, unicode(value).encode('utf-8')) for key, value in params.iteritems()],
+            key=lambda x: x[0]
+        )
+
+        # content = '&'.join(['='.join(x) for x in sort_param])
+        content = urllib.urlencode(sort_param)
+        # result
+        data = {
+            "pay_params": content
+        }
+        url = self.Host + "?" + content
+        req = urllib2.Request(url)
+        res = urllib2.urlopen(req).read()
+        print res
+        # todo 加入验签及完善订单逻辑
+
+    @classmethod
+    def test_payee(cls):
+        alipay_withdraw = cls("test1", "biweibiren@163.com", u"毕伟", 0.1, sign_type="RSA2")
+        alipay_withdraw.do_withdraw()
+
+
+
+
+
+
+
+
+
 
 
 class AliPayVerifyNotice(AliPayBase):
