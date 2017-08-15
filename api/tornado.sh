@@ -8,7 +8,7 @@ LOG_DIR=/mydata/logs/tornado/
 LOG_LEVEL=error
 
 #TODO 这里上线后修改为100
-WORKER_NUM=100
+WORKER_NUM=2
 PORTS=(9000 9001 9002 9003)
 #PORTS=(9005)
 
