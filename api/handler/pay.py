@@ -171,17 +171,17 @@ class AliPayHandler(BaseHandler):
             params = pay.do_pay_params()
         #微信支付
         elif trade_type == 1:
-            # pay = WePayDoPay(
-            #     out_trade_no=str(order.id),
-            #     subject=good_name,
-            #     total_fee=amount,
-            #     body=good_name,
-            #     ip=self.user_ip,
-            # )
-            #
-            # params = pay.do_pay_params()
-            pay = HeliDoPay(str(order.id), amount, self.user_ip, good_name, desc)
-            params = pay.post_submit()
+            pay = WePayDoPay(
+                out_trade_no=str(order.id),
+                subject=good_name,
+                total_fee=amount,
+                body=good_name,
+                ip=self.user_ip,
+            )
+
+            params = pay.do_pay_params()
+            #pay = HeliDoPay(str(order.id), amount, self.user_ip, good_name, desc)
+            #params = pay.post_submit()
         #苹果支付只创建一个订单 返回订单号
         elif trade_type == 2:
             pay = ApplePayDoPay()
