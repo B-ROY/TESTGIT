@@ -68,6 +68,8 @@ class Initial(BaseHandler):
             version_info["download_url"] = ""
             version_info["desc"] = ""
 
+        version_info["version_code"] = 1000000
+
         audit_info = ChannelAuditInfo.get_audit_info(channel)
 
         if audit_info and ua_version >= audit_info.version:
