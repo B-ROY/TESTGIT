@@ -39,7 +39,6 @@ class Initial(BaseHandler):
             'upgrade_type': '',
             'download_url': '',
             'desc': '',
-            'version_code': 1000000
         }
         app_name = ua.split(";")[0]
         uas = ua.split(";")
@@ -68,6 +67,8 @@ class Initial(BaseHandler):
             version_info["upgrade_type"] = 0
             version_info["download_url"] = ""
             version_info["desc"] = ""
+
+        version_info["version_code"] = 1000000
 
         audit_info = ChannelAuditInfo.get_audit_info(channel)
 
