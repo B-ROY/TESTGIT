@@ -39,6 +39,7 @@ class Initial(BaseHandler):
             'upgrade_type': '',
             'download_url': '',
             'desc': '',
+            'version_code': 1000000
         }
         app_name = ua.split(";")[0]
         uas = ua.split(";")
