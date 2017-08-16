@@ -1221,10 +1221,10 @@ class UserHomepageV2(BaseHandler):
             dic["audio_status"] = AudioRoomRecord.get_room_status(user_id=home_id)
 
         dic["user"] = convert_user(home_user)
-        ua = self.request.headers.get('User-Agent')
-        uas = ua.split(";")
-        if uas[2] != "Android":
-            dic["user"]["now_price"] = dic["user"]["video_price"]
+        # ua = self.request.headers.get('User-Agent')
+        # uas = ua.split(";")
+        # if uas[2] != "Android":
+        #     dic["user"]["now_price"] = dic["user"]["video_price"]
         dic["personal_tags"] = personal_tags
         dic["user"]["picture_count"] = PictureInfo.objects.filter(user_id=home_id, status=0).count()
         dic["picture_list"] = data_pic
