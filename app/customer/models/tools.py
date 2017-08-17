@@ -6,6 +6,8 @@ from base.settings import CHATPAMONGO
 from app.customer.models.account import Account, TradeDiamondRecord
 from app.customer.models.user import User
 from django.db.models import F
+from app.customer.models.user import VideoManagerVerify
+from app.util.messageque.msgsender import MessageSender
 
 
 connect(CHATPAMONGO.db, host=CHATPAMONGO.host, port=CHATPAMONGO.port, username=CHATPAMONGO.username,
@@ -50,6 +52,79 @@ class Tools(Document):
             return url
         else:
             return url.replace("http", "https")
+
+
+
+    @classmethod
+    def send_activity_tools(cls, user_id):
+        now = datetime.datetime.now()
+        now_str = now.strftime('%Y-%m-%d 23:59:59')
+        hm = cls.get_hm(now)
+        activity_id = ""
+        user = User.objects.filter(id=user_id).first()
+        receive_data = {}
+
+        if user.is_video_auth == 1:
+            #  主播
+            verify = VideoManagerVerify.objects.filter(user_id=user_id).first()
+            if not verify:
+                return
+            verify_time = verify.verify_time
+            temp_end_time = verify_time + datetime.timedelta(days=7)
+            endtime = temp_end_time.strftime('%Y-%m-%d 23:59:59')
+
+            # 6-22 之前认证的都属于老主播
+            compare_time = datetime.datetime(2017, 6, 21)
+
+            if verify_time < compare_time or datetime.datetime.strptime(endtime, "%Y-%m-%d %H:%M:%S") < now:
+                # 老主播
+                status, activity = cls.check_receive(2, now, user_id)
+                if status == 3:
+                    receive_data = eval(activity.tools_data)
+                    activity_id = str(activity.id)
+            else:
+                # 新主播
+                status, activity = cls.check_receive(1, now, user_id)
+                if status == 3:
+                    receive_data = eval(activity.tools_data)
+                    activity_id = str(activity.id)
+        else:
+            #  非主播
+            status, activity = cls.check_receive(3, now, user_id)
+            if status == 3:
+                receive_data = eval(activity.tools_data)
+                activity_id = str(activity.id)
+
+        if receive_data:
+            for key, value in receive_data.items():
+                tools = Tools.objects.filter(tools_type=int(key)).first()  # 道具
+                user_tools = UserTools()
+                user_tools.user_id = user_id
+                user_tools.tools_id = str(tools.id)
+                user_tools.tools_count = int(value)
+                user_tools.time_type = 0
+                user_tools.get_type = 4
+                invalid_time = now + datetime.timedelta(days=1)
+                user_tools.invalid_time = invalid_time
+                user_tools.save()
+
+                tools_record = UserToolsRecord()
+                tools_record.user_id = user_id
+                tools_record.tools_id = str(tools.id)
+                tools_record.tools_count = 1
+                tools_record.time_type = 0
+                tools_record.oper_type = 4
+                tools_record.create_time = now
+                tools_record.save()
+
+            activity_record = ToolsActivityRecord()
+            activity_record.user_id = user_id
+            activity_record.date_time = datetime.datetime(now.year, now.month, now.day)
+            activity_record.tools_activity_id = activity_id
+            activity_record.save()
+
+            desc = u"<html><p>" + _(u"您的活动奖励已发送至您的账户，请注意查收，希望您在我们平台玩得开心～") + u"</p></br></html>"
+            MessageSender.send_system_message(user.sid, desc)
 
 
 # 用户拥有道具
