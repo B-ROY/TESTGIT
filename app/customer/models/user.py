@@ -157,7 +157,7 @@ class User(Document):
     current_score = FloatField(verbose_name=u'用户在线状态评分')
     #个人封面
     cover = StringField(verbose_name=u"个人封面")
-
+    label = ListField(verbose_name=u"用户标签")
     online_time = IntField(verbose_name=u"在线时长", default=0)
 
     #上次登录设备
