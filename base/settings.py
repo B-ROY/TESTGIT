@@ -17,7 +17,7 @@ from django.utils import importlib
 
 class CHATPAMONGO():
     db = "mini_version"
-    host = "10.141.15.92"
+    host = "10.141.59.52"
     #host = "123.207.147.20"
 
     port = 27017
@@ -27,7 +27,7 @@ class CHATPAMONGO():
 
 class CHATPALOGSMONGO():
     db = "mini_version"
-    host = "10.141.15.92"
+    host = "10.141.59.52"
     # host = "10.141.15.92"
     port = 27017
     username = "mini_admin"

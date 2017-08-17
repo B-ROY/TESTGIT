@@ -25,7 +25,7 @@ class CHATPAMONGO():
 
 class CHATPALOGSMONGO():
     db = "mini_version"
-    host = "10.141.15.92"
+    host = "10.141.59.52"
     port = 27017
     username = "mini_admin"
     password = "bw890905"
