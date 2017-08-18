@@ -31,12 +31,16 @@ from app.customer.models.follow_user import FollowUser
 from app.customer.models.black_user import BlackUser
 from app.customer.models.community import UserMoment
 from app.customer.models.real_video_verify import RealVideoVerify
+from api.handler.thridpard.twitter_ import TwitterAPI
+from api.handler.thridpard.facebook_ import FacebookAPI
+
+
 
 class ThridPardLogin(BaseHandler):
     def create_user(self, openid, access_token, phone, userinfo, source, channel, site_openid=''):
         #获取改用户的guid
         guid = self.arg("guid")
-        if source == User.SOURCE_PHONE or source==User.SOURCE_FACEBOOK or User.SOURCE_TWITTER:
+        if source == User.SOURCE_PHONE or source==User.SOURCE_FACEBOOK:
             userinfo={}
             userinfo["nickname"] = RegisterInfo.make_nickname()
             gender = userinfo.get("sex", 1)
@@ -262,30 +266,28 @@ class ThridPardLogin(BaseHandler):
         else:
             channel = uas[5]
         # print access_token,openid
-
+        userinfo = FacebookAPI.get_user_info(access_token=access_token)
         if access_token == "" or openid == "":
             raise Exception("access_token or openid null!")
 
-        return self.create_user(openid=openid, access_token=access_token, phone="", userinfo=None,
+        return self.create_user(openid=openid, access_token=access_token, phone="", userinfo=userinfo,
                          source=User.SOURCE_FACEBOOK, channel=channel, site_openid=openid)
 
     def twitter_login(self):
         access_token = self.arg("user_key", "")
         openid = self.arg("openid", "")
+        access_token_secret = self.arg("token_secret", "")
         ua = self.request.headers.get('User-Agent')
         uas = ua.split(";")
-        app_name = uas[0]
-        if app_name == "liaoai_teyue" or app_name == "liaoai_lizhen":
-            channel = "AppStore"
-        else:
-            channel = uas[5]
-        # print access_token,openid
+        channel = uas[5]
+        userinfo = TwitterAPI.get_user_info(openid, access_token, access_token_secret)
+
         print access_token
         print openid
         if access_token == "" or openid == "":
             raise Exception("access_token or openid null!")
 
-        return self.create_user(openid=openid, access_token=access_token, phone="", userinfo=None,
+        return self.create_user(openid=openid, access_token=access_token, phone="", userinfo=userinfo,
                          source=User.SOURCE_TWITTER, channel=channel, site_openid=openid)
 
     def test_login(self,username,source="100"):
@@ -329,7 +331,8 @@ class Login(ThridPardLogin):
         Param('sms_code',False,str,"","",u'短信验证码'),
         Param('createdate',False,str,"","",u'申请验证码时间'),
         Param('platform', True, str, "ios", "ios", u'可选:ios,android,h5'),
-        Param('phone',False, str, "", "", u'电话号码')
+        Param('phone',False, str, "", "", u'电话号码'),
+        Param("token_secret", False, str, "", "", u'twitter登录传')
     ], description=u"登录接口",protocal="https")
     def get(self):
         #获取参数

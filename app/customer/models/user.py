@@ -270,7 +270,7 @@ class User(Document):
                 is_new = True
 
         except User.DoesNotExist:
-            if image and source != cls.SOURCE_PHONE:
+            if image and source != cls.SOURCE_PHONE and source!=cls.SOURCE_FACEBOOK:
                 image = User.convert_http_to_https(cls.upload_logo(image,gender))
 
             is_new = True
@@ -381,7 +381,7 @@ class User(Document):
                 is_new = True
 
         except User.DoesNotExist:
-            if image and source != cls.SOURCE_PHONE:
+            if image and source != cls.SOURCE_PHONE and source != cls.SOURCE_FACEBOOK:
                 image = User.convert_http_to_https(cls.upload_logo(image,gender))
 
             if source == cls.SOURCE_PHONE:
