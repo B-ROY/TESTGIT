@@ -91,5 +91,6 @@ class Initial(BaseHandler):
             "report_interval": UserHeartBeat.REPORT_INTERVAL,
             "share_url": share_url,
             "invite_url": invite_url,
-            "ins_img_url": ins_img_url
+            "ins_img_url": ins_img_url,
+            "pollingtime":60
         })
