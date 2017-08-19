@@ -27,15 +27,6 @@ class RecommendList(BaseHandler):
         if recommed_list:
             try:
                 for recommed in recommed_list:
-                    # tempobj = UserRedis.get_recommed(recommed)
-                    # if "audioroom" in tempobj:
-                    #     tempobj["audioroom"] = eval(tempobj["audioroom"])
-                    # if "user" in tempobj:
-                    #     tempobj["user"] = eval(tempobj["user"])
-                    # if "vip" in tempobj:
-                    #     tempobj["vip"] = eval(tempobj["vip"])
-                    # if tempobj["personal_tags"]:
-                    #     tempobj["personal_tags"] = eval(tempobj["personal_tags"])
                     hot_list.append(recommed_data[recommed])
             except Exception,e:
                 print e

@@ -894,6 +894,42 @@ def oldanchorlist(gender,is_video,page,page_count):
         data.append(json.dumps(dic))
     return data
 
+
+@handler_define
+class GetVoiceRoomListV3(BaseHandler):
+    @api_define("home page list v3", r'/audio/room/list_v3', [ ], description=u"首页接口")
+    def get(self):
+        result_advs = []
+        hot_list = []
+        video_list = []
+        advs = Adv.get_list()
+        for adv in advs or []:
+            result_advs.append(adv.normal_info())
+
+        recommed_list = UserRedis.get_recommed_list_v3()
+        recommed_data = eval(UserRedis.get_recommed_v3())
+        if recommed_list:
+            try:
+                for recommed in recommed_list:
+                    hot_list.append(json.loads(recommed_data[recommed]))
+            except Exception,e:
+                print e
+        else:
+            print "空的推荐列表"
+
+        anchor_list = UserRedis.get_index_anchor_list_v3(0,-1)
+        anchor_data = eval(UserRedis.get_index_anchor_v3())
+        if len(anchor_list) > 0:
+            for anchor in anchor_list:
+                video_list.append(json.loads(anchor_data[anchor]))
+
+        self.write({
+            "status": "success",
+            "banners": result_advs,
+            "video_list": video_list,
+            "hot_list": hot_list,
+        })
+
 # 新人驾到  (在线的, 认证主播 认证时间倒序)
 @handler_define
 class GetNewAnchorList(BaseHandler):
