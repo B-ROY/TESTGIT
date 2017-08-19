@@ -265,3 +265,17 @@ class MessageSender:
         elif result.get("status_code") == 400:
             logging.error("send text_check message to mq error")
             return 400
+
+    @classmethod
+    def send_about_me_message(cls, user_id):
+        body = {}
+        body["user_id"] = user_id
+        path = "/tecent/about_me"
+        data = RequestApi.post_body_request_http(path=path, body=json.dumps(body), headers={}, host=cls.Host)
+        result = json.loads(data)
+        print result.get("status_code")
+        if result.get("status_code") == 200:
+            return 200
+        elif result.get("status_code") == 400:
+            logging.error("send about me message to mq error")
+            return 400

@@ -40,3 +40,18 @@ class RealVideoVerify(Document):
             return verify.status
         else:
             return 3
+
+
+    @classmethod
+    def get_status(cls, user_id):
+        real_video = RealVideoVerify.objects(user_id=user_id, status__ne=2).order_by("-update_time").first()
+
+        show_video = RealVideoVerify.objects(user_id=user_id, status=1).order_by("-update_time").first()
+        status = 3
+        if show_video:
+            status = show_video.status
+
+        else:
+            if real_video:
+                status = real_video.status
+        return status

@@ -144,6 +144,11 @@ class User(Document):
     platform = IntField(verbose_name=u'平台', choices=PLATFORM)
     source = IntField(verbose_name=u'用户来源', choices=SOURCE)
 
+    real_video_auth = IntField(verbose_name=u'是否视频认证')
+    real_name_auth = IntField(verbose_name=u'是否实名认证')
+    height =  IntField(verbose_name=u'身高')
+    weight =  IntField(verbose_name=u'体重')
+
     # 账户信息
     experience = IntField(verbose_name=u'经验值')
     ticket = IntField(verbose_name=u'收益')

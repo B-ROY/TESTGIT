@@ -53,12 +53,11 @@ class Tools(Document):
         else:
             return url.replace("http", "https")
 
-
-
     @classmethod
     def send_activity_tools(cls, user_id):
         now = datetime.datetime.now()
         now_str = now.strftime('%Y-%m-%d 23:59:59')
+        hm = cls.get_hm(now)
         activity_id = ""
         user = User.objects.filter(id=user_id).first()
         receive_data = {}
@@ -137,8 +136,7 @@ class Tools(Document):
         else:
             date_now = datetime.datetime(date_time.year, date_time.month, date_time.day)
             activity_id = str(activity.id)
-            record = ToolsActivityRecord.objects.filter(date_time=date_now, user_id=user_id,
-                                                        tools_activity_id=activity_id).first()
+            record = ToolsActivityRecord.objects.filter(date_time=date_now, user_id=user_id, tools_activity_id=activity_id).first()
             if record:
                 return 2, None  # 已经领取
             return 3, activity
@@ -149,16 +147,17 @@ class Tools(Document):
         minute = now.minute
 
         if hour < 10:
-            hour_str = '0' + str(hour)
+            hour_str = '0'+str(hour)
         else:
             hour_str = str(hour)
 
         if minute < 10:
-            minute_str = '0' + str(minute)
+            minute_str = '0'+str(minute)
         else:
             minute_str = str(minute)
 
         return hour_str + ":" + minute_str
+
 
 
 # 用户拥有道具
@@ -279,6 +278,7 @@ class UserTools(Document):
         record.oper_type = 0
         record.create_time = datetime.datetime.now()
         record.save()
+        return time_type
 
 
 # 用户道具 记录表

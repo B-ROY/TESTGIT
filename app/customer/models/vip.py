@@ -211,6 +211,41 @@ class VipReceiveRecord(Document):
     create_time = DateTimeField(verbose_name=u"创建时间")
 
 
+class VipPrivilege(Document):
+    name = StringField(max_length=64, verbose_name=u"特权名称")
+    icon_url = StringField(max_length=256, verbose_name=u'icon图片')
+    desc = StringField(max_length=1024, verbose_name=u'描述')
+    intro_pic_url = StringField(max_length=256, verbose_name=u'介绍图url')
+    sort_num = IntField(verbose_name=u'排序')
+    delete_status = IntField(verbose_name=u"是否删除")  # 1:未删除  2:删除
+
+    @classmethod
+    def create(cls, name, icon_url, desc, intro_pic_url, delete_status, sort_num):
+        try:
+            _obj = cls()
+            _obj.name = name
+            _obj.icon_url = icon_url
+            _obj.desc = desc
+            _obj.intro_pic_url = intro_pic_url
+            _obj.sort_num = sort_num
+            _obj.delete_status = delete_status
+            _obj.save()
+            return _obj
+        except Exception, e:
+            logging.error("create VipPrivilege error:{0}".format(e))
+        return ''
+
+    def normal_info(self):
+        return {
+            "id": str(self.id),
+            "name": self.name,
+            "icon_url": self.icon_url,
+            "desc": self.desc,
+            "intro_pic_url": self.intro_pic_url,
+            "sort_num": self.sort_num,
+        }
+
+
 
 
 

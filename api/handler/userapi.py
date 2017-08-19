@@ -32,21 +32,21 @@ from app.customer.models.shumeidetect import *
 from app.customer.models.follow_user import FollowUser, FollowUserRecord
 from app.customer.models.black_user import BlackUser, BlackUserRecord
 from app.customer.models.community import UserMoment
-from app.customer.models.follow_user import FollowUser
+from app.customer.models.follow_user import FollowUser, FriendUser
 from app.customer.models.black_user import BlackUser
 from app.customer.models.community import UserMoment
 from app.customer.models.real_video_verify import RealVideoVerify
 from api.handler.thridpard.twitter_ import TwitterAPI
 from api.handler.thridpard.facebook_ import FacebookAPI
-
-
+from app.customer.models.video import PrivateVideo, VideoPurchaseRecord
+from app.customer.models.chat import ChatMessage, UserConversation
 
 
 class ThridPardLogin(BaseHandler):
     def create_user(self, openid, access_token, phone, userinfo, source, channel, site_openid=''):
         #获取改用户的guid
         guid = self.arg("guid")
-        if source == User.SOURCE_PHONE or source==User.SOURCE_FACEBOOK:
+        if source == User.SOURCE_PHONE or source==User.SOURCE_FACEBOOK or User.SOURCE_TWITTER:
             userinfo={}
             userinfo["nickname"] = RegisterInfo.make_nickname()
             gender = userinfo.get("sex", 1)
@@ -1209,8 +1209,9 @@ class UserHomepageV2(BaseHandler):
             personal_tags = []
 
         data = {}
-        normal_data_pic = []
+        picture_list = []
         essence_data_pic = []
+        normal_data_pic = []
         # 如果是本人的主页.可以看到鉴定中的相册
         current_user_id = self.current_user_id
         normal_pictures = PictureInfo.objects.filter(user_id=int(home_id), status=0, type=1, show_status=1)
@@ -1222,19 +1223,24 @@ class UserHomepageV2(BaseHandler):
                 essence_pictures = PictureInfo.objects.filter(user_id=int(home_id), status=0, type=2, show_status__ne=2)
 
         for normal_picture in normal_pictures:
-            pic_url = normal_picture.picture_url
-            normal_data_pic.append(pic_url)
+            if normal_picture:
+                pic_url = normal_picture.picture_url
+                picture_list.append(pic_url)
+                dict = {
+                    "pictureId": str(normal_picture.id),
+                    "picture_url": normal_picture.picture_url,
+                    "type": normal_picture.type
+                }
+                normal_data_pic.append(dict)
 
         for essence_picture in essence_pictures:
-            if current_user_id:
-                user_vip = UserVip.objects.filter(user_id=current_user_id).first()
-                if user_vip:
-                    pic_url = essence_picture.picture_url
-                else:
-                    pic_url = ""
-            else:
-                pic_url = ""
-            essence_data_pic.append(pic_url)
+            if essence_picture:
+                dict = {
+                    "pictureId": str(essence_picture.id),
+                    "picture_url": essence_picture.picture_url,
+                    "type": essence_picture.type
+                }
+                essence_data_pic.append(dict)
 
         dic = {}
         if home_user.audio_room_id:
@@ -1256,8 +1262,9 @@ class UserHomepageV2(BaseHandler):
         #     dic["user"]["now_price"] = dic["user"]["video_price"]
         dic["personal_tags"] = personal_tags
         dic["user"]["picture_count"] = PictureInfo.objects.filter(user_id=home_id, status=0).count()
-        dic["picture_list"] = normal_data_pic
+        dic["picture_list"] = picture_list
         dic["essence_picture_list"] = essence_data_pic
+        dic["normal_picture_list"] = normal_data_pic
         user_vip = UserVip.objects.filter(user_id=home_id).first()
         if user_vip:
             vip = Vip.objects.filter(id=user_vip.vip_id).first()
@@ -1311,16 +1318,19 @@ class UserHomepageV2(BaseHandler):
                 dic["check_real_video"] = 3
 
 
-
         # 我的动态相关
-        temp_moments = UserMoment.objects.filter(user_id=home_id, show_status__ne=2, delete_status=1).order_by("-create_time")
+        temp_moments = UserMoment.objects.filter(user_id=home_id, show_status__ne=2, delete_status=1, is_public=1).order_by("-create_time")
         count = 0
         moment_img_list = []
-        moment_count = UserMoment.objects.filter(user_id=home_id, show_status__ne=2, delete_status=1).count()
+        moment_list = []
+        if int(current_user_id) == int(home_id):
+            moment_count = UserMoment.objects.filter(user_id=home_id, show_status__ne=2, delete_status=1, is_public=1).count()
+        else:
+            moment_count = UserMoment.objects.filter(user_id=home_id, show_status__in=[1, 3, 4], delete_status=1, is_public=1).count()
+
         for moment in temp_moments:
             if count > 10:
                 break
-
             imgs = moment.img_list
             if not imgs:
                 continue
@@ -1330,8 +1340,39 @@ class UserHomepageV2(BaseHandler):
                     moment_img_list.append(img["url"])
                     count += 1
                     break
+
+        count2 = 0
+        for moment2 in temp_moments:
+            if count > 10:
+                break
+            if moment2.type == 3:
+                private_video = PrivateVideo.objects.filter(id=moment2.video_id).first()
+                dict = {
+                    "type": moment2.type,
+                    "img_url": moment2.cover_url,
+                    "price": private_video.price
+                }
+                moment_list.append(dict)
+                count2 += 1
+            else:
+                imgs = moment2.img_list
+                if not imgs:
+                    continue
+                for img in imgs:
+                    if img["status"] == 1:
+                        type = moment2.type
+                        if not type:
+                            type = 1
+                        dict = {
+                            "type": type,
+                            "img_url": img["url"]
+                        }
+                        moment_list.append(dict)
+                        count2 += 1
+                        break
+
         if not moment_img_list:
-            moment = UserMoment.objects.filter(user_id=home_id, show_status__ne=2, delete_status=1).order_by("-create_time").first()
+            moment = UserMoment.objects.filter(user_id=home_id, show_status__ne=2, delete_status=1, is_public=1).order_by("-create_time").first()
             if moment:
                 dic["content"] = moment.content
             else:
@@ -1339,7 +1380,34 @@ class UserHomepageV2(BaseHandler):
 
         dic["moment_img_list"] = moment_img_list
         dic["moment_count"] = moment_count
+        dic["moment_list"] = moment_list
+
+        # 私房视频列表
+        video_list = []
+        user_id = self.current_user_id
+        if int(home_id) == int(current_user_id):
+            videos = PrivateVideo.objects.filter(show_status__ne=2, user_id=home_id, delete_status=1)
+        else:
+            videos = PrivateVideo.objects.filter(show_status=1, user_id=home_id, delete_status=1)
+
+        if videos:
+            for video in videos:
+                moment = UserMoment.objects.filter(video_id=str(video.id)).order_by("-create_time").first()
+                if moment:
+                    dict = {}
+                    buy_video_status = 2
+                    record = VideoPurchaseRecord.objects.filter(user_id=user_id, video_id=moment.video_id).first()
+                    if record:
+                        buy_video_status = 1
+                    dict["buy_video_status"] = buy_video_status
+                    dict["cover_url"] = moment.cover_url
+                    dict["price"] = moment.price
+                    dict["video_id"] = moment.video_id
+                    video_list.append(dict)
+
+        dic["video_list"] = video_list
         data.update(dic)
+
         self.write({"status": "success", "data": data, })
 
 
@@ -1401,7 +1469,12 @@ class BatchUserInfo(BaseHandler):
             results = []
             users = User.objects.filter(id__in=uids)
             for user in users:
-                results.append(convert_user(user))
+                dict = convert_user(user)
+                user_vip = UserVip.objects.filter(user_id=user.id).first()
+                if user_vip:
+                    vip = Vip.objects.filter(id=user_vip.vip_id).first()
+                    dict["vip_icon"] = vip.icon_url
+                results.append(dict)
 
             data = {"status": "success", "results": results}
 
@@ -1447,7 +1520,9 @@ class UpdateUserInfo(BaseHandler):
         Param('blood_type', True, str, "", "", u'血型'),
         Param('birth_date', True, str, "", "", u'生日'),  # 回传字符串类型如'2016-01-01'
         Param('emotional', True, str, "", "", u'情感状态'),
-        Param('cover', False, str, "", "", u'封面')
+        Param('cover', False, str, "", "", u'封面'),
+        Param('height', False, str, "", "", u'身高'),
+        Param('weight', False, str, "", "", u'体重'),
     ], description=u"更新用户信息")
     @login_required
     def get(self):
@@ -1472,6 +1547,14 @@ class UpdateUserInfo(BaseHandler):
 
         if self.has_arg("gender"):
             user.gender = self.arg_int("gender")
+            is_change = True
+
+        if self.has_arg("height"):
+            user.height = self.arg_int("height")
+            is_change = True
+
+        if self.has_arg("weight"):
+            user.weight = self.arg_int("weight")
             is_change = True
 
         if self.has_arg("logo"):
@@ -1929,22 +2012,64 @@ class MessageCheckV1(BaseHandler):
         send_id = int(self.current_user_id)
         send_user = User.objects.filter(id=send_id).first()
         receive_id = self.arg_int("receive_id")
+        chat_status = False
 
         # 判断是否是主播.主播没有门槛
         if send_user.is_video_auth == 1:
-            return self.write({"status": "success", "chat_status": True})
+            chat_status = True
+            # return self.write({"status": "success", "chat_status": True})
 
+        # 好友也没有门槛
+        friend_user = FriendUser.objects.filter(from_id=send_id, to_id=receive_id).first()
+        if friend_user:
+            chat_status = True
         tool = Tools.objects.filter(tools_type=0).first()
-        record = SendToolsRecord.objects.filter(send_id=send_id, receive_id=receive_id, tools_id=str(tool.id)).first()
-        if record:
-            return self.write({"status": "success", "chat_status": True})
 
         tools_count = UserTools.objects.filter(user_id=send_id, tools_id=str(tool.id)).sum("tools_count")
         data = {
             "tool": convert_tools(tool),
             "count": tools_count
         }
-        return self.write({"status": "success", "chat_status": False, "data": data})
+
+        #  判断会话:
+        conversation = UserConversation.objects.filter(from_user_id=send_id, to_user_id=receive_id, type__ne=4).first()
+        refer_conversation = UserConversation.objects.filter(from_user_id=receive_id, to_user_id=send_id, type__ne=4).first()
+        start_time = None
+        conversation_id = ""
+
+        if not conversation and not refer_conversation and chat_status:
+            conver = UserConversation.create_conversation_message(send_id, receive_id, 3, 2)
+            conver.update(set__wait_time=datetime.datetime.now())
+            conversation_id = str(conver.id)
+        else:
+            if conversation:
+                conversation_id = str(conversation.id)
+                if conversation.type == 1:
+                    start_time = conversation.start_time
+                chat_status = True
+
+            if refer_conversation:
+                conversation_id = str(refer_conversation.id)
+                if refer_conversation.type == 1:
+                    start_time = refer_conversation.start_time
+                    chat_status = True
+                else:
+                    if refer_conversation.from_user_id == send_id:
+                        chat_status = True
+
+        data["conversation_id"] = conversation_id
+        if start_time:
+            temp_time = start_time.strftime("%Y-%m-%d %H:%M:%S")
+            timeArray = time.strptime(temp_time, "%Y-%m-%d %H:%M:%S")
+            #转换成时间戳
+            timestamp = time.mktime(timeArray)
+            data["start_time"] = int(timestamp)
+
+        if chat_status:
+
+            return self.write({"status": "success", "chat_status": True, "data": data})
+        else:
+            return self.write({"status": "success", "chat_status": False, "data": data})
 
 
 # 消息门槛送礼物
@@ -1973,25 +2098,68 @@ class MessageSendGift(BaseHandler):
 class MessageSendToolV1(BaseHandler):
     @api_define("message send gift_v1", r'/live/user/message/send_tool_v1', [
         Param("receive_id", True, str, "", "", u"收礼人用户id"),
+        Param("conversation_id", False, str, "", "", u"会话id"),
     ], description=u"消息门槛送礼物_v1 新版")
     @login_required
     def get(self):
         send_id = int(self.current_user_id)
         receive_id = self.arg_int("receive_id")
+        conversation_id = self.arg("conversation_id", "")
 
         tool = Tools.objects.filter(tools_type=0).first()
 
         # 判断道具, 有就发道具
         status = UserTools.has_tools(send_id, str(tool.id))
         if status == 1:
+
             # 消耗道具
-            UserTools.reduce_tools(send_id, str(tool.id))
+            time_type = UserTools.reduce_tools(send_id, str(tool.id))
+
+            if not conversation_id:
+
+                #  判断会话:
+                conversation = UserConversation.objects.filter(from_user_id=send_id, to_user_id=receive_id, type__ne=4).first()
+                refer_conversation = UserConversation.objects.filter(from_user_id=receive_id, to_user_id=send_id, type__ne=4).first()
+
+                if not conversation and not refer_conversation:
+                    # 无 未关闭会话, 创建一个会话
+                    conver = UserConversation.create_conversation_message(send_id, receive_id, 3, 1)
+                    conver.update(set__wait_time=datetime.datetime.now())
+                    conversation_id = str(conver.id)
+
+                if conversation:
+                    conversation.update(set__from_user_id=send_id)
+                    conversation.update(set__to_user_id=receive_id)
+                    conversation.update(set__is_send_tool=1)
+                    conversation.update(set__tool_time_type=time_type)
+                    conversation_id = str(conversation.id)
+
+                if refer_conversation:
+                    refer_conversation.update(set__from_user_id=send_id)
+                    refer_conversation.update(set__to_user_id=receive_id)
+                    refer_conversation.update(set__is_send_tool=1)
+                    refer_conversation.update(set__tool_time_type=time_type)
+                    conversation_id = str(refer_conversation.id)
+
+            # 修改会话的使用道具状态:
+            if conversation_id:
+                conversation = UserConversation.objects.filter(id=conversation_id).first()
+                if not conversation:
+                    pass
+                conversation.update(set__from_user_id=send_id)
+                conversation.update(set__to_user_id=receive_id)
+                conversation.update(set__is_send_tool=1)
+                conversation.update(set__tool_time_type=time_type)
+            dic = {
+                "conversation_id": conversation_id
+            }
+
+
             # 添加记录
             SendToolsRecord.add(send_id, receive_id, str(tool.id), 1)
-            return self.write({"status": "success"})
+            return self.write({"status": "success", "data": dic})
         else:
             return self.write({"status": "fail", "error": _(u"无可用门槛道具"), })
-
 
 
 @handler_define
@@ -2041,10 +2209,17 @@ class RealNameCheck(BaseHandler):
     def get(self):
         user = self.current_user
         status = RealNameVerify.check_user_verify(user_id=user.id)
+
         real_video_verify = RealVideoVerify.check_user_verify(user_id=user.id)
         video_auth_status = VideoManagerVerify.check_video_manager_verify(user_id=user.id)
         self.write({"status": "success", "check_real_name": status, "real_video_verify": real_video_verify,
                     "video_auth_status": video_auth_status})
+
+
+        video_auth_status = VideoManagerVerify.check_video_manager_verify(user_id=user.id)
+
+
+        self.write({"status": "success", "check_real_name": status, "video_auth_status": video_auth_status})
 
 #@handler_define
 #class H5VideoCheck(BaseHandler):
@@ -2363,6 +2538,7 @@ class UserChatCheck(BaseHandler):
 
         if result == 1:
             return self.write({"status": "success"})
+
 
 
 

@@ -166,64 +166,55 @@ class Receive_Tools(BaseHandler):
 
     @login_required
     def get(self):
+        flag = False
+        if not flag:
+            return self.write({"status": "success", "tools": []})
         user_id = int(self.current_user_id)
         user = self.current_user
         now = datetime.datetime.now()
         now_str = now.strftime('%Y-%m-%d 23:59:59')
         hm = get_hm(now)
         activity_id = ""
-
         type = self.arg_int("type", "1")
-        if type == 1:
+        receive_data = {}
 
-            if user.is_video_auth == 1:
-                #  主播
-                verify = VideoManagerVerify.objects.filter(user_id=user_id).first()
-                if not verify:
-                    return self.write({"status": "failed", "error_message": "认证主播", })
-                verify_time = verify.verify_time
-                temp_end_time = verify_time + datetime.timedelta(days=7)
-                endtime = temp_end_time.strftime('%Y-%m-%d 23:59:59')
+        if user.is_video_auth == 1:
+            #  主播
+            verify = VideoManagerVerify.objects.filter(user_id=user_id).first()
+            if not verify:
+                return self.write({"status": "failed", "error_message": "认证主播", })
+            verify_time = verify.verify_time
+            temp_end_time = verify_time + datetime.timedelta(days=7)
+            endtime = temp_end_time.strftime('%Y-%m-%d 23:59:59')
 
-                # 6-22 之前认证的都属于老主播
-                compare_time = datetime.datetime(2017, 6, 21)
+            # 6-22 之前认证的都属于老主播
+            compare_time = datetime.datetime(2017, 6, 21)
 
-                if verify_time < compare_time or datetime.datetime.strptime(endtime, "%Y-%m-%d %H:%M:%S") < now:
-                    # 老主播
-                    status, activity = check_receive(2, now, user_id)
-                    if status == 1:
-                        return self.write({"status": "failed", "error_message": "活动已过期", })
-                    if status == 2:
-                        return self.write({"status": "failed", "error_message": "您已经领取该活动", })
-                    receive_data = eval(activity.tools_data)
-                    activity_id = str(activity.id)
-                else:
-                    # 新主播
-                    status, activity = check_receive(1, now, user_id)
-                    if status == 1:
-                        return self.write({"status": "failed", "error_message": "活动已过期", })
-                    if status == 2:
-                        return self.write({"status": "failed", "error_message": "您已经领取该活动", })
+            if verify_time < compare_time or datetime.datetime.strptime(endtime, "%Y-%m-%d %H:%M:%S") < now:
+                # 老主播
+                status, activity = check_receive(2, now, user_id)
+                if status == 3:
                     receive_data = eval(activity.tools_data)
                     activity_id = str(activity.id)
             else:
-                #  非主播
-                status, activity = check_receive(3, now, user_id)
-                if status == 1:
-                    return self.write({"status": "failed", "error_message": "活动已过期", })
-                if status == 2:
-                    return self.write({"status": "failed", "error_message": "您已经领取该活动", })
-
+                # 新主播
+                status, activity = check_receive(1, now, user_id)
+                if status == 3:
+                    receive_data = eval(activity.tools_data)
+                    activity_id = str(activity.id)
+        else:
+            #  非主播
+            status, activity = check_receive(3, now, user_id)
+            if status == 3:
                 receive_data = eval(activity.tools_data)
                 activity_id = str(activity.id)
 
-            # ====================================================================================
+        # ====================================================================================
 
-            tools_list = []
+        tools_list = []
 
-            create_time = now
-            starttime = create_time.strftime("%Y-%m-%d 00:00:00")
-            endtime = create_time.strftime('%Y-%m-%d 23:59:59')
+        create_time = now
+        if receive_data:
             for key, value in receive_data.items():
                 tools = Tools.objects.filter(tools_type=int(key)).first()  # 道具
                 user_tools = UserTools()
@@ -261,12 +252,10 @@ class Receive_Tools(BaseHandler):
             activity_record.tools_activity_id = activity_id
             activity_record.save()
 
-            return self.write({"status": "success", "tools": tools_list})
-        elif type == 2:
-            # vip每日赠送领取
-            user_vip = UserVip.objects.filter(user_id=user_id).first()
-            if not user_vip:
-                return self.write({"status": "success"})
+
+        # vip每日赠送领取
+        user_vip = UserVip.objects.filter(user_id=user_id).first()
+        if user_vip:
             vip = Vip.objects.filter(id=user_vip.vip_id).first()
             tool_str = vip.tools_data
             tool_dic = eval(tool_str)
@@ -296,8 +285,7 @@ class Receive_Tools(BaseHandler):
             receive_record.create_time = datetime.datetime.now()
             receive_record.save()
 
-
-            return self.write({"status": "success"})
+        return self.write({"status": "success", "tools": tools_list})
 
 
 def check_receive(role, date_time, user_id):
