@@ -11,8 +11,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.abspath(__file__), '../')))
 sys.path.append(os.path.abspath(os.path.join(os.path.abspath(__file__), '../../')))
 sys.path.append(os.path.abspath(os.path.join(os.path.abspath(__file__), '../../..')))
 sys.path.append(os.path.abspath(os.path.join(os.path.abspath(__file__), '../../../..')))
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(__file__)), "..", "base", "site-packages")))
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(__file__)), "..", "base", "site-packages","django_admin_bootstrapped")))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(__file__)), "../", "base", "site-packages")))
+sys.path.insert(1, os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(__file__)), "../", "base", "site-packages", "django_admin_bootstrapped")))
 
 from base.settings import load_django_settings
 load_django_settings('live_video.base', 'live_video.app')
