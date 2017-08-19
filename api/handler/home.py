@@ -19,79 +19,29 @@ class RecommendList(BaseHandler):
     def get(self):
         #audiorooms = AudioRoomRecord.get_online_users_v1(query_time=datetime.datetime.now(), page=1, page_count=9, gender=2, is_video=0)
         #videorooms = AudioRoomRecord.get_online_users_v1(query_time=datetime.datetime.now(), page=1, page_count=27, gender=2, is_video=1)
-        now_time = int(time.time())
-        pre_time = now_time - 120
-        heartbeats = UserHeartBeat.objects.filter(last_report_time__gte=pre_time)
-        hots=[]
-        anchors = Anchor.objects.all()
-        hot_ids = []
-        for anchor in anchors:
-            user = User.objects.get(id=anchor.sid)
-            user_heart = UserHeartBeat.objects.get(user=user)
-            if user_heart.last_report_time > pre_time and user.disturb_mode != 1:
-                hots.append(user)
-                hot_ids.append(user.id)
-
-        for heartbeat in heartbeats:
-            if heartbeat.user.charm_value > 3500 and heartbeat.user.disturb_mode != 1 \
-                    and heartbeat.user.id not in hot_ids and heartbeat.user.is_video_auth == 1:
-                hots.append(heartbeat.user)
-
-        if not hots:
-            hots = User.objects.filter(is_video_auth=1).order_by("-charm_value")[0:4]
-
         audio_list = []
         video_list = []
         hot_list = []
-
-        user_id_list=[]
-        for user in hots:
-            room = AudioRoomRecord.objects.get(id=user.audio_room_id)
-            personal_tags = UserTags.get_usertags(user_id=room.user_id)
-            if not personal_tags:
-                personal_tags = []
-
-            user_vip = UserVip.objects.filter(user_id=user.id).first()
-
-            # time = int(time.time())
-            # pre_time = time - 120
-            user_beat = UserHeartBeat.objects.filter(user=user, last_report_time__gte=pre_time).first()
-            if user_beat:
-                is_online = 1
-            else:
-                is_online = 0
-
-            if not user_vip:
-                dic = {
-                    "audioroom": convert_audioroom(room),
-                    "user": convert_user(user),
-                    "personal_tags": personal_tags,
-                    "time_stamp": int(time.time()),
-                    "is_online": is_online
-                }
-            else:
-                vip = Vip.objects.filter(id=user_vip.vip_id).first()
-                dic = {
-                    "audioroom": convert_audioroom(room),
-                    "user": convert_user(user),
-                    "personal_tags": personal_tags,
-                    "time_stamp": int(time.time()),
-                    "vip": convert_vip(vip),
-                    "is_online": is_online
-                }
-
-            show_video = RealVideoVerify.objects(user_id=user.id, status=1).order_by("-update_time").first()
-            if show_video:
-                dic["check_real_video"] = show_video.status
-            else:
-                real_video = RealVideoVerify.objects(user_id=user.id, status__ne=2).order_by("-update_time").first()
-                if real_video:
-                    dic["check_real_video"] = real_video.status
-                else:
-                    dic["check_real_video"] = 3
-
-            hot_list.append(dic)
-            user_id_list.append(user.id)
+        recommed_list = UserRedis.get_recommed_list()
+        recommed_data = eval(UserRedis.get_recommed())
+        if recommed_list:
+            try:
+                for recommed in recommed_list:
+                    # tempobj = UserRedis.get_recommed(recommed)
+                    # if "audioroom" in tempobj:
+                    #     tempobj["audioroom"] = eval(tempobj["audioroom"])
+                    # if "user" in tempobj:
+                    #     tempobj["user"] = eval(tempobj["user"])
+                    # if "vip" in tempobj:
+                    #     tempobj["vip"] = eval(tempobj["vip"])
+                    # if tempobj["personal_tags"]:
+                    #     tempobj["personal_tags"] = eval(tempobj["personal_tags"])
+                    hot_list.append(recommed_data[recommed])
+            except Exception,e:
+                print e
+                hot_list = oldcommonlist()
+        else:
+            hot_list = oldcommonlist()
 
         result_advs = []
         advs = Adv.get_list()
@@ -103,9 +53,79 @@ class RecommendList(BaseHandler):
             "banners": result_advs,
             "audio_list": audio_list,
             "video_list": video_list,
-            "hot_list": hot_list,
+            "hot_list": map(lambda x:json.loads(x), hot_list),
         })
 
+def oldcommonlist():
+    now_time = int(time.time())
+    pre_time = now_time - 120
+    heartbeats = UserHeartBeat.objects.filter(last_report_time__gte=pre_time)
+    hots=[]
+    anchors = Anchor.objects.all()
+    hot_ids = []
+    hot_list = []
+    for anchor in anchors:
+        user = User.objects.get(id=anchor.sid)
+        user_heart = UserHeartBeat.objects.get(user=user)
+        if user_heart.last_report_time > pre_time and user.disturb_mode != 1:
+            hots.append(user)
+            hot_ids.append(user.id)
+
+    for heartbeat in heartbeats:
+        if heartbeat.user.charm_value > 3500 and heartbeat.user.disturb_mode != 1 \
+                and heartbeat.user.id not in hot_ids and heartbeat.user.is_video_auth == 1:
+            hots.append(heartbeat.user)
+
+    if not hots:
+        hots = User.objects.filter(is_video_auth=1).order_by("-charm_value")[0:4]
+
+
+    for user in hots:
+        room = AudioRoomRecord.objects.get(id=user.audio_room_id)
+        personal_tags = UserTags.get_usertags(user_id=room.user_id)
+        if not personal_tags:
+            personal_tags = []
+
+        user_vip = UserVip.objects.filter(user_id=user.id).first()
+
+        # time = int(time.time())
+        # pre_time = time - 120
+        user_beat = UserHeartBeat.objects.filter(user=user, last_report_time__gte=pre_time).first()
+        if user_beat:
+            is_online = 1
+        else:
+            is_online = 0
+
+        if not user_vip:
+            dic = {
+                "audioroom": convert_audioroom(room),
+                "user": convert_user(user),
+                "personal_tags": personal_tags,
+                "time_stamp": int(time.time()),
+                "is_online": is_online
+            }
+        else:
+            vip = Vip.objects.filter(id=user_vip.vip_id).first()
+            dic = {
+                "audioroom": convert_audioroom(room),
+                "user": convert_user(user),
+                "personal_tags": personal_tags,
+                "time_stamp": int(time.time()),
+                "vip": convert_vip(vip),
+                "is_online": is_online
+            }
+
+        show_video = RealVideoVerify.objects(user_id=user.id, status=1).order_by("-update_time").first()
+        if show_video:
+            dic["check_real_video"] = show_video.status
+        else:
+            real_video = RealVideoVerify.objects(user_id=user.id, status__ne=2).order_by("-update_time").first()
+            if real_video:
+                dic["check_real_video"] = real_video.status
+            else:
+                dic["check_real_video"] = 3
+        hot_list.append(json.dumps(dic))
+    return hot_list
 
 @handler_define
 class ColumnList(BaseHandler):

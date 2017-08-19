@@ -59,7 +59,6 @@ class Tools(Document):
     def send_activity_tools(cls, user_id):
         now = datetime.datetime.now()
         now_str = now.strftime('%Y-%m-%d 23:59:59')
-        hm = cls.get_hm(now)
         activity_id = ""
         user = User.objects.filter(id=user_id).first()
         receive_data = {}
@@ -125,6 +124,41 @@ class Tools(Document):
 
             desc = u"<html><p>" + _(u"您的活动奖励已发送至您的账户，请注意查收，希望您在我们平台玩得开心～") + u"</p></br></html>"
             MessageSender.send_system_message(user.sid, desc)
+
+    @classmethod
+    def check_receive(cls, role, date_time, user_id):
+        hm = cls.get_hm(date_time)
+        now_str = date_time.strftime('%Y-%m-%d 23:59:59')
+
+        activity = ToolsActivity.objects.filter(delete_status=1, role__contains=str(role), end_time__gte=now_str,
+                                                start_hms__lte=hm, end_hms__gte=hm).first()
+        if not activity:
+            return 1, None  # 活动过期
+        else:
+            date_now = datetime.datetime(date_time.year, date_time.month, date_time.day)
+            activity_id = str(activity.id)
+            record = ToolsActivityRecord.objects.filter(date_time=date_now, user_id=user_id,
+                                                        tools_activity_id=activity_id).first()
+            if record:
+                return 2, None  # 已经领取
+            return 3, activity
+
+    @classmethod
+    def get_hm(cls, now):
+        hour = now.hour
+        minute = now.minute
+
+        if hour < 10:
+            hour_str = '0' + str(hour)
+        else:
+            hour_str = str(hour)
+
+        if minute < 10:
+            minute_str = '0' + str(minute)
+        else:
+            minute_str = str(minute)
+
+        return hour_str + ":" + minute_str
 
 
 # 用户拥有道具

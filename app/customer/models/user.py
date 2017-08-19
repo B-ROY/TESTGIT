@@ -161,7 +161,7 @@ class User(Document):
     current_score = FloatField(verbose_name=u'用户在线状态评分')
     #个人封面
     cover = StringField(verbose_name=u"个人封面")
-
+    label = ListField(verbose_name=u"用户标签")
     online_time = IntField(verbose_name=u"在线时长", default=0)
 
     #上次登录设备
@@ -274,7 +274,7 @@ class User(Document):
                 is_new = True
 
         except User.DoesNotExist:
-            if image and source != cls.SOURCE_PHONE:
+            if image and source != cls.SOURCE_PHONE and source!=cls.SOURCE_FACEBOOK:
                 image = User.convert_http_to_https(cls.upload_logo(image,gender))
 
             is_new = True
@@ -385,7 +385,7 @@ class User(Document):
                 is_new = True
 
         except User.DoesNotExist:
-            if image and source != cls.SOURCE_PHONE:
+            if image and source != cls.SOURCE_PHONE and source != cls.SOURCE_FACEBOOK:
                 image = User.convert_http_to_https(cls.upload_logo(image,gender))
 
             if source == cls.SOURCE_PHONE:

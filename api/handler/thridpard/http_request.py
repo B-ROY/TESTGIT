@@ -34,7 +34,6 @@ class RequestApi(object):
             params = ''
         else:
             path = "%s" % path
-            
         logging.debug("*[Requst]* %s %s %s" % (method, host + path, params))
         conn.request(method, path, params, _headers)
         #conn.set_debuglevel(cls.DEBUG_LEVEL)
