@@ -784,7 +784,7 @@ class PhonePassword(Document):
         try:
             phone_pass = PhonePassword.objects.filter(phone=phone).first()
             if phone_pass:
-                phone_pass.update(password=password)
+                phone_pass.update(set__password=password)
             else:
                 phone_pass = PhonePassword()
                 phone_pass.phone = phone
@@ -798,7 +798,7 @@ class PhonePassword(Document):
     @classmethod
     def check_phone_password(cls, phone, password):
         try:
-            phone_pass = PhonePassword.objects.get(phone=phone)
+            phone_pass = PhonePassword.objects.get(set__phone=phone)
             if phone_pass.password == password:
                 return True, phone
             else:

@@ -37,19 +37,22 @@ class CreateMoment(BaseHandler):
             return self.write({'status': "fail", 'error': _(message)})
 
         if content:
-            # 文本内容鉴黄
-            ret, duration = shumei_text_spam(text=content, timeout=1, user_id=user.id, channel="DYNAMIC_COMMENT", nickname=user.nickname,
-                                             phone=user.phone, ip=self.user_ip)
-            print ret
-            is_pass = 0
-            if ret["code"] == 1100:
-                if ret["riskLevel"] == "PASS":
-                    is_pass = 1
-                if ret["riskLevel"] == "REJECT":
-                    is_pass = 0
-                if ret["riskLevel"] == "REVIEW":
-                    # todo +人工审核逻辑
-                    is_pass = 1
+            if settings.INTERNATIONAL_TYPE == 86:
+                # 文本内容鉴黄
+                ret, duration = shumei_text_spam(text=content, timeout=1, user_id=user.id, channel="DYNAMIC_COMMENT", nickname=user.nickname,
+                                                 phone=user.phone, ip=self.user_ip)
+                print ret
+                is_pass = 0
+                if ret["code"] == 1100:
+                    if ret["riskLevel"] == "PASS":
+                        is_pass = 1
+                    if ret["riskLevel"] == "REJECT":
+                        is_pass = 0
+                    if ret["riskLevel"] == "REVIEW":
+                        # todo +人工审核逻辑
+                        is_pass = 1
+            else:
+                is_pass = 1
             if not is_pass:
                 return self.write({'status': "fail",
                                    'error': u"经系统检测,您的内容涉及违规因素,请重新编辑"})
