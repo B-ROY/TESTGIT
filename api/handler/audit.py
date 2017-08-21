@@ -130,18 +130,20 @@ class PictureCheck(BaseHandler):
             sex = user.gender
         else:
             sex = 0
+        if settings.INTERNATIONAL_TYPE == 86:
+            ret = shumei_image_detect(pic_url=pic_url, timeout=12, user_id=user.id, channel=pic_channel, sex=sex, phone=user.phone)
 
-        ret = shumei_image_detect(pic_url=pic_url, timeout=12, user_id=user.id, channel=pic_channel, sex=sex, phone=user.phone)
-
-        # todo 格式不正确
-        is_pass = 0
-        if ret["code"] == 1100:
-            if ret["riskLevel"] == "PASS":
-                is_pass = 1
-            if ret["riskLevel"] == "REJECT":
-                is_pass = 0
-            if ret["riskLevel"] == "REVIEW":
-                # todo +人工审核逻辑
+            # todo 格式不正确
+            is_pass = 0
+            if ret["code"] == 1100:
+                if ret["riskLevel"] == "PASS":
+                    is_pass = 1
+                if ret["riskLevel"] == "REJECT":
+                    is_pass = 0
+                if ret["riskLevel"] == "REVIEW":
+                    # todo +人工审核逻辑
+                    is_pass = 1
+            else:
                 is_pass = 1
 
         self.write({

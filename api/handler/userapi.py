@@ -1452,32 +1452,32 @@ class UpdateUserInfo(BaseHandler):
             if self.arg("nickname")!= user.nickname:
                 is_nickname_change = True
                 nickname = self.arg("nickname")
+                if settings.INTERNATIONAL_TYPE == 86:
+                    # 昵称鉴黄
+                    ret, duration = shumei_text_spam(text=nickname, timeout=1, user_id=user.id, channel="NICKNAME", nickname=user.nickname,
+                                                 phone=user.phone, ip=self.user_ip)
 
-                # 昵称鉴黄
-                ret, duration = shumei_text_spam(text=nickname, timeout=1, user_id=user.id, channel="NICKNAME", nickname=user.nickname,
-                                             phone=user.phone, ip=self.user_ip)
-
-                print ret
-                is_pass = 0
-                if ret["code"] == 1100:
-                    if ret["riskLevel"] == "PASS":
-                        is_pass = 1
-                    if ret["riskLevel"] == "REJECT":
-                        is_pass = 0
-                    if ret["riskLevel"] == "REVIEW":
-                        # todo +人工审核逻辑
-                        is_pass = 1
-                if not is_pass:
-                    # user.update(set__nickname="爱聊用户" + str(user.identity))
-                    text_detect = TextDetect()
-                    text_detect.user = user
-                    text_detect.text_channel = 1
-                    text_detect.text = user.nickname
-                    text_detect.created_time = datetime.datetime.now()
-                    text_detect.save()
-                    return self.write({'status': "fail",
-                                       'param': 'nickname',
-                                       'error': u"经系统检测,您的昵称内容涉及违规因素,请重新编辑"})
+                    print ret
+                    is_pass = 0
+                    if ret["code"] == 1100:
+                        if ret["riskLevel"] == "PASS":
+                            is_pass = 1
+                        if ret["riskLevel"] == "REJECT":
+                            is_pass = 0
+                        if ret["riskLevel"] == "REVIEW":
+                            # todo +人工审核逻辑
+                            is_pass = 1
+                    if not is_pass:
+                        # user.update(set__nickname="爱聊用户" + str(user.identity))
+                        text_detect = TextDetect()
+                        text_detect.user = user
+                        text_detect.text_channel = 1
+                        text_detect.text = user.nickname
+                        text_detect.created_time = datetime.datetime.now()
+                        text_detect.save()
+                        return self.write({'status': "fail",
+                                           'param': 'nickname',
+                                           'error': u"经系统检测,您的昵称内容涉及违规因素,请重新编辑"})
                 user.nickname = nickname
                 is_change = True
 
