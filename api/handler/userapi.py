@@ -46,7 +46,7 @@ class ThridPardLogin(BaseHandler):
     def create_user(self, openid, access_token, phone, userinfo, source, channel, site_openid=''):
         #获取改用户的guid
         guid = self.arg("guid")
-        if source == User.SOURCE_PHONE or source==User.SOURCE_FACEBOOK or User.SOURCE_TWITTER:
+        if source == User.SOURCE_PHONE:
             userinfo={}
             userinfo["nickname"] = RegisterInfo.make_nickname()
             gender = userinfo.get("sex", 1)
@@ -66,10 +66,10 @@ class ThridPardLogin(BaseHandler):
                 channel=channel,
                 guid=guid
             )
-        else:
+        elif source == User.SOURCE_WEIXIN or source == User.SOURCE_WEIXIN or source == User.SOURCE_QQ or source == User.SOURCE_WEIBO:
             #创建新用户
             # openid, source, nickname, platform=0, image="", channel=""
-            gender = userinfo.get("gender", 1)
+            gender = userinfo.get("sex", 1)
             if gender==1:
                 img_url = userinfo.get("headimgurl", "https://heydopic-10048692.image.myqcloud.com/icon_1501468004")
             else:
@@ -81,14 +81,29 @@ class ThridPardLogin(BaseHandler):
                 gender=gender,
                 phone=phone,
                 ip=self.user_ip,
-                image=img_url,
+                image=userinfo.get("headimgurl",
+                                   img_url),
                 channel=channel,
                 guid = guid
             )
-
-            if source != User.SOURCE_PHONE:
-                third_part = ThridPard.get_by_user(user_id=user.id)
-                third_part.update_weixin_info(site_openid, access_token)
+        else:
+            gender = userinfo.get("sex", 1)
+            if gender == 1:
+                img_url = userinfo.get("headimgurl", "https://heydopic-10048692.image.myqcloud.com/icon_1501468004")
+            else:
+                img_url = userinfo.get("headimgurl", "https://heydopic-10048692.image.myqcloud.com/icon_1501468154")
+            is_new, user = User.create_user(
+                openid=openid,
+                source=source,
+                nickname=userinfo.get("nickname")[0:18],
+                gender=gender,
+                phone=phone,
+                ip=self.user_ip,
+                image=userinfo.get("headimgurl",
+                                   img_url),
+                channel=channel,
+                guid=guid
+            )
 
         return is_new, user
 
@@ -271,7 +286,7 @@ class ThridPardLogin(BaseHandler):
             channel = "AppStore"
         else:
             channel = uas[5]
-        # print access_token,openid
+        print access_token,openid
         userinfo = FacebookAPI.get_user_info(access_token=access_token)
         if access_token == "" or openid == "":
             raise Exception("access_token or openid null!")
@@ -453,28 +468,29 @@ class CompletePersonalInfo(BaseHandler):
         # 用户昵称 鉴黄
 
         if self.has_arg("nickname"):
-            ret, duration = shumei_text_spam(text=user.nickname, timeout=1, user_id=user.id, channel="NICKNAME", nickname=nickname,
-                                                                phone=user.phone, ip=self.user_ip)
-            is_pass = 0
-            if ret["code"] == 1100:
-                if ret["riskLevel"] == "PASS":
-                    is_pass = 1
-                if ret["riskLevel"] == "REJECT":
-                    is_pass = 0
-                if ret["riskLevel"] == "REVIEW":
-                    # todo +人工审核逻辑
-                    is_pass = 1
-            if not is_pass:
-                # user.update(set__nickname="爱聊用户" + str(user.identity))
-                text_detect = TextDetect()
-                text_detect.user = user
-                text_detect.text_channel = 1
-                text_detect.text = user.nickname
-                text_detect.created_time = datetime.datetime.now()
-                text_detect.save()
-                return self.write({'status': "fail",
-                                   "error_code": 10005,
-                                   'error_message': u"经系统检测,您的昵称内容涉及违规因素,请重新编辑"})
+            if settings.INTERNATIONAL_TYPE == 86:
+                ret, duration = shumei_text_spam(text=user.nickname, timeout=1, user_id=user.id, channel="NICKNAME", nickname=nickname,
+                                                                    phone=user.phone, ip=self.user_ip)
+                is_pass = 0
+                if ret["code"] == 1100:
+                    if ret["riskLevel"] == "PASS":
+                        is_pass = 1
+                    if ret["riskLevel"] == "REJECT":
+                        is_pass = 0
+                    if ret["riskLevel"] == "REVIEW":
+                        # todo +人工审核逻辑
+                        is_pass = 1
+                if not is_pass:
+                    # user.update(set__nickname="爱聊用户" + str(user.identity))
+                    text_detect = TextDetect()
+                    text_detect.user = user
+                    text_detect.text_channel = 1
+                    text_detect.text = user.nickname
+                    text_detect.created_time = datetime.datetime.now()
+                    text_detect.save()
+                    return self.write({'status': "fail",
+                                       "error_code": 10005,
+                                       'error_message': u"经系统检测,您的昵称内容涉及违规因素,请重新编辑"})
 
 
         birth_date = self.arg("birth_date", "1995-01-01")
