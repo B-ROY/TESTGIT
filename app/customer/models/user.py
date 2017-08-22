@@ -381,7 +381,7 @@ class User(Document):
                 is_new = True
 
         except User.DoesNotExist:
-            if image and source != cls.SOURCE_PHONE and source != cls.SOURCE_FACEBOOK:
+            if image and source == User.SOURCE_TWITTER:
                 image = User.convert_http_to_https(cls.upload_logo(image,gender))
 
             if source == cls.SOURCE_PHONE:
@@ -598,7 +598,7 @@ class User(Document):
     def complete_personal_info(cls, user, nickname, gender, img, birth_date):
         if not nickname:
             nickname = user.sid
-        if not img:
+        if not img and not user.image:
             if gender == 1:
                 img = "https://hdlive-10048692.image.myqcloud.com/head_1497412888"
             else:

@@ -11,6 +11,7 @@ class FacebookAPI(object):
         import time
         start_time = int(time.time())
         access_token = access_token
+        print access_token
         #access_token = "EAAYpViK68lYBAJ1lI6eP3Y1d2LS04APhPD6beE9vwRpB8IZCRIM5Kv325sI3DAY24VqlIlcDdHT71qyLhToL9KaPhAzFbaHZCsQgLQAYA5s6aHACqwln5mlQ7QyqFmommlFdpWvMMQVP2LK0j7xB3piiUyrpQElzEn7bHNLF52I5eEcprkaW7i7nyISoUZD"
         graph = facebook.GraphAPI(access_token=access_token, version='2.7')
         user_info = graph.get_object('me',fileds="name,gender")
@@ -36,4 +37,4 @@ class FacebookAPI(object):
             "headimgurl" : url,
             "sex": gender,
         }
-        #return result
+        return result
