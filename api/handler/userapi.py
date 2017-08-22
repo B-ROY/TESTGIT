@@ -2032,6 +2032,36 @@ class MessageCheckV1(BaseHandler):
         send_id = int(self.current_user_id)
         send_user = User.objects.filter(id=send_id).first()
         receive_id = self.arg_int("receive_id")
+
+        # 判断是否是主播.主播没有门槛
+        if send_user.is_video_auth == 1:
+            return self.write({"status": "success", "chat_status": True})
+
+        tool = Tools.objects.filter(tools_type=0).first()
+        record = SendToolsRecord.objects.filter(send_id=send_id, receive_id=receive_id, tools_id=str(tool.id)).first()
+        if record:
+            return self.write({"status": "success", "chat_status": True})
+
+        tools_count = UserTools.objects.filter(user_id=send_id, tools_id=str(tool.id)).sum("tools_count")
+        data = {
+            "tool": convert_tools(tool),
+            "count": tools_count
+        }
+        return self.write({"status": "success", "chat_status": False, "data": data})
+
+
+
+# 消息门槛检测_v2
+@handler_define
+class MessageCheckV2(BaseHandler):
+    @api_define("message check v2", r'/live/user/message/check_v2', [
+        Param("receive_id", True, str, "", "", u"收礼人用户id"),
+    ], description=u"消息门槛检测_V2")
+    @login_required
+    def get(self):
+        send_id = int(self.current_user_id)
+        send_user = User.objects.filter(id=send_id).first()
+        receive_id = self.arg_int("receive_id")
         chat_status = False
 
         # 判断是否是主播.主播没有门槛
@@ -2139,8 +2169,33 @@ class MessageSendGift(BaseHandler):
 class MessageSendToolV1(BaseHandler):
     @api_define("message send gift_v1", r'/live/user/message/send_tool_v1', [
         Param("receive_id", True, str, "", "", u"收礼人用户id"),
-        Param("conversation_id", False, str, "", "", u"会话id"),
     ], description=u"消息门槛送礼物_v1 新版")
+    @login_required
+    def get(self):
+        send_id = int(self.current_user_id)
+        receive_id = self.arg_int("receive_id")
+
+        tool = Tools.objects.filter(tools_type=0).first()
+
+        # 判断道具, 有就发道具
+        status = UserTools.has_tools(send_id, str(tool.id))
+        if status == 1:
+            # 消耗道具
+            UserTools.reduce_tools(send_id, str(tool.id))
+            # 添加记录
+            SendToolsRecord.add(send_id, receive_id, str(tool.id), 1)
+            return self.write({"status": "success"})
+        else:
+            return self.write({"status": "fail", "error": _(u"无可用门槛道具"), })
+
+
+# 消息门槛送礼物 V2
+@handler_define
+class MessageSendToolV2(BaseHandler):
+    @api_define("message send gift_v2", r'/live/user/message/send_tool_v2', [
+        Param("receive_id", True, str, "", "", u"收礼人用户id"),
+        Param("conversation_id", False, str, "", "", u"会话id"),
+    ], description=u"消息门槛送礼物_v2")
     @login_required
     def get(self):
         send_id = int(self.current_user_id)
@@ -2192,7 +2247,6 @@ class MessageSendToolV1(BaseHandler):
             dic = {
                 "conversation_id": conversation_id
             }
-
 
             # 添加记录
             SendToolsRecord.add(send_id, receive_id, str(tool.id), 1)
