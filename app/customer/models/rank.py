@@ -21,7 +21,13 @@ class CharmRank(Document):
     rank = IntField(verbose_name=u"当前排名", default=0)
 
     @classmethod
-    def get_rank_list(self, interval, count, type):
+    def get_rank_list(self, interval, count):
+        charm_rank_list = CharmRank.objects.filter(rank__lte=count)
+
+        return charm_rank_list
+
+    @classmethod
+    def get_rank_list2(self, interval, count, type):
         charm_rank_list = CharmRank.objects.filter(rank__lte=count, type=int(type)).order_by("rank")
 
         return charm_rank_list
@@ -42,7 +48,13 @@ class WealthRank(Document):
 
 
     @classmethod
-    def get_rank_list(self, interval, count, type):
+    def get_rank_list(self, interval, count):
+        wealth_rank_list = WealthRank.objects.filter(rank__lte=count)
+
+        return wealth_rank_list
+
+    @classmethod
+    def get_rank_list2(self, interval, count, type):
         wealth_rank_list = WealthRank.objects.filter(rank__lte=count, type=type).order_by("rank")
 
         return wealth_rank_list
