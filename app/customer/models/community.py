@@ -70,12 +70,13 @@ class UserMoment(Document):
         like_user_list = user_moment.like_user_list
         if status == 1:
             # 点赞
-            if user_id not in like_user_list:
+            if int(user_id) not in like_user_list:
                 user_moment.update(inc__like_count=1)
                 user_moment.update(push__like_user_list=user_id)
                 # 与我相关消息
-                AboutMeMessage.create_about_me(user_moment.user_id, user_id, user_moment.user_id, moment_id, 1, "")
-                MessageSender.send_about_me_message(user_moment.user_id)
+                if int(user_id) != int(user_moment.user_id):
+                    AboutMeMessage.create_about_me(user_moment.user_id, user_id, user_moment.user_id, moment_id, 1, "")
+                    MessageSender.send_about_me_message(user_moment.user_id)
         elif status == 2:
             # 取消点赞
             user_moment.update(dec__like_count=1)
@@ -473,7 +474,7 @@ class AboutMeMessage(Document):
         obj_.create_time = datetime.datetime.now()
         obj_.save()
 
-    def normal_info(self, user_id):
+    def normal_info(self):
         data = {
             "user_id": self.user_id,
             "from_id": self.from_id,
@@ -497,15 +498,4 @@ class AboutMeMessage(Document):
         if user_vip:
             vip = Vip.objects.filter(id=user_vip.vip_id).first()
             data["from_user_vip_icon"] = vip.icon_url
-
-        if user_id:
-            like_user_list = moment.like_user_list
-            if int(user_id) in like_user_list:
-                is_liked = 1
-            else:
-                is_liked = 0
-            is_liked = is_liked
-        else:
-            is_liked = 0
-        data["is_liked"] = is_liked
         return data

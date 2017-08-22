@@ -645,7 +645,14 @@ class AboutMeMessageList(BaseHandler):
         data = []
         if messages:
             for message in messages:
-                dict = convert_about_me_message(message, user_id)
+                dict = convert_about_me_message(message)
+                moment = UserMoment.objects.filter(id=message.moment_id).first()
+                like_user_list = moment.like_user_list
+                if int(user_id) in like_user_list:
+                    is_liked = 1
+                else:
+                    is_liked = 0
+                dict["moment"]["is_liked"] = is_liked
                 data.append(dict)
 
         return self.write({"status": "success", "data": data})
