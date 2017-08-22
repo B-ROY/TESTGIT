@@ -162,7 +162,7 @@ class UserMoment(Document):
         vip_count = 5
         anchor_vip_count = 15
         anchor_count = 10
-        user_count = 3
+        user_count = 2
         is_video = user.is_video_auth
         user_vip = UserVip.objects.filter(user_id=user.id).first()
 
