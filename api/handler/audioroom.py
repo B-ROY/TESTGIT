@@ -916,7 +916,60 @@ class GetVoiceRoomListV3(BaseHandler):
                 print e
         else:
             print "空的推荐列表"
+        if not hot_list:
+            import time
+            time = int(time.time())
+            pre_time = time - 120
+            user_beats = UserHeartBeat.objects.filter(last_report_time__gte=pre_time)
+            if user_beats:
+                for heart in user_beats:
+                    if heart.user.is_video_auth == 1 and heart.user.disturb_mode == 0:
+                        is_online = 1
+                        # 视频认证状态
+                        real_video = RealVideoVerify.objects(user_id=heart.user.id, status__ne=2).order_by("-update_time").first()
+                        show_video = RealVideoVerify.objects(user_id=heart.user.id, status=1).order_by("-update_time").first()
 
+                        personal_tags = UserTags.get_usertags(user_id=heart.user.id)
+                        if not personal_tags:
+                            personal_tags = []
+                        user_vip = UserVip.objects.filter(user_id=heart.user.id).first()
+
+                        if user_vip:
+                            vip = Vip.objects.filter(id=user_vip.vip_id).first()
+                            dic = {
+                                "user":{
+                                    "_uid": heart.user.sid,
+                                    "logo_big":heart.user.image,
+                                    "nickname":heart.user.nickname,
+                                    "desc":heart.user.desc
+                                },
+                                "personal_tags": personal_tags,
+                                "vip":{
+                                    "vip_type": vip.vip_type,
+                                    "icon_url": Vip.convert_http_to_https(vip.icon_url)
+                                },
+                                "is_online": is_online
+                            }
+                        else:
+                            dic = {
+                                "user": {
+                                    "_uid": heart.user.sid,
+                                    "logo_big":heart.user.image,
+                                    "nickname":heart.user.nickname,
+                                    "desc":heart.user.desc
+                                },
+                                "personal_tags": personal_tags,
+                                "is_online": is_online
+                            }
+
+                        if show_video:
+                            dic["check_real_video"] = show_video.status
+                        else:
+                            if real_video:
+                                dic["check_real_video"] = real_video.status
+                            else:
+                                dic["check_real_video"] = 3
+                        hot_list.append(dic)
         anchor_list = UserRedis.get_index_anchor_list_v3(0,-1)
         anchor_data = eval(UserRedis.get_index_anchor_v3())
         if len(anchor_list) > 0:
