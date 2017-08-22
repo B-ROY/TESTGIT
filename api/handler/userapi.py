@@ -2068,6 +2068,12 @@ class MessageCheckV1(BaseHandler):
                     start_time = conversation.start_time
                 chat_status = True
 
+                if conversation.type == 2:
+                    if int(conversation.from_user_id) == int(send_id):
+                        data["is_from_me"] = 1
+                    else:
+                        data["is_from_me"] = 2
+
             if refer_conversation:
                 conversation_id = str(refer_conversation.id)
                 if refer_conversation.type == 1:
@@ -2076,6 +2082,12 @@ class MessageCheckV1(BaseHandler):
                 else:
                     if refer_conversation.from_user_id == send_id:
                         chat_status = True
+
+                if refer_conversation.type == 2:
+                    if int(refer_conversation.from_user_id) == int(send_id):
+                        data["is_from_me"] = 1
+                    else:
+                        data["is_from_me"] = 2
 
         data["conversation_id"] = conversation_id
         if start_time:
@@ -2088,6 +2100,11 @@ class MessageCheckV1(BaseHandler):
         if conversation_id:
             now_con = UserConversation.objects.filter(id=conversation_id).first()
             data["conversation_type"] = now_con.type
+            if now_con.type == 2:
+                if int(now_con.from_user_id) == int(send_id):
+                    data["is_from_me"] = 1
+                else:
+                    data["is_from_me"] = 2
 
         if chat_status:
 
@@ -2152,15 +2169,13 @@ class MessageSendToolV1(BaseHandler):
                     conversation_id = str(conver.id)
 
                 if conversation:
-                    conversation.update(set__from_user_id=send_id)
-                    conversation.update(set__to_user_id=receive_id)
+                    conversation.update(set__send_id=send_id)
                     conversation.update(set__is_send_tool=1)
                     conversation.update(set__tool_time_type=time_type)
                     conversation_id = str(conversation.id)
 
                 if refer_conversation:
-                    refer_conversation.update(set__from_user_id=send_id)
-                    refer_conversation.update(set__to_user_id=receive_id)
+                    refer_conversation.update(set__send_id=send_id)
                     refer_conversation.update(set__is_send_tool=1)
                     refer_conversation.update(set__tool_time_type=time_type)
                     conversation_id = str(refer_conversation.id)

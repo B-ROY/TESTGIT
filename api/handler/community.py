@@ -645,7 +645,7 @@ class AboutMeMessageList(BaseHandler):
         data = []
         if messages:
             for message in messages:
-                dict = convert_about_me_message(message)
+                dict = convert_about_me_message(message, user_id)
                 data.append(dict)
 
         return self.write({"status": "success", "data": data})

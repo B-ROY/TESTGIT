@@ -62,6 +62,7 @@ class ChatMessage(Document):
 class UserConversation(Document):
     from_user_id = IntField(verbose_name=u"用户id")
     to_user_id = IntField(verbose_name=u"接收用户id")
+    send_id = IntField(verbose_name=u"道具使用 用户id")
     create_time = DateTimeField(verbose_name=u"创建时间", default=datetime.datetime.now())
     type = IntField(verbose_name=u"会话状态")  # 1:建立  2:未建立  3:道具阶段  4:关闭
     start_time = DateTimeField(verbose_name=u"会话开始时间")

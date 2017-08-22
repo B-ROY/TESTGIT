@@ -473,7 +473,7 @@ class AboutMeMessage(Document):
         obj_.create_time = datetime.datetime.now()
         obj_.save()
 
-    def normal_info(self):
+    def normal_info(self, user_id):
         data = {
             "user_id": self.user_id,
             "from_id": self.from_id,
@@ -498,4 +498,14 @@ class AboutMeMessage(Document):
             vip = Vip.objects.filter(id=user_vip.vip_id).first()
             data["from_user_vip_icon"] = vip.icon_url
 
+        if user_id:
+            like_user_list = moment.like_user_list
+            if int(user_id) in like_user_list:
+                is_liked = 1
+            else:
+                is_liked = 0
+            is_liked = is_liked
+        else:
+            is_liked = 0
+        data["is_liked"] = is_liked
         return data

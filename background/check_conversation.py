@@ -46,7 +46,7 @@ def check_conversation():
                 if conversation.is_send_tool == 1:
                     # 返还道具:
                     tool = Tools.objects.filter(tools_type=0).first()
-                    db_user_tools = UserTools.objects.filter(user_id=conversation.from_user_id, tools_id=str(tool.id),
+                    db_user_tools = UserTools.objects.filter(user_id=conversation.send_id, tools_id=str(tool.id),
                                              time_type=conversation.tool_time_type).first()
                     time_type = conversation.tool_time_type
                     get_type = 0
@@ -55,7 +55,7 @@ def check_conversation():
 
                     if not db_user_tools:
                         user_tools = UserTools()
-                        user_tools.user_id = conversation.from_user_id
+                        user_tools.user_id = conversation.send_id
                         user_tools.tools_id = str(tool.id)
                         user_tools.tools_count = 1
                         user_tools.time_type = time_type
