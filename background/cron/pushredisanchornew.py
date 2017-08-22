@@ -40,28 +40,25 @@ def pushredis(self):
     users = []
     user_recommed_id = []
     usermap = {}
-    anchors = Anchor.objects.all()
-
-    for stui in stuianchors:
-        user_heart = UserHeartBeat.objects.get(user=stui)
-        if user_heart.last_report_time > pre_time and stui.disturb_mode != 1:
-            show_video = RealVideoVerify.objects(user_id=stui.id, status=1).order_by("-update_time").first()
-            if show_video:
-                hots.insert(0,stui)
-            else:
-                hots.append(stui)
+    anchors = Anchor.objects.filter().order_by("seq")
 
     for anchor in anchors:
         user = User.objects.get(id=anchor.sid)
         user_heart = UserHeartBeat.objects.get(user=user)
         if user_heart.last_report_time > pre_time and user.disturb_mode != 1:
-            show_video = RealVideoVerify.objects(user_id=user.id, status=1).order_by("-update_time").first()
-            if show_video:
-                hots.insert(0,user)
-            else:
-                hots.append(user)
+            hots.append(user)
             print "===================在线的热门主播",user.id
+    stuilist = []
+    for stui in stuianchors:
+        user_heart = UserHeartBeat.objects.get(user=stui)
+        if user_heart.last_report_time > pre_time and stui.disturb_mode != 1:
+            show_video = RealVideoVerify.objects(user_id=stui.id, status=1).order_by("-update_time").first()
+            if show_video:
+                stuilist.insert(0,stui)
+            else:
+                stuilist.append(stui)
 
+    hots = hots + stuilist
     for h in hots:
         if h not in users:
             users.append(h)

@@ -34,7 +34,7 @@ def pushredis(self):
     pre_time = now_time - 3600
     # heartbeats = UserHeartBeat.objects.filter(last_report_time__gte=pre_time)
     stuilabel ="598d7a2418ce423b1222d645"
-    usersss = User.objects.filter(is_video_auth = 1)
+    usersss = User.objects.filter(is_video_auth = 1).order_by("is_vip")
     stuianchors =[]
     for u in usersss:
         if stuilabel in u.label:
@@ -43,18 +43,25 @@ def pushredis(self):
     users = []
     user_recommed_id = []
     usermap = {}
-    anchors = Anchor.objects.all()
-
-    for stui in stuianchors:
-        user_heart = UserHeartBeat.objects.get(user=stui)
-        if user_heart.last_report_time > pre_time and stui.disturb_mode != 1:
-            hots.append(stui)
+    anchors = Anchor.objects.filter().order_by("seq")
 
     for anchor in anchors:
         user = User.objects.get(id=anchor.sid)
         user_heart = UserHeartBeat.objects.get(user=user)
         if user_heart.last_report_time > pre_time and user.disturb_mode != 1:
             hots.append(user)
+            print "===================在线的热门主播",user.id
+    stuilist = []
+    for stui in stuianchors:
+        user_heart = UserHeartBeat.objects.get(user=stui)
+        if user_heart.last_report_time > pre_time and stui.disturb_mode != 1:
+            show_video = RealVideoVerify.objects(user_id=stui.id, status=1).order_by("-update_time").first()
+            if show_video:
+                stuilist.insert(0,stui)
+            else:
+                stuilist.append(stui)
+
+    hots = hots + stuilist
 
     # for heartbeat in heartbeats:
     #     if heartbeat.user.charm_value > 3500 and heartbeat.user.disturb_mode != 1 \
@@ -84,7 +91,6 @@ def pushredis(self):
 
         if not user_vip:
             dic = {
-                "audioroom": convert_audioroom(room),
                 "user": convert_user(user),
                 "personal_tags": personal_tags,
                 "time_stamp": int(time.time()),
@@ -93,7 +99,6 @@ def pushredis(self):
         else:
             vip = Vip.objects.filter(id=user_vip.vip_id).first()
             dic = {
-                "audioroom": convert_audioroom(room),
                 "user": convert_user(user),
                 "personal_tags": personal_tags,
                 "time_stamp": int(time.time()),
@@ -131,23 +136,43 @@ def push_index_anchor(self):
     valist4 =[]
     valist5 =[]
     index_id = []
-    anchors = User.objects.filter(is_video_auth = 1)
+    anchors = User.objects.filter(is_video_auth = 1).order_by("is_vip")
     for anchor in anchors:
         if gaoyanzhi in anchor.label and xinggan in anchor.label:
             if anchor not in users:
-                valist1.append(anchor)
+                show_video = RealVideoVerify.objects(user_id=anchor.id, status=1).order_by("-update_time").first()
+                if show_video:
+                    valist1.insert(0,anchor)
+                else:
+                    valist1.append(anchor)
         elif gaoyanzhi in anchor.label and qingcun in anchor.label:
             if anchor not in users:
-                valist2.append(anchor)
+                show_video = RealVideoVerify.objects(user_id=anchor.id, status=1).order_by("-update_time").first()
+                if show_video:
+                    valist2.insert(0,anchor)
+                else:
+                    valist2.append(anchor)
         else:
             if xinggan in anchor.label:
                 if anchor not in users:
-                    valist3.append(anchor)
+                    show_video = RealVideoVerify.objects(user_id=anchor.id, status=1).order_by("-update_time").first()
+                    if show_video:
+                        valist3.insert(0,anchor)
+                    else:
+                        valist3.append(anchor)
             elif yujie in anchor.label:
                 if anchor not in users:
-                    valist4.append(anchor)
+                    show_video = RealVideoVerify.objects(user_id=anchor.id, status=1).order_by("-update_time").first()
+                    if show_video:
+                        valist4.insert(0,anchor)
+                    else:
+                        valist4.append(anchor)
             elif not anchor.label:
-                valist5.append(anchor)
+                show_video = RealVideoVerify.objects(user_id=anchor.id, status=1).order_by("-update_time").first()
+                if show_video:
+                    valist5.insert(0,anchor)
+                else:
+                    valist5.append(anchor)
     for gaoxing in valist1:
         if gaoxing not in users and gaoxing.disturb_mode ==0 and gaoxing.audio_room_id !="":
             users.append(gaoxing)
