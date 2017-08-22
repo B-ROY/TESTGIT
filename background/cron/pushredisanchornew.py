@@ -17,20 +17,18 @@ sys.path.insert(1, os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(
 from base.settings import load_django_settings
 load_django_settings('live_video.base', 'live_video.app')
 
-from app.audio.models import AudioRoomRecord
 from app.customer.models import UserHeartBeat, User
 from app.customer.models.hotAnchor import Anchor
 from app.customer.models.personal_tags import UserTags
 from app.customer.models.real_video_verify import RealVideoVerify
 from app.customer.models.vip import Vip, UserVip
 from app_redis.user.models.user import UserRedis
-from base.core.util.dateutils import datetime_to_timestamp
-from api.convert.convert_user import convert_audioroom, convert_user, convert_vip
 import json
 
 def pushredis(self):
     now_time = int(time.time())
-    pre_time = now_time - 120
+    #pre_time = now_time - 120
+    pre_time = now_time - 3600
     # heartbeats = UserHeartBeat.objects.filter(last_report_time__gte=pre_time)
     stuilabel ="598d7a2418ce423b1222d645"
     usersss = User.objects.filter(is_video_auth = 1).order_by("is_vip")
@@ -62,14 +60,13 @@ def pushredis(self):
                 hots.insert(0,user)
             else:
                 hots.append(user)
+            print "===================在线的热门主播",user.id
 
     for h in hots:
         if h not in users:
             users.append(h)
-
     for user in users:
-        room = AudioRoomRecord.objects.get(id=user.audio_room_id)
-        personal_tags = UserTags.get_usertags(user_id=room.user_id)
+        personal_tags = UserTags.get_usertags(user_id=user.id)
         if not personal_tags:
             personal_tags = []
 
@@ -80,49 +77,49 @@ def pushredis(self):
         user_beat = UserHeartBeat.objects.filter(user=user, last_report_time__gte=pre_time).first()
         if user_beat:
             is_online = 1
-        else:
-            is_online = 0
+        # else:
+        #     is_online = 0
 
-        if not user_vip:
-            dic = {
-                "user":{
-                    "_uid": user.sid,
-                    "logo_big":user.image,
-                    "nickname":user.nickname,
-                    "desc":user.desc
-                },
-                "personal_tags": personal_tags,
-                "is_online": is_online
-            }
-        else:
-            vip = Vip.objects.filter(id=user_vip.vip_id).first()
-            dic = {
-                "user":{
-                    "_uid": user.sid,
-                    "logo_big":user.image,
-                    "nickname":user.nickname,
-                    "desc":user.desc
-                },
-                "personal_tags": personal_tags,
-                "vip": {
-                    "vip_type": vip.vip_type,
-                    "icon_url": Vip.convert_http_to_https(vip.icon_url)
-                },
-                "is_online": is_online
-            }
-
-        show_video = RealVideoVerify.objects(user_id=user.id, status=1).order_by("-update_time").first()
-        if show_video:
-            dic["check_real_video"] = show_video.status
-        else:
-            real_video = RealVideoVerify.objects(user_id=user.id, status__ne=2).order_by("-update_time").first()
-            if real_video:
-                dic["check_real_video"] = real_video.status
+            if not user_vip:
+                dic = {
+                    "user":{
+                        "_uid": user.sid,
+                        "logo_big":user.image,
+                        "nickname":user.nickname,
+                        "desc":user.desc
+                    },
+                    "personal_tags": personal_tags,
+                    "is_online": is_online
+                }
             else:
-                dic["check_real_video"] = 3
-        user_recommed_id.append(user.id)
-        self.append(user.id)
-        usermap[str(user.id)] = json.dumps(dic)
+                vip = Vip.objects.filter(id=user_vip.vip_id).first()
+                dic = {
+                    "user":{
+                        "_uid": user.sid,
+                        "logo_big":user.image,
+                        "nickname":user.nickname,
+                        "desc":user.desc
+                    },
+                    "personal_tags": personal_tags,
+                    "vip": {
+                        "vip_type": vip.vip_type,
+                        "icon_url": Vip.convert_http_to_https(vip.icon_url)
+                    },
+                    "is_online": is_online
+                }
+
+            show_video = RealVideoVerify.objects(user_id=user.id, status=1).order_by("-update_time").first()
+            if show_video:
+                dic["check_real_video"] = show_video.status
+            else:
+                real_video = RealVideoVerify.objects(user_id=user.id, status__ne=2).order_by("-update_time").first()
+                if real_video:
+                    dic["check_real_video"] = real_video.status
+                else:
+                    dic["check_real_video"] = 3
+            user_recommed_id.append(user.id)
+            self.append(user.id)
+            usermap[str(user.id)] = json.dumps(dic)
     deletetui()
     UserRedis.add_user_recommed_id_v3(user_recommed_id)
     UserRedis.add_user_recommed_v3(usermap)

@@ -30,7 +30,8 @@ import json
 
 def pushredis(self):
     now_time = int(time.time())
-    pre_time = now_time - 120
+    # pre_time = now_time - 120
+    pre_time = now_time - 3600
     # heartbeats = UserHeartBeat.objects.filter(last_report_time__gte=pre_time)
     stuilabel ="598d7a2418ce423b1222d645"
     usersss = User.objects.filter(is_video_auth = 1)
@@ -67,8 +68,7 @@ def pushredis(self):
             users.append(h)
 
     for user in users:
-        room = AudioRoomRecord.objects.get(id=user.audio_room_id)
-        personal_tags = UserTags.get_usertags(user_id=room.user_id)
+        personal_tags = UserTags.get_usertags(user_id=user.id)
         if not personal_tags:
             personal_tags = []
 
