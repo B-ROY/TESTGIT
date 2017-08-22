@@ -81,8 +81,7 @@ class ThridPardLogin(BaseHandler):
                 gender=gender,
                 phone=phone,
                 ip=self.user_ip,
-                image=userinfo.get("headimgurl",
-                                   img_url),
+                image="",
                 channel=channel,
                 guid = guid
             )

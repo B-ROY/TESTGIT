@@ -798,7 +798,7 @@ class PhonePassword(Document):
     @classmethod
     def check_phone_password(cls, phone, password):
         try:
-            phone_pass = PhonePassword.objects.get(set__phone=phone)
+            phone_pass = PhonePassword.objects.get(phone=phone)
             if phone_pass.password == password:
                 return True, phone
             else:
