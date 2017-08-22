@@ -24,11 +24,9 @@ class RankListCharm(BaseHandler):
         list_type = self.arg_int("type", 3)
         interval = self.arg_int("interval", 10)
         if list_type == 3:
-            charm_rank_list = CharmRank.get_rank_list(interval=interval, count=60)
+            charm_rank_list = CharmRank.get_rank_list(interval=interval, count=30, type=1)
             charm_data = []
-            charm_data_yesterday = []
             for charm_rank in charm_rank_list:
-                print "==>", str(charm_rank.type) + "-" + str(charm_rank.rank)
                 dic = {}
                 user = charm_rank.user
                 if user:
@@ -39,16 +37,25 @@ class RankListCharm(BaseHandler):
                     dic["user"] = charm_rank.user.get_normal_dic_info()
                     dic["charm"] = charm_rank.charm
                     dic["change_status"] = charm_rank.change_status
-                    if charm_rank.type == 1:
-                        #  周榜
-                        charm_data.append(dic)
-                    if charm_rank.type == 2:
-                        #  日榜
-                        charm_data_yesterday.append(dic)
+                    charm_data.append(dic)
 
-            wealth_rank_list = WealthRank.get_rank_list(interval=interval, count=60)
+            charm_rank_list_yesterday = CharmRank.get_rank_list(interval=interval, count=30, type=2)
+            charm_data_yesterday = []
+            for charm_rank in charm_rank_list_yesterday:
+                dic = {}
+                user = charm_rank.user
+                if user:
+                    user_vip = UserVip.objects.filter(user_id=user.id).first()
+                    if user_vip:
+                        vip = Vip.objects.filter(id=user_vip.vip_id).first()
+                        dic["vip"] = convert_vip(vip)
+                    dic["user"] = charm_rank.user.get_normal_dic_info()
+                    dic["charm"] = charm_rank.charm
+                    dic["change_status"] = charm_rank.change_status
+                    charm_data_yesterday.append(dic)
+
+            wealth_rank_list = WealthRank.get_rank_list(interval=interval, count=30, type=1)
             wealth_data = []
-            wealth_data_yesterday = []
             for wealth_rank in wealth_rank_list:
                 dic = {}
                 user = wealth_rank.user
@@ -61,11 +68,23 @@ class RankListCharm(BaseHandler):
                     dic["user"] = wealth_rank.user.get_normal_dic_info()
                     dic["wealth"] = wealth_rank.wealth
                     dic["change_status"] = wealth_rank.change_status
-                    if wealth_rank.type == 1:
-                        #  周榜
-                        wealth_data.append(dic)
-                    if wealth_rank.type == 2:
-                        wealth_data_yesterday.append(dic)
+                    wealth_data.append(dic)
+
+            wealth_rank_list_yesterday = WealthRank.get_rank_list(interval=interval, count=30, type=2)
+            wealth_data_yesterday = []
+            for wealth_rank in wealth_rank_list_yesterday:
+                dic = {}
+                user = wealth_rank.user
+                if user:
+                    user_vip = UserVip.objects.filter(user_id=user.id).first()
+                    if user_vip:
+                        vip = Vip.objects.filter(id=user_vip.vip_id).first()
+                        dic["vip"] = convert_vip(vip)
+
+                    dic["user"] = wealth_rank.user.get_normal_dic_info()
+                    dic["wealth"] = wealth_rank.wealth
+                    dic["change_status"] = wealth_rank.change_status
+                    wealth_data_yesterday.append(dic)
             self.write({
                 "status": "success",
                 "charm_list": charm_data,

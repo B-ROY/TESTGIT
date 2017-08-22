@@ -18,10 +18,12 @@ load_django_settings('live_video.base', 'live_video.app')
 
 from app.customer.models.chat import UserConversation
 from app.customer.models.tools import UserTools, Tools
+from app.util.messageque.msgsender import MessageSender
 
 
 def check_conversation():
     now = datetime.datetime.now()
+    print now.strftime("%Y-%m-%d %H:%M:%S")
     conversations = UserConversation.objects.filter(type__in=[1, 2, 3])
     if not conversations:
         return
@@ -63,6 +65,9 @@ def check_conversation():
                         user_tools.save()
                     else:
                         db_user_tools.update(inc__tools_count=1)
+                    MessageSender.send_return_tool(conversation.from_user_id, conversation.to_user_id, 1)
+                    MessageSender.send_return_tool(conversation.to_user_id, conversation.from_user_id, 2)
+                    print "close........"
         if conversation.type == 3:
             # 道具解锁状态
             wait_time = conversation.wait_time

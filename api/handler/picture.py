@@ -515,7 +515,7 @@ class UserPictureCreate(BaseHandler):
         now = datetime.datetime.now()
         starttime = now.strftime("%Y-%m-%d 00:00:00")
         endtime = now.strftime('%Y-%m-%d 23:59:59')
-        today_moment_used_count = UserMoment.objects.filter(user_id=user.id, show_status__ne=2, delete_status=1,
+        today_moment_used_count = UserMoment.objects.filter(user_id=user.id, show_status__ne=2,
                                             is_public=1, create_time__gte=starttime, create_time__lte=endtime).count()
 
         """

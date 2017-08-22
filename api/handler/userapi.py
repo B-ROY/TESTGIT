@@ -71,9 +71,9 @@ class ThridPardLogin(BaseHandler):
             # openid, source, nickname, platform=0, image="", channel=""
             gender = userinfo.get("sex", 1)
             if gender==1:
-                img_url = userinfo.get("headimgurl", "https://heydopic-10048692.image.myqcloud.com/icon_1501468004")
+                img_url ="https://heydopic-10048692.image.myqcloud.com/icon_1501468004"
             else:
-                img_url = userinfo.get("headimgurl", "https://heydopic-10048692.image.myqcloud.com/icon_1501468154")
+                img_url = "https://heydopic-10048692.image.myqcloud.com/icon_1501468154"
             is_new, user = User.create_user(
                 openid=openid,
                 source=source,
@@ -81,7 +81,7 @@ class ThridPardLogin(BaseHandler):
                 gender=gender,
                 phone=phone,
                 ip=self.user_ip,
-                image="",
+                image=img_url,
                 channel=channel,
                 guid = guid
             )
@@ -1358,7 +1358,7 @@ class UserHomepageV2(BaseHandler):
 
         count2 = 0
         for moment2 in temp_moments:
-            if count > 10:
+            if count2 > 10:
                 break
             if moment2.type == 3:
                 private_video = PrivateVideo.objects.filter(id=moment2.video_id).first()
@@ -1410,10 +1410,7 @@ class UserHomepageV2(BaseHandler):
                 moment = UserMoment.objects.filter(video_id=str(video.id)).order_by("-create_time").first()
                 if moment:
                     dict = {}
-                    buy_video_status = 2
-                    record = VideoPurchaseRecord.objects.filter(user_id=user_id, video_id=moment.video_id).first()
-                    if record:
-                        buy_video_status = 1
+                    buy_video_status = VideoPurchaseRecord.get_buy_status(user_id, moment.video_id)
                     dict["buy_video_status"] = buy_video_status
                     dict["cover_url"] = moment.cover_url
                     dict["price"] = moment.price
@@ -1639,6 +1636,14 @@ class UpdateUserInfo(BaseHandler):
 
         if self.has_arg("birth_date"):
             birth_date = self.arg("birth_date")
+            try:
+                year = birth_date.split("-")[0]
+                if year:
+                    if int(year) < 1900:
+                        return self.write({'status': "fail", 'param':'occupation', 'error':"birthday error"})
+            except Exception:
+                return self.write({'status': "fail", 'param':'occupation', 'error':"birthday error"})
+
             user.birth_date = datetime.datetime.strptime(birth_date, '%Y-%m-%d')
             user.constellation = User.zodiac(birth_date)
             is_change = True
@@ -2079,6 +2084,10 @@ class MessageCheckV1(BaseHandler):
             #转换成时间戳
             timestamp = time.mktime(timeArray)
             data["start_time"] = int(timestamp)
+
+        if conversation_id:
+            now_con = UserConversation.objects.filter(id=conversation_id).first()
+            data["conversation_type"] = now_con.type
 
         if chat_status:
 

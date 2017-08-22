@@ -97,7 +97,7 @@ class User(Document):
     # 个人资料
     nickname = StringField(verbose_name=u"用户昵称", max_length=32)
     desc = StringField(verbose_name=u"自我描述", max_length=280)
-    phone = StringField(verbose_name=u"手机号", max_length=15)
+    phone = StringField(verbose_name=u"手机号", max_length=32)
     gender = IntField(verbose_name=u"性别", choices=((0, u"未选择"), (1, u"男"), (2, u"女")))
     image = StringField(verbose_name=u"用户图片", max_length=255, default='')
     constellation = StringField(verbose_name=u"星座", max_length=256)
@@ -209,13 +209,12 @@ class User(Document):
         return dic.get(self.source, u"其他")
 
     def get_normal_dic_info(self):
-
         if not self.phone:
             phone = ""
         else:
             phone = self.phone[0:3] + "*****" + self.phone[8:11]
 
-        return {
+        data = {
             "_uid": self.sid,
             "uid": self.uuid,
             "is_block": self.is_block,
@@ -263,9 +262,15 @@ class User(Document):
             "current_score": self.current_score,
             "cover": self.cover,
             "is_valid": self.is_valid,
-            "is_vip": self.is_vip,
-
+            "is_vip": self.is_vip
         }
+
+        if self.height:
+            data["height"] = self.height
+        if self.weight:
+            data["weight"] = self.weight
+
+        return data
 
     @classmethod
     def create_user(cls, openid, source, nickname, platform=0, phone=None, gender=1, ip='', image="", channel="", guid=guid):
@@ -279,7 +284,7 @@ class User(Document):
                 is_new = True
 
         except User.DoesNotExist:
-            if image and source != cls.SOURCE_PHONE and source!=cls.SOURCE_FACEBOOK:
+            if image and source==User.SOURCE_TWITTER:
                 image = User.convert_http_to_https(cls.upload_logo(image,gender))
 
             is_new = True

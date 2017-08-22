@@ -135,6 +135,14 @@ class VideoPurchaseRecord(Document):
         record.create_time = datetime.datetime.now()
         record.save()
 
+    @classmethod
+    def get_buy_status(cls, user_id, video_id):
+        buy_video_status = 2
+        record = VideoPurchaseRecord.objects.filter(user_id=user_id, video_id=video_id).first()
+        if record:
+            buy_video_status = 1
+        return buy_video_status
+
 
 class InviteMessage(Document):
     from_user_id = IntField(verbose_name=u"用户id")

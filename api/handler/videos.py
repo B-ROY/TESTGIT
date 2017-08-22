@@ -222,7 +222,7 @@ class BuyPrivateVideo(BaseHandler):
 
 # vip 是否到达免费观看上限
 @handler_define
-class PrivateVideoDelete(BaseHandler):
+class PrivateVideoCanWatch(BaseHandler):
     @api_define("private video delete", r'/video/can_watch', [
         Param('video_id', True, str, "", "", u'私房视频ID'),
     ], description=u'vip是否可以到达免费观看上限(1:可以观看   2:不可以观看)')
@@ -237,25 +237,40 @@ class PrivateVideoDelete(BaseHandler):
         vip_count = 2
         user_vip = UserVip.objects.filter(user_id=user_id).first()
         can_watch = 2
-        if not user_vip:
-            return self.write({"status": "success", "can_watch": can_watch})
 
-        vip = Vip.objects.filter(id=user_vip.vip_id).first()
-        if vip.vip_type == 1:
-            # 高级
-            if count < vip_count:
-                can_watch = 1
+        buy_video_status = VideoPurchaseRecord.get_buy_status(user_id, video_id)
 
-        if vip.vip_type == 2:
-            # 超级
-            if count < super_vip_count:
-                can_watch = 1
+        # 今天是否看过词视频
+        looked_today = VipWatchVideoRecord.objects.filter(user_id=user_id, create_time=create_time, video_id=video_id).first()
+        is_looked_today = 2
+        if looked_today:
+            is_looked_today = 1
 
-        if can_watch == 1:
-            # 添加观看记录
-            VipWatchVideoRecord.create_record(video_id, user_id)
+        if user_vip:
+            vip = Vip.objects.filter(id=user_vip.vip_id).first()
+            if vip.vip_type == 1:
+                # 高级
+                if count < vip_count or looked_today:
+                    can_watch = 1
+                vip_total_count = vip_count
 
-        return self.write({"status": "success", "can_watch": can_watch})
+            if vip.vip_type == 2:
+                # 超级
+                if count < super_vip_count or looked_today:
+                    can_watch = 1
+                vip_total_count = super_vip_count
+
+            looked_count = count
+
+            if can_watch == 1:
+                # 添加观看记录
+                VipWatchVideoRecord.create_record(video_id, user_id)
+
+            return self.write({"status": "success", "can_watch": can_watch, "looked_count": looked_count,
+                               "vip_total_count": vip_total_count, "buy_video_status": buy_video_status, "is_looked_today": is_looked_today})
+        else:
+            return self.write({"status": "success", "can_watch": can_watch, "looked_count": 0,
+                               "vip_total_count": 0, "buy_video_status": buy_video_status, "is_looked_today": is_looked_today})
 
 
 @handler_define
@@ -311,10 +326,7 @@ class PrivateVideoList(BaseHandler):
                 moment = UserMoment.objects.filter(video_id=str(video.id)).order_by("-create_time").first()
                 if moment:
                     dic = convert_user_moment(moment)
-                    buy_video_status = 2
-                    record = VideoPurchaseRecord.objects.filter(user_id=user_id, video_id=moment.video_id).first()
-                    if record:
-                        buy_video_status = 1
+                    buy_video_status = VideoPurchaseRecord.get_buy_status(current_user_id, moment.video_id)
                     dic["buy_video_status"] = buy_video_status
 
                     if user_id:

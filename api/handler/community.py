@@ -13,7 +13,7 @@ from app.customer.models.shumeidetect import *
 from app.customer.models.follow_user import FollowUser, FriendUser
 from app.customer.models.black_user import BlackUser
 from app.customer.models.vip import UserVip, Vip
-from app.customer.models.video import VideoPurchaseRecord, VipWatchVideoRecord
+from app.customer.models.video import VideoPurchaseRecord, VipWatchVideoRecord, PrivateVideo
 from app.customer.models.real_video_verify import RealVideoVerify
 
 
@@ -192,10 +192,7 @@ class MomentListV3(BaseHandler):
                     is_liked = 0
                 dic["is_liked"] = is_liked
                 if moment.type == 3:
-                    buy_video_status = 2
-                    record = VideoPurchaseRecord.objects.filter(user_id=user_id, video_id=moment.video_id).first()
-                    if record:
-                        buy_video_status = 1
+                    buy_video_status = VideoPurchaseRecord.get_buy_status(user_id, moment.video_id)
                     dic["buy_video_status"] = buy_video_status
 
                 dic["check_real_video"] = RealVideoVerify.get_status(moment.user_id)
@@ -261,10 +258,7 @@ class MomentListV3(BaseHandler):
                         dic["is_liked"] = is_liked
 
                         if moment.type == 3:
-                            buy_video_status = 2
-                            record = VideoPurchaseRecord.objects.filter(user_id=user_id, video_id=moment.video_id).first()
-                            if record:
-                                buy_video_status = 1
+                            buy_video_status = VideoPurchaseRecord.get_buy_status(user_id, moment.video_id)
                             dic["buy_video_status"] = buy_video_status
 
                         dic["check_real_video"] = RealVideoVerify.get_status(moment.user_id)
@@ -299,10 +293,7 @@ class GetMoment(BaseHandler):
             dic["is_liked"] = is_liked
 
             if moment.type == 3:
-                buy_video_status = 2
-                record = VideoPurchaseRecord.objects.filter(user_id=user_id, video_id=moment.video_id).first()
-                if record:
-                    buy_video_status = 1
+                buy_video_status = VideoPurchaseRecord.get_buy_status(user_id, moment.video_id)
                 dic["buy_video_status"] = buy_video_status
                 user_vip = UserVip.objects.filter(user_id=user_id).first()
                 if user_vip:
@@ -366,10 +357,10 @@ class CreateComment(BaseHandler):
         user = self.current_user
 
         if status == 1:
-            code, message = UserComment.check_comment_count(user)
-            if code == 2:
-                print message
-                return self.write({'status': "fail"})
+            if comment_type == 1:
+                code, message = UserComment.check_comment_count(user)
+                if code == 2:
+                    return self.write({'status': "fail", "error": message})
             user_moment = UserMoment.objects.filter(id=str(moment_id)).first()
             if int(user_moment.user_id) == int(user.id) and comment_type == 1:
                 return self.write({'status': "fail", 'error': _(u"不可评论自己的动态")})
@@ -377,19 +368,18 @@ class CreateComment(BaseHandler):
 
             # 购买的人可以评论私房视频
             if user_moment.type == 3:
-                purchase_record = VideoPurchaseRecord.objects.filter(user_id=user.id, video_id=user_moment.video_id).first()
-                if not purchase_record:
-                    return self.write({'status': "fail", 'error': _(u"只有购买视频才可评论")})
+                if comment_type ==2 and user.id != user_moment.user_id:
+                    video = PrivateVideo.objects.filter(id=user_moment.video_id).first()
+                    if int(video.price) != 0:
+                        purchase_record = VideoPurchaseRecord.objects.filter(user_id=user.id, video_id=user_moment.video_id).first()
+                        if not purchase_record:
+                            return self.write({'status': "fail", 'error': _(u"只有购买视频才可评论")})
 
             black_type = BlackUser.is_black(user.id, user_moment.user_id)
             if black_type == 1 or black_type == 0:
                 return self.write({'status': "fail", 'error': _(u"您已把对方拉黑")})
             elif black_type == 2:
                 return self.write({'status': "fail", 'error': _(u"对方已把您拉黑")})
-
-            # 私房视频 评论限制
-            if user_moment.type == 3:
-                pass
 
             if content:
                 # 文本内容鉴黄
@@ -414,7 +404,6 @@ class CreateComment(BaseHandler):
             if user_vip:
                 vip = Vip.objects.filter(id=user_vip.vip_id).first()
                 vip_icon = vip.icon_url
-
 
             return self.write({"status": "success", "comment_id": str(comment.id), "vip_icon": vip_icon})
 

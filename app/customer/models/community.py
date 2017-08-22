@@ -6,6 +6,7 @@ import time
 from mongoengine import *
 from base.settings import CHATPAMONGO
 from api.convert.convert_user import *
+from app.customer.models.real_video_verify import RealVideoVerify
 
 from app.util.messageque.msgsender import MessageSender
 import logging
@@ -59,10 +60,8 @@ class UserMoment(Document):
         user_moment.create_time = datetime.datetime.now()
         user_moment.save()
         if user_moment.img_list:
-            print "============个数", len(picture_url_list)
             MessageSender.send_picture_detect(pic_url="", user_id=0, pic_channel=0, source=2, obj_id=str(user_moment.id))
         else:
-            print "=============没图片"
             user_moment.update(set__show_status=1)
 
     @classmethod
@@ -111,8 +110,10 @@ class UserMoment(Document):
         if not type:
             type = 1
 
-        real_video_auth = user.real_video_auth
-        if not real_video_auth:
+        show_video = RealVideoVerify.objects(user_id=user.id, status=1).order_by("-update_time").first()
+        if show_video:
+            real_video_auth = show_video.status
+        else:
             real_video_auth = 3
 
 
@@ -270,10 +271,11 @@ class UserComment(Document):
             AboutMeMessage.create_about_me(user_moment.user_id, user_id, user_moment.user_id, str(moment_id), 2, content)
             MessageSender.send_about_me_message(user_moment.user_id)
         if int(comment_type) == 2:
-            AboutMeMessage.create_about_me(user_moment.user_id, user_id, reply_user_id, str(moment_id), 3, content)
-            AboutMeMessage.create_about_me(reply_user_id, user_id, reply_user_id, str(moment_id), 3, content)
-            MessageSender.send_about_me_message(user_moment.user_id)
-            MessageSender.send_about_me_message(reply_user_id)
+            if int(user_id) != int(user_moment.user_id):
+                AboutMeMessage.create_about_me(user_moment.user_id, user_id, reply_user_id, str(moment_id), 3, content)
+                AboutMeMessage.create_about_me(reply_user_id, user_id, reply_user_id, str(moment_id), 3, content)
+                MessageSender.send_about_me_message(user_moment.user_id)
+                MessageSender.send_about_me_message(reply_user_id)
 
         return user_coment
 
