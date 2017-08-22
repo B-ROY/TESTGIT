@@ -1401,9 +1401,9 @@ class UserHomepageV2(BaseHandler):
         video_list = []
         user_id = self.current_user_id
         if int(home_id) == int(current_user_id):
-            videos = PrivateVideo.objects.filter(show_status__ne=2, user_id=home_id, delete_status=1)
+            videos = PrivateVideo.objects.filter(show_status__ne=2, user_id=home_id, delete_status=1).order_by("-create_time")
         else:
-            videos = PrivateVideo.objects.filter(show_status=1, user_id=home_id, delete_status=1)
+            videos = PrivateVideo.objects.filter(show_status=1, user_id=home_id, delete_status=1).order_by("-create_time")
 
         if videos:
             for video in videos:
