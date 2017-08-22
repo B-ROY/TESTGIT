@@ -271,7 +271,10 @@ class UserComment(Document):
             AboutMeMessage.create_about_me(user_moment.user_id, user_id, user_moment.user_id, str(moment_id), 2, content)
             MessageSender.send_about_me_message(user_moment.user_id)
         if int(comment_type) == 2:
-            if int(user_id) != int(user_moment.user_id):
+            if int(user_id) == int(user_moment.user_id):
+                AboutMeMessage.create_about_me(reply_user_id, user_id, reply_user_id, str(moment_id), 3, content)
+                MessageSender.send_about_me_message(reply_user_id)
+            else:
                 AboutMeMessage.create_about_me(user_moment.user_id, user_id, reply_user_id, str(moment_id), 3, content)
                 AboutMeMessage.create_about_me(reply_user_id, user_id, reply_user_id, str(moment_id), 3, content)
                 MessageSender.send_about_me_message(user_moment.user_id)
