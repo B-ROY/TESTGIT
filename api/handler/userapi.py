@@ -468,7 +468,7 @@ class CompletePersonalInfo(BaseHandler):
 
         if self.has_arg("nickname"):
             if settings.INTERNATIONAL_TYPE == 86:
-                ret, duration = shumei_text_spam(text=user.nickname, timeout=1, user_id=user.id, channel="NICKNAME", nickname=nickname,
+                ret, duration = shumei_text_spam(text=nickname, timeout=1, user_id=user.id, channel="NICKNAME", nickname=user.nickname,
                                                                     phone=user.phone, ip=self.user_ip)
                 is_pass = 0
                 if ret["code"] == 1100:
