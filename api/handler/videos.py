@@ -368,11 +368,11 @@ class InviteMessageSend(BaseHandler):
             desc = u"<html><p>" + _(u"%s 邀请您上传视频" % self.current_user.nickname) + u"</p></br></html>"
 
         if desc:
-            message = InviteMessage.objects.filter(from_user_id=self.current_user.id, to_user_id=user_id).first()
+            message = InviteMessage.objects.filter(from_user_id=self.current_user.id, to_user_id=user_id, type=int(type)).first()
             if message:
                 return self.write({"status": "fail", "error": _(u"您已发送过邀请")})
             MessageSender.send_system_message(user.sid, desc)
-            InviteMessage.create_invite_message(self.current_user.id, user_id)
+            InviteMessage.create_invite_message(self.current_user.id, user_id, type)
             return self.write({"status": "success"})
 
 

@@ -147,13 +147,15 @@ class VideoPurchaseRecord(Document):
 class InviteMessage(Document):
     from_user_id = IntField(verbose_name=u"用户id")
     to_user_id = IntField(verbose_name=u"被邀请用户id")
+    type = IntField(verbose_name=u"邀请类型")
     create_time = DateTimeField(verbose_name=u"创建时间", default=datetime.datetime.now())
 
     @classmethod
-    def create_invite_message(cls, from_user_id, to_user_id):
+    def create_invite_message(cls, from_user_id, to_user_id, type):
         obj_ = cls()
         obj_.from_user_id = from_user_id
         obj_.to_user_id = to_user_id
+        obj_.type = type
         obj_.create_time = datetime.datetime.now()
         obj_.save()
 
