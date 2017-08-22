@@ -12,10 +12,44 @@ import international
 from app.customer.models.vip import *
 from api.convert.convert_user import *
 
-
 @handler_define
 class RankListCharm(BaseHandler):
     @api_define("day's ranklist", "/service/ranklist",
+                [
+                    Param("type", True, int, 0, 0, "排行榜类型（1，魅力 2， 财富 3， 魅力加财富"),
+                    Param("interval", False, int, 0,0, "计算周期(0:天，1:周,2：月,3:三天")
+                ], description=u"排行榜")
+    def get(self):
+        list_type = self.arg_int("type", 3)
+        interval = self.arg_int("interval", 10)
+        if list_type == 3:
+            charm_rank_list = CharmRank.get_rank_list(interval=interval, count=30)
+            charm_data = []
+            for charm_rank in charm_rank_list:
+                dic = {}
+                dic["user"] = charm_rank.user.get_normal_dic_info()
+                dic["charm"] = charm_rank.charm
+                dic["change_status"] = charm_rank.change_status
+                charm_data.append(dic)
+            wealth_rank_list = WealthRank.get_rank_list(interval=interval, count=30)
+            wealth_data = []
+            for wealth_rank in wealth_rank_list:
+                dic = {}
+                dic["user"] = wealth_rank.user.get_normal_dic_info()
+                dic["wealth"] = wealth_rank.wealth
+                dic["change_status"] = wealth_rank.change_status
+                wealth_data.append(dic)
+            self.write({
+                "status": "success",
+                "charm_list": charm_data,
+                "wealth_list": wealth_data
+
+            })
+
+
+@handler_define
+class RankListCharmV1(BaseHandler):
+    @api_define("day's ranklistv1", "/service/ranklist_v1",
         [
             Param("type", True, int, 0, 0, "排行榜类型（1，魅力 2， 财富 3， 魅力加财富"),
             Param("interval", False, int, 0,0, "计算周期(0:天，1:周,2：月,3:三天")
