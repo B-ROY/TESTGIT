@@ -282,7 +282,6 @@ class UserComment(Document):
                 AboutMeMessage.create_about_me(reply_user_id, user_id, reply_user_id, str(moment_id), 3, content)
                 MessageSender.send_about_me_message(reply_user_id)
 
-
         return user_coment
 
     @classmethod
