@@ -271,6 +271,23 @@ def init_vip_privilege():
                              "https://heydopic-10048692.image.myqcloud.com/1502881644_488c832d20672bd50ea1c4f2eac79fdb",
                              1, 9)
 
+def fix_friend():
+    from app.customer.models.follow_user import FollowUser
+    users = FriendUser.objects.all()
+    if users:
+        for user in users:
+            from_id = user.from_id
+            to_id = user.to_id
+            follow_user = FollowUser.objects.filter(from_id=from_id, to_id=to_id).first()
+            if not follow_user:
+                u = FollowUser()
+                u.from_id = from_id
+                u.to_id = to_id
+                u.create_time = user.create_time
+                u.save()
+
+
+
 
 
 

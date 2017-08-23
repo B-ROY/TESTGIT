@@ -14,7 +14,6 @@ from django.core.management import execute_from_command_line
 from django.conf import settings as django_settings
 from django.utils import importlib
 
-
 class CHATPAMONGO():
     db = "mini_version"
     host = "10.141.59.52"
@@ -30,13 +29,11 @@ class CHATPALOGSMONGO():
     host = "10.141.59.52"
     # host = "10.141.15.92"
     port = 27017
-    username = "mini_admin"
-    password = "bw890905"
+    username = 'mini_admin'
+    password = 'bw890905'
 
-
-class Manifest(object):
-    languages = 'zh-CN'
-
+class Manifest():
+    languages = "zh-CN"
 
 def execute(*modules):
     load_django_settings(*modules)
@@ -79,8 +76,8 @@ def load_settings(settings, debug=False, **kwargs):
     ugettext = lambda s: s
     settings.update({
 
-#        "QCLOUD_LIVE_SDK_APP_ID": "1400011479" , #黑洞互动直播测试key，后面可以进行替换
-        "QCLOUD_LIVE_SDK_APP_ID": "1400012778",  # 聊啪APPID
+        #        "QCLOUD_LIVE_SDK_APP_ID": "1400011479" , #黑洞互动直播测试key，后面可以进行替换
+        "QCLOUD_LIVE_SDK_APP_ID": "1400022298",  # 聊啪APPID
         "QCLOUD_LIVE_SDK_APP_SECRECTs": "e6683b957f7a448c" ,
         'SPHINXES': {
             "host": 'localhost', #连接mogodb，进行用户快速搜索，但目前没有写完业务逻辑
@@ -98,7 +95,7 @@ def load_settings(settings, debug=False, **kwargs):
 
         'DEBUG': False,
         'TEMPLATE_DEBUG': False,
-    
+
         'ALLOWED_HOSTS': ['*','182.254.138.87','localhost'],
         #TODO:这里需要把微信等域名加入进来
         #'ALLOWED_HOSTS':[
@@ -120,7 +117,18 @@ def load_settings(settings, debug=False, **kwargs):
         #    'localhost'
         #],
         'DATABASES': {
-
+            'default': {
+                'ENGINE': 'django.db.backends.mysql',
+                'NAME': 'livevideo_platform',  # Or path to database file if using sqlite3.
+                'USER': 'root',  # Not used with sqlite3.
+                'PASSWORD': '2RKE#zyeq1',  # Not used with sqlite3.
+                'HOST': '10.66.109.98',  # Set to sempty string for localhost. Not used with sqlite3.
+                'PORT': '',  # Set to empty string for default. Not used with sqlite3.
+                'OPTIONS': {
+                    'init_command': 'SET storage_engine=INNODB ; set SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;',
+                    'charset':'utf8mb4',
+                },
+            }
         },
 
         'DISABLE_TRANSACTION_MANAGEMENT' : False,
@@ -149,9 +157,9 @@ def load_settings(settings, debug=False, **kwargs):
         'SECRET_KEY':'&=e@@kz@&-qp0g(=3)kz%l1#w$t#0c%1c=(u$vd(vt6ub@_f&g',
         #'SECRET_KEY': 'ovvxva)f_gx7$ldaasbn+l2asdfaadfdsafasdf2##sdfsa',
         'TEMPLATE_LOADERS': ((
-            'django.template.loaders.cached.Loader', (
-            'django.template.loaders.filesystem.Loader',
-            'django.template.loaders.app_directories.Loader',)),
+                                 'django.template.loaders.cached.Loader', (
+                                     'django.template.loaders.filesystem.Loader',
+                                     'django.template.loaders.app_directories.Loader',)),
         ),
         'MIDDLEWARE_CLASSES': [
             'django.middleware.common.CommonMiddleware',
@@ -190,10 +198,10 @@ def load_settings(settings, debug=False, **kwargs):
         "PROXY_MEMCACHE": False,
 
         "memcache_settings": {
-            'func_cache': ['10.141.108.216:11211'],
-            'page_cache': ['10.141.108.216:11211'],
-            'fragment_cache': ['10.141.108.216:11211'],
-            'user_cache': ['10.141.108.216:11211'],
+            'func_cache': ['127.0.0.1:11211'],
+            'page_cache': ['127.0.0.1:11211'],
+            'fragment_cache': ['127.0.0.1:11211'],
+            'user_cache': ['127.0.0.1:11211'],
         },
         'enable_memcached': True,
         'apple_verify': True,
@@ -214,27 +222,18 @@ def load_settings(settings, debug=False, **kwargs):
         'Agora_AppId': "edbfe06e96ec4bb0b4271adffa068031",
         'Agora_appCertificate': "0a69dde1c31249848f2834aff61ae8b8",
         'RabbitQueue_name': "chatpa_test",
-        'Weixin_pay_notifyurl': "http://123.207.175.223/api/live/wepay/notice",
-        'Alipay_notifyurl' : "http://123.207.175.223/api/live/alipay/notice",
+        'Weixin_pay_notifyurl': "https://api.ios.iwala.cn/api/live/wepay/notice",
+        'Alipay_notifyurl' : "https://api.ios.iwala.cn//api/live/alipay/notice",
         'Message_Tornado_host': "127.0.0.1:9005",
 
-        # 腾讯云 签名工具配置
-        "SIG_TOOL_PATH": "/mydata/python/live_video/api/util/tencenttools/tls_sig_api-linux-64/tools",
-        "SIG_KEY_PATH": "/mydata/python/live_video/api/util/tencenttools/keys_test",
-        "SIG_PATH": '/mydata/python/live_video/api/util/tencenttools/tls_sig_api-linux-64/tools',
-
-        "INTERNATIONAL_TYPE": 86,
         "SHARE_URL": "http://www.iwala.cn/shar/",
         "INVITE_URL": "http://www.iwala.cn/invitte/liaopa_invite_.html",
         "INS_IMAGE_URL": "",
-
-        # 合利宝相关配置
-        "helipay_customerNumber": "C1800001347",
-        "helipay_sign_key": "zP6UOCVkfm5DQQJR988eCsGhL1zrPJnF",
-        "helipay_url": "http://test.trx.helipay.com/trx/app/interface.action",
-        "notify_url": "http://123.207.175.223/api/live/helipay/notify",  # http://pay.trx.helipay.com/trx/app/interface.action
+        # 腾讯云 签名工具配置
+        "SIG_TOOL_PATH": "/mydata/python/live_video/api/util/tencenttools/tls_sig_api-linux-64/tools",
+        "SIG_KEY_PATH": "/mydata/python/live_video/api/util/tencenttools/keys",
+        "SIG_PATH": '/mydata/python/live_video/api/util/tencenttools/tls_sig_api-linux-64/tools',
+        "INTERNATIONAL_TYPE": 86
 
     },
-
-
 )
