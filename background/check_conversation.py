@@ -31,7 +31,7 @@ def check_conversation():
         if conversation.type == 1:
             #  建立会话(60分钟关闭)
             start_time = conversation.start_time
-            if int((now - start_time).total_seconds()/60) > 60:
+            if int((now - start_time).total_seconds()) > 3600:
                 conversation.update(set__type=4)
                 conversation.update(set__stop_time=now)
                 conversation.update(set__stop_type=1)
@@ -39,7 +39,7 @@ def check_conversation():
         if conversation.type == 2:
             #  会话未建立(10分钟关闭)
             wait_time = conversation.wait_time
-            if int((now-wait_time).total_seconds()/60) > 10:
+            if int((now-wait_time).total_seconds()) > 600:
                 conversation.update(set__type=4)
                 conversation.update(set__stop_time=now)
                 conversation.update(set__stop_type=1)
@@ -71,7 +71,7 @@ def check_conversation():
         if conversation.type == 3:
             # 道具解锁状态
             wait_time = conversation.wait_time
-            if int((now-wait_time).total_seconds()/60) > 10:
+            if int((now-wait_time).total_seconds()) > 600:
                 conversation.update(set__type=4)
                 conversation.update(set__stop_time=now)
                 conversation.update(set__stop_type=1)
