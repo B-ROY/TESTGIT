@@ -2221,6 +2221,7 @@ class MessageSendToolV2(BaseHandler):
                     # 无 未关闭会话, 创建一个会话
                     conver = UserConversation.create_conversation_message(send_id, receive_id, 3, 1)
                     conver.update(set__wait_time=datetime.datetime.now())
+                    conver.update(set__send_id=send_id)
                     conversation_id = str(conver.id)
 
                 if conversation:
