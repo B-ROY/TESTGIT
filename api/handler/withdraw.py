@@ -174,18 +174,19 @@ class H5WithDrawRequest(BaseHandler):
     def get(self):
         try:
         #user = self.current_user
-            user_id = self.arg("user_id")
-            user = User.objects.get(id=int(user_id))
+
+            user = self.current_user
+            user_id = self.current_user_id
+
+            #user_id = self.arg("user_id")
+            #user = User.objects.get(id=int(user_id))
             ip = self.user_ip
             user_agent = self.request.headers.get('User-Agent')
             money = self.arg_int("money")
 
             code = self.arg("code")
-            openid = WexinAPI.get_open_id_h5(code=code)
-            #检查实名认证状态
-            realname_status = RealNameVerify.check_user_verify(user_id)
-            if realname_status != 1:
-                return self.write({"status": "fail", "error": _(u"尚未进行实名认证，请返回聊啪客户端进行实名认证")})
+
+
             """ 原有代码 留作参考
             invite_list = UserInviteCode.get_invite_list(invite_id=user.id)
 
@@ -200,9 +201,15 @@ class H5WithDrawRequest(BaseHandler):
 
             if money > money_available:
                 return self.write({"status": "fail", "error": _(u"余额不足"),})
-
+                # 检查实名认证状态
+            realname_status = RealNameVerify.check_user_verify(user_id)
+            if realname_status != 1:
+                return self.write({"status": "fail", "error": _(u"尚未进行实名认证，请返回聊啪客户端进行实名认证")})
+            openid = WexinAPI.get_open_id_h5(code=code)
+            print openid
             status = WithdrawRequest.create_withdraw_request(user_id=user_id, request_money=money,
                                                              user_agent=user_agent, openid=openid, ip=ip)
+            print status
             if not status:
                 return self.write({"status": "fail", "error": _(u"创建提现请求失败"), })
             else:

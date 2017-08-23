@@ -468,7 +468,7 @@ class CompletePersonalInfo(BaseHandler):
 
         if self.has_arg("nickname"):
             if settings.INTERNATIONAL_TYPE == 86:
-                ret, duration = shumei_text_spam(text=user.nickname, timeout=1, user_id=user.id, channel="NICKNAME", nickname=nickname,
+                ret, duration = shumei_text_spam(text=nickname, timeout=1, user_id=user.id, channel="NICKNAME", nickname=user.nickname,
                                                                     phone=user.phone, ip=self.user_ip)
                 is_pass = 0
                 if ret["code"] == 1100:
@@ -2221,6 +2221,7 @@ class MessageSendToolV2(BaseHandler):
                     # 无 未关闭会话, 创建一个会话
                     conver = UserConversation.create_conversation_message(send_id, receive_id, 3, 1)
                     conver.update(set__wait_time=datetime.datetime.now())
+                    conver.update(set__send_id=send_id)
                     conversation_id = str(conver.id)
 
                 if conversation:
