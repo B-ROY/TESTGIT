@@ -308,6 +308,10 @@ def compute_1_rank_list_delta():
 
 if __name__ == '__main__':
     compute_7_rank_list_first()
-    compute_7_rank_list_delta()
     compute_1_rank_list_first()
+    
+    now = datetime.datetime.now()
+    week_num = now.weekday()
+    if int(week_num) == 0:
+        compute_7_rank_list_delta()
     compute_1_rank_list_delta()
