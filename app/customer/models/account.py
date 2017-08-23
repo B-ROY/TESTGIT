@@ -157,7 +157,7 @@ class Account(Document):
         order.rule = rule
         order.buy_time = datetime.datetime.now()
         order.trade_type = TradeBalanceOrder.TradeType_IN
-        order.diamon = rule.diamon + rule.free_diamon
+        order.diamon = rule.diamon
         order.status = TradeBalanceOrder.STATUS_FILL_IN_WAIT_PAY
         order.money = money
         order.fill_in_type = fill_in_type
@@ -185,7 +185,6 @@ class Account(Document):
             order.save()
 
             user = order.user
-
             user_vip = UserVip.objects.filter(user_id=user.id).first()
             diamond_bonus = 0
             if user_vip:
