@@ -30,7 +30,7 @@ class FollowUser(Document):
                 # 如果已经反向关注了.  互相关注成为好友
                 rever_follow_user = FollowUser.objects.filter(to_id=from_user.id, from_id=to_user.id).first()
                 if rever_follow_user:
-                    rever_follow_user.delete()
+                    # rever_follow_user.delete()
 
                     friend = FriendUser()
                     friend.from_id = from_user.id
@@ -41,17 +41,19 @@ class FollowUser(Document):
                     rever_friend.from_id = to_user.id
                     rever_friend.to_id = from_user.id
                     rever_friend.save()
-                else:
-                    follow_user = FollowUser()
-                    follow_user.from_id = from_user.id
-                    follow_user.to_id = to_user.id
-                    follow_user.save()
 
-                record = FollowUserRecord()
-                record.from_id = from_user.id
-                record.to_id = to_user.id
-                record.oper_status = 1
-                record.save()
+        if not follow_user:
+            follow_user = FollowUser()
+            follow_user.from_id = from_user.id
+            follow_user.to_id = to_user.id
+            follow_user.create_time = datetime.datetime.now()
+            follow_user.save()
+
+            record = FollowUserRecord()
+            record.from_id = from_user.id
+            record.to_id = to_user.id
+            record.oper_status = 1
+            record.save()
 
 
     @classmethod
@@ -64,11 +66,13 @@ class FollowUser(Document):
         friend_user = FriendUser.objects.filter(from_id=from_user.id, to_id=to_user.id).first()
         if friend_user:
             friend_user.delete()
-
-            follow_user_new = FollowUser()
-            follow_user_new.from_id = to_user.id
-            follow_user_new.to_id = from_user.id
-            follow_user_new.save()
+            refer_follow = FollowUser.objects.filter(from_id=to_user.id, to_id=from_user.id).first()
+            if not refer_follow:
+                follow_user_new = FollowUser()
+                follow_user_new.from_id = to_user.id
+                follow_user_new.to_id = from_user.id
+                follow_user.create_time = datetime.datetime.now()
+                follow_user_new.save()
 
         rever_friend_user = FriendUser.objects.filter(to_id=from_user.id, from_id=to_user.id).first()
         if rever_friend_user:
