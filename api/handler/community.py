@@ -72,6 +72,13 @@ class DeleteMoment(BaseHandler):
         if int(user_moment.user_id) == int(user.id):
             user_moment.delete_status = 2
             user_moment.save()
+            if int(user_moment.type) == 4:
+                # 私房视频也要修改状态
+                video_id = user_moment.video_id
+                video = PrivateVideo.objects.filter(id=video_id).first()
+                if video:
+                    if int(video.user_id) == int(user.id):
+                        video.update(set__delete_status=2)
         self.write({"status": "success"})
 
 

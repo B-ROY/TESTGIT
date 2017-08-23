@@ -58,7 +58,7 @@ class RankListCharmV1(BaseHandler):
         list_type = self.arg_int("type", 3)
         interval = self.arg_int("interval", 10)
         if list_type == 3:
-            charm_rank_list = CharmRank.get_rank_list(interval=interval, count=30, type=1)
+            charm_rank_list = CharmRankNew.get_rank_list(count=30, type=1)
             charm_data = []
             for charm_rank in charm_rank_list:
                 dic = {}
@@ -73,7 +73,7 @@ class RankListCharmV1(BaseHandler):
                     dic["change_status"] = charm_rank.change_status
                     charm_data.append(dic)
 
-            charm_rank_list_yesterday = CharmRank.get_rank_list(interval=interval, count=30, type=2)
+            charm_rank_list_yesterday = CharmRankNew.get_rank_list(count=30, type=2)
             charm_data_yesterday = []
             for charm_rank in charm_rank_list_yesterday:
                 dic = {}
@@ -88,7 +88,7 @@ class RankListCharmV1(BaseHandler):
                     dic["change_status"] = charm_rank.change_status
                     charm_data_yesterday.append(dic)
 
-            wealth_rank_list = WealthRank.get_rank_list(interval=interval, count=30, type=1)
+            wealth_rank_list = WealthRankNew.get_rank_list(count=30, type=1)
             wealth_data = []
             for wealth_rank in wealth_rank_list:
                 dic = {}
@@ -104,7 +104,7 @@ class RankListCharmV1(BaseHandler):
                     dic["change_status"] = wealth_rank.change_status
                     wealth_data.append(dic)
 
-            wealth_rank_list_yesterday = WealthRank.get_rank_list(interval=interval, count=30, type=2)
+            wealth_rank_list_yesterday = WealthRankNew.get_rank_list(count=30, type=2)
             wealth_data_yesterday = []
             for wealth_rank in wealth_rank_list_yesterday:
                 dic = {}
