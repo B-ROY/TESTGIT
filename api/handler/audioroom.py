@@ -27,10 +27,47 @@ import json
 from django.conf import settings
 from app.customer.models.vip import *
 import random
-
+from app.customer.models.black_user import *
+from app.customer.models.rank import *
+from redis_model.redis_client import *
 from app.picture.models.picture import PictureInfo
-appID = "0927d1c4bb914c658b4a1a8ba7a88a96"
-appCertificate = "ed1b88f080b644ebb24e60d18439c6ad"
+from app.customer.models.real_video_verify import RealVideoVerify
+
+appID = settings.Agora_AppId
+appCertificate = settings.Agora_appCertificate
+
+def get_area_by_ip(ip):
+    """
+    In redis IP Library is preserverd as key-list
+
+    key is the ip's the top three
+    list's memeber is like  a_b_city
+    a and b is the ip's fourth number
+    for example 1.2.4.0 - 1.2.4.2 is Beijing
+                1.2.4.3 - 1.2.4.5 is Shanghai
+            In Redis, they are preserverd as 1.2.4 : [0_2_Beijing, 3_5_Shanghai]
+    This method is used to resolve the city by ip and return the city.
+
+    :param ip: user's ip
+    :return: city if city else None
+    """
+    ips = ip.split(".")
+    k = str(ips[0]) + "." + str(ips[1]) + "." + str(ips[2])
+
+    ip4_list = RQueueClient.getInstance().redis.lrange(k, 0, 100)
+    if ip4_list:
+        for ip4 in ip4_list:
+            ip4s = ip4.split("_")
+
+            min_ip4 = int(ip4s[0])
+            max_ip4 = int(ip4s[1])
+            print min_ip4,max_ip4, ips[3]
+            if min_ip4 <= int(ips[3]) <= max_ip4:
+                city = ip4s[2]
+                return city
+        return None
+    return None
+
 
 #声网登录
 @handler_define
@@ -69,6 +106,21 @@ class GenerateChannelKey(BaseHandler):
         ruid = self.arg_int("room_user_id")
         channelname = self.arg("channel_id", "")
         is_video = self.arg_int("is_video", 0)
+
+        # 校验黑名单
+        # black_user = BlackUser.objects.filter(from_id=uid, to_id=ruid).first()
+        # if black_user:
+        #     return self.write({
+        #         "status": "failed",
+        #         "error": "to_user is on the blacklist"
+        #     })
+        #
+        # rever_black_user = BlackUser.objects.filter(from_id=ruid, to_id=uid).first()
+        # if rever_black_user:
+        #     return self.write({
+        #         "status": "failed",
+        #         "error": "you are on to_user's blacklist"
+        #     })
 
 
         room_user = User.objects.get(id=ruid)
@@ -721,7 +773,7 @@ class GetVoiceRoomListV2(BaseHandler):
         Param('time_stamp', False, str, "10", "10", u"最后一个人的时间戳(page=1不用传)"),
         Param('gender', False, int, 0, 0, u"选择性别，0:全部,1:男,2:女"),
         Param('room_type', False, int, 0, 0, u"房间类型筛选，0:全部,1:语音,2:视频")
-    ], description=u"获取挂单房间列表v1")
+    ], description=u"获取挂单房间列表v2")
     def get(self):
         page = self.arg_int('page')
         page_count = self.arg_int('page_count')
@@ -948,6 +1000,273 @@ class GetNewAnchorList(BaseHandler):
                     }
                 data.append(dic)
         self.write({"status": "success", "data": data, })
+@handler_define
+class GetVoiceRoomListV3(BaseHandler):
+    @api_define("Get voice room list v3", r'/audio/room/list_v3', [
+        Param('page', True, str, "1", "1", u'page'),
+        Param('page_count', True, str, "10", "10", u'page_count'),
+        Param('time_stamp', False, str, "10", "10", u"最后一个人的时间戳(page=1不用传)"),
+        Param('gender', False, int, 0, 0, u"选择性别，0:全部,1:男,2:女"),
+        Param('room_type', False, int, 0, 0, u"房间类型筛选，0:全部,1:语音,2:视频")
+    ], description=u"获取挂单房间列表v3(带相册图片)")
+    def get(self):
+        page = self.arg_int('page')
+        page_count = self.arg_int('page_count')
+        room_type = self.arg_int('room_type', 0)
+
+        if room_type == 0:
+            is_video = 2
+        elif room_type == 1:
+            is_video = 0
+        else:
+            is_video = 1
+        """
+        if self.current_user:
+            gender = self.current_user.gender
+        else:
+            gender = 0
+        """
+        gender = self.arg_int("gender",0)
+
+        data = []
+        if room_type == 2 and gender == 2 :
+            try:
+                anchor_list = UserRedis.get_index_anchor_list((page - 1) * page_count,(page * page_count)-1)
+                anchor_data = eval(UserRedis.get_index_anchor())
+                if len(anchor_list) > 0:
+                    for anchor in anchor_list:
+                        #tempobj = UserRedis.get_index_anchor(anchor)
+                        # if "audioroom" in tempobj:
+                        #     tempobj["audioroom"] = eval(tempobj["audioroom"])
+                        # if "user" in tempobj:
+                        #     tempobj["user"] = eval(tempobj["user"])
+                        # if "vip" in tempobj:
+                        #     tempobj["vip"] = eval(tempobj["vip"])
+                        # if tempobj["personal_tags"]:
+                        #     tempobj["personal_tags"] = eval(tempobj["personal_tags"])
+                        data.append(anchor_data[anchor])
+                else:
+                    data = oldanchorlist(gender,is_video,page,page_count)
+            except Exception,e:
+                print e
+                data = oldanchorlist(gender,is_video,page,page_count)
+        else:
+            data = oldanchorlist(gender,is_video,page,page_count)
+        self.write({"status": "success", "data": map(lambda x:json.loads(x), data)})
+
+def oldanchorlist(gender,is_video,page,page_count):
+    data = []
+    if gender!=0:
+        if is_video == 1:
+            users = User.objects.filter(is_video_auth=1,gender=gender,audio_room_id__ne="", disturb_mode=0).order_by("-current_score")[
+                    (page - 1) * page_count:page * page_count]
+        elif is_video == 0:
+            users = User.objects.filter(is_video_auth__ne=1,gender=gender,audio_room_id__ne="", disturb_mode=0).order_by("-current_score")[
+                    (page - 1) * page_count:page * page_count]
+        else:
+            users = User.objects.filter(gender=gender,audio_room_id__ne="", disturb_mode=0).order_by("-current_score")[(page - 1) * page_count:page * page_count]
+    else:
+        if is_video == 1:
+            users = User.objects.filter(is_video_auth=1, audio_room_id__ne="", disturb_mode=0).order_by(
+                "-current_score")[
+                    (page - 1) * page_count:page * page_count]
+        elif is_video == 0:
+            users = User.objects.filter(is_video_auth__ne=1, audio_room_id__ne="", disturb_mode=0).order_by(
+                "-current_score")[
+                    (page - 1) * page_count:page * page_count]
+        else:
+            users = User.objects.filter(audio_room_id__ne="", disturb_mode=0).order_by("-current_score")[
+                    (page - 1) * page_count:page * page_count]
+
+
+    for user in users:
+        #if not user.audio_room_id:
+        #   continue
+        if user.id == 1 or user.id == 2:
+            continue
+        audioroom = AudioRoomRecord.objects.get(id=user.audio_room_id)
+        personal_tags = UserTags.get_usertags(user_id=user.id)
+        if not personal_tags:
+            personal_tags = []
+        user_vip = UserVip.objects.filter(user_id=user.id).first()
+
+        # 是否在线 查看心跳
+        import time
+        time = int(time.time())
+        pre_time = time - 3600
+        user_beat = UserHeartBeat.objects.filter(user=user, last_report_time__gte=pre_time).first()
+        if user_beat:
+            is_online = 1
+        else:
+            is_online = 0
+
+        # 视频认证状态
+        real_video = RealVideoVerify.objects(user_id=user.id, status__ne=2).order_by("-update_time").first()
+        show_video = RealVideoVerify.objects(user_id=user.id, status=1).order_by("-update_time").first()
+
+        if user_vip:
+            vip = Vip.objects.filter(id=user_vip.vip_id).first()
+            dic = {
+                "audioroom": convert_audioroom(audioroom),
+                "user": convert_user(user),
+                "personal_tags": personal_tags,
+                "time_stamp": datetime_to_timestamp(audioroom.open_time),
+                "vip": convert_vip(vip),
+                "is_online": is_online
+            }
+        else:
+            dic = {
+                "audioroom": convert_audioroom(audioroom),
+                "user": convert_user(user),
+                "personal_tags": personal_tags,
+                "time_stamp": datetime_to_timestamp(audioroom.open_time),
+                "is_online": is_online
+            }
+
+        if show_video:
+            dic["check_real_video"] = show_video.status
+        else:
+            if real_video:
+                dic["check_real_video"] = real_video.status
+            else:
+                dic["check_real_video"] = 3
+
+        data.append(json.dumps(dic))
+    return data
+
+
+@handler_define
+class GetVoiceRoomListV3(BaseHandler):
+    @api_define("home page list v3", r'/audio/room/list_v3', [ ], description=u"首页接口")
+    def get(self):
+        result_advs = []
+        hot_list = []
+        video_list = []
+        advs = Adv.get_list()
+        for adv in advs or []:
+            result_advs.append(adv.normal_info())
+
+        recommed_list = UserRedis.get_recommed_list_v3()
+        recommed_data = eval(UserRedis.get_recommed_v3())
+        if recommed_list:
+            try:
+                for recommed in recommed_list:
+                    hot_list.append(json.loads(recommed_data[recommed]))
+            except Exception,e:
+                print e
+        else:
+            print "空的推荐列表"
+        if not hot_list:
+            import time
+            time = int(time.time())
+            pre_time = time - 120
+            user_beats = UserHeartBeat.objects.filter(last_report_time__gte=pre_time)
+            if user_beats:
+                for heart in user_beats:
+                    if heart.user.is_video_auth == 1 and heart.user.disturb_mode == 0:
+                        is_online = 1
+                        # 视频认证状态
+                        real_video = RealVideoVerify.objects(user_id=heart.user.id, status__ne=2).order_by("-update_time").first()
+                        show_video = RealVideoVerify.objects(user_id=heart.user.id, status=1).order_by("-update_time").first()
+
+                        personal_tags = UserTags.get_usertags(user_id=heart.user.id)
+                        if not personal_tags:
+                            personal_tags = []
+                        user_vip = UserVip.objects.filter(user_id=heart.user.id).first()
+
+                        if user_vip:
+                            vip = Vip.objects.filter(id=user_vip.vip_id).first()
+                            dic = {
+                                "user":{
+                                    "_uid": heart.user.sid,
+                                    "logo_big":heart.user.image,
+                                    "nickname":heart.user.nickname,
+                                    "desc":heart.user.desc
+                                },
+                                "personal_tags": personal_tags,
+                                "vip":{
+                                    "vip_type": vip.vip_type,
+                                    "icon_url": Vip.convert_http_to_https(vip.icon_url)
+                                },
+                                "is_online": is_online
+                            }
+                        else:
+                            dic = {
+                                "user": {
+                                    "_uid": heart.user.sid,
+                                    "logo_big":heart.user.image,
+                                    "nickname":heart.user.nickname,
+                                    "desc":heart.user.desc
+                                },
+                                "personal_tags": personal_tags,
+                                "is_online": is_online
+                            }
+
+                        if show_video:
+                            dic["check_real_video"] = show_video.status
+                        else:
+                            if real_video:
+                                dic["check_real_video"] = real_video.status
+                            else:
+                                dic["check_real_video"] = 3
+                        hot_list.append(dic)
+        anchor_list = UserRedis.get_index_anchor_list_v3(0,-1)
+        anchor_data = eval(UserRedis.get_index_anchor_v3())
+        if len(anchor_list) > 0:
+            for anchor in anchor_list:
+                video_list.append(json.loads(anchor_data[anchor]))
+
+        self.write({
+            "status": "success",
+            "banners": result_advs,
+            "video_list": video_list,
+            "hot_list": hot_list,
+        })
+
+# 新人驾到  (在线的, 认证主播 认证时间倒序)
+@handler_define
+class GetNewAnchorList(BaseHandler):
+    @api_define("Get new anchor online list ", r'/audio/room/new_anchor_list', [
+        Param('page', True, str, "1", "1", u'page'),
+        Param('page_count', True, str, "10", "10", u'page_count')
+    ], description=u"新人驾到")
+    def get(self):
+
+        from app.customer.models.rank import NewAnchorRank
+        page = self.arg_int('page')
+        page_count = self.arg_int('page_count')
+
+        anchor_list = NewAnchorRank.objects.all()[(page - 1) * page_count:page * page_count]
+        data = []
+        for anchor in anchor_list:
+            user = User.objects.filter(id=anchor.user_id).first()
+            if user.id == 1 or user.id == 2:
+                continue
+            if not user.audio_room_id:
+                continue
+            audioroom = AudioRoomRecord.objects.get(id=user.audio_room_id)
+            personal_tags = UserTags.get_usertags(user_id=user.id)
+            user_vip = UserVip.objects.filter(user_id=user.id).first()
+            if user_vip:
+                vip = Vip.objects.filter(id=user_vip.vip_id).first()
+                dic = {
+                    "audioroom": convert_audioroom(audioroom),
+                    "user": convert_user(user),
+                    "personal_tags": personal_tags,
+                    "vip": convert_vip(vip)
+                }
+            else:
+                # 测试
+                # vip = Vip.objects.filter(id="5928e5ee2040e4079fff2322").first()
+                dic = {
+                    "audioroom": convert_audioroom(audioroom),
+                    "user": convert_user(user),
+                    "personal_tags": personal_tags
+                }
+            data.append(dic)
+        self.write({"status": "success", "data": json.data, })
+
+
 @handler_define
 class GetVoiceRoomListV3(BaseHandler):
     @api_define("Get voice room list v3", r'/audio/room/list_v3', [

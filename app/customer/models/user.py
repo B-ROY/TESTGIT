@@ -12,6 +12,8 @@ import random
 from app.util.messageque.msgsender import MessageSender
 from app_redis.user.models.user import UserRedis
 from django.conf import settings
+from redis_model.redis_client import RQueueClient
+from app.redis_key_settings import RedisKeys
 
 connect(CHATPAMONGO.db, host=CHATPAMONGO.host, port=CHATPAMONGO.port, username=CHATPAMONGO.username,password=CHATPAMONGO.password)
 
@@ -79,6 +81,8 @@ class User(Document):
         (2, u'离线')
     ]
 
+
+
     # 用户id信息
     id = IntField(verbose_name=u'id', primary_key=True)
     identity = IntField(verbose_name=u"用户id", unique=True)
@@ -93,7 +97,7 @@ class User(Document):
     # 个人资料
     nickname = StringField(verbose_name=u"用户昵称", max_length=32)
     desc = StringField(verbose_name=u"自我描述", max_length=280)
-    phone = StringField(verbose_name=u"手机号", max_length=15)
+    phone = StringField(verbose_name=u"手机号", max_length=32)
     gender = IntField(verbose_name=u"性别", choices=((0, u"未选择"), (1, u"男"), (2, u"女")))
     image = StringField(verbose_name=u"用户图片", max_length=255, default='')
     constellation = StringField(verbose_name=u"星座", max_length=256)
@@ -140,6 +144,11 @@ class User(Document):
     platform = IntField(verbose_name=u'平台', choices=PLATFORM)
     source = IntField(verbose_name=u'用户来源', choices=SOURCE)
 
+    real_video_auth = IntField(verbose_name=u'是否视频认证')
+    real_name_auth = IntField(verbose_name=u'是否实名认证')
+    height =  IntField(verbose_name=u'身高')
+    weight =  IntField(verbose_name=u'体重')
+
     # 账户信息
     experience = IntField(verbose_name=u'经验值')
     ticket = IntField(verbose_name=u'收益')
@@ -157,7 +166,7 @@ class User(Document):
     current_score = FloatField(verbose_name=u'用户在线状态评分')
     #个人封面
     cover = StringField(verbose_name=u"个人封面")
-
+    label = ListField(verbose_name=u"用户标签")
     online_time = IntField(verbose_name=u"在线时长", default=0)
 
     #上次登录设备
@@ -200,13 +209,12 @@ class User(Document):
         return dic.get(self.source, u"其他")
 
     def get_normal_dic_info(self):
-
         if not self.phone:
             phone = ""
         else:
             phone = self.phone[0:3] + "*****" + self.phone[8:11]
 
-        return {
+        data = {
             "_uid": self.sid,
             "uid": self.uuid,
             "is_block": self.is_block,
@@ -254,9 +262,15 @@ class User(Document):
             "current_score": self.current_score,
             "cover": self.cover,
             "is_valid": self.is_valid,
-            "is_vip": self.is_vip,
-
+            "is_vip": self.is_vip
         }
+
+        if self.height:
+            data["height"] = self.height
+        if self.weight:
+            data["weight"] = self.weight
+
+        return data
 
     @classmethod
     def create_user(cls, openid, source, nickname, platform=0, phone=None, gender=1, ip='', image="", channel="", guid=guid):
@@ -270,7 +284,7 @@ class User(Document):
                 is_new = True
 
         except User.DoesNotExist:
-            if image and source != cls.SOURCE_PHONE:
+            if image and source==User.SOURCE_TWITTER:
                 image = User.convert_http_to_https(cls.upload_logo(image,gender))
 
             is_new = True
@@ -381,7 +395,7 @@ class User(Document):
                 is_new = True
 
         except User.DoesNotExist:
-            if image and source != cls.SOURCE_PHONE:
+            if image and source == User.SOURCE_TWITTER:
                 image = User.convert_http_to_https(cls.upload_logo(image,gender))
 
             if source == cls.SOURCE_PHONE:
@@ -598,7 +612,7 @@ class User(Document):
     def complete_personal_info(cls, user, nickname, gender, img, birth_date):
         if not nickname:
             nickname = user.sid
-        if not img:
+        if not img and not user.image:
             if gender == 1:
                 img = "https://hdlive-10048692.image.myqcloud.com/head_1497412888"
             else:
@@ -615,9 +629,36 @@ class User(Document):
             user.complete_info = 1
             user.save()
             return True
-        except Exception,e:
+        except Exception, e:
             logging.error("complete personal info error:{0}".format(e))
             return False
+
+    @classmethod
+    def chat_check(cls, user_id, current_user_id):
+        key = RedisKeys.USER_CHAT_LIST + str(current_user_id)
+        # 检查key是否存在
+        is_exist = RQueueClient.getInstance().redis.exists(key)
+        if not is_exist:
+            RQueueClient.getInstance().redis.sadd(key, str(user_id))
+            # 过期时间
+            now = datetime.datetime.now()
+            now_start = datetime.datetime(now.year, now.month, now.day)
+            date_time = now_start.timedelta(days=1)
+            second = time.mktime(date_time.timetuple()) - time.mktime(now.timetuple()) - 1
+            RQueueClient.getInstance().redis.expire(key, second)
+            return 1
+
+        flag = RQueueClient.getInstance().redis.sismember(key, str(user_id))
+        print flag
+        if not flag:
+            count = RQueueClient.getInstance().redis.scard(key)
+            if count >= 10:
+                return 2  # 已经聊天的有10个了
+            else:
+                RQueueClient.getInstance().redis.sadd(key, str(user_id))
+                return 1
+        else:
+            return 1  # 可以聊天
 
 
 
@@ -748,7 +789,7 @@ class PhonePassword(Document):
         try:
             phone_pass = PhonePassword.objects.filter(phone=phone).first()
             if phone_pass:
-                phone.update(password=password)
+                phone_pass.update(set__password=password)
             else:
                 phone_pass = PhonePassword()
                 phone_pass.phone = phone

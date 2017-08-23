@@ -185,6 +185,94 @@ def get_time(date_time):
         interval = "0"
     return interval
 
+from app.picture.models.picture import PictureInfo
+def update_pic():
+    pics = PictureInfo.objects.all()
+    for pic in pics:
+        pic.update(set__show_status=1)
+
+
+def video_price():
+    from app.customer.models.video import PrivateVideoPrice
+    video1 = PrivateVideoPrice()
+    video1.price = 0
+    video1.only_vip = 2
+    video1.delete_status = 1
+    video1.save()
+
+    video2 = PrivateVideoPrice()
+    video2.price = 100
+    video2.only_vip = 2
+    video2.delete_status = 1
+    video2.save()
+
+    video3 = PrivateVideoPrice()
+    video3.price = 200
+    video3.only_vip = 2
+    video3.delete_status = 1
+    video3.save()
+
+    video4 = PrivateVideoPrice()
+    video4.price = 300
+    video4.only_vip = 1
+    video4.delete_status = 1
+    video4.save()
+
+def update_usermoment():
+    from app.customer.models.community import UserMoment
+    UserMoment.objects.update(set__is_public=1)
+
+
+def init_vip_privilege():
+    from app.customer.models.vip import VipPrivilege
+
+    p1 = VipPrivilege.create("专属标识", "https://heydopic-10048692.image.myqcloud.com/1502851151_93e44a1151bf39ef5a2ec454547cbe69",
+                             "会员期间内，VIP用户将拥有专属标识，不同VIP等级显示的表示也有区分，让你在各个位置脱颖而出，时时刻刻展现尊贵的VIP身份。",
+                             "https://heydopic-10048692.image.myqcloud.com/1502877604_695d703997c7bbc8e36d13cdcf55dfb9",
+                             1, 1)
+
+    p2 = VipPrivilege.create("免费看私房视频", "https://heydopic-10048692.image.myqcloud.com/1502853017_e66f49af3710e9b5f70ee779a733052a",
+                             "会员期间内，高级VIP用户每天可以免费观看认证用户的2个私房视频，超级VIP用户可以免费观看认证用户的6个私房视频。【私房视频单价至少100钻石】 ",
+                             "https://heydopic-10048692.image.myqcloud.com/1502952284_51694056c14e2d793ebe6166b4219ecb",
+                             1, 2)
+
+    p3 = VipPrivilege.create("免费看精华照片", "https://heydopic-10048692.image.myqcloud.com/1502853178_e72e4cfc84765dd1b185bf4de659fdf7",
+                             "会员期间内，VIP用户可以免费查看认证用户的精华照片，是所有认证用户哦。【非VIP用户无法查看的哟】 ",
+                             "https://heydopic-10048692.image.myqcloud.com/1502952230_1fe35448aa54aac4ba8795529c5c171b",
+                             1, 3)
+
+    p4 = VipPrivilege.create("充值送钻石", "https://heydopic-10048692.image.myqcloud.com/1502878381_011df750553ff2a6a7be45fefaf6d33a",
+                             "会员期间内，超级VIP用户充值钻石，额外赠送钻石奖励，充值越多送得越多【高级VIP用户无此特权】 ",
+                             "https://heydopic-10048692.image.myqcloud.com/1503047218_dbd07208a0eef1d10664e30063a27728",
+                             1, 4)
+
+    p5 = VipPrivilege.create("私信图片功能", "https://heydopic-10048692.image.myqcloud.com/1502878417_52ede4fde4d7590dfec85408bfb48b94",
+                             "会员期间内，VIP用户与好友私信聊天室，可以任意发送图片 ，不受任何限制。【非VIP用户无法使用此功能】 ",
+                             "https://heydopic-10048692.image.myqcloud.com/1502878489_2ba1a5451288fc5ad0fe5d5d5b3b69bf",
+                             1, 5)
+
+    p6 = VipPrivilege.create("私信语音功能", "https://heydopic-10048692.image.myqcloud.com/1502878591_e24d0d2a3107ed66de49a994d2d35df8",
+                             "会员期间内，VIP用户与好友私信聊天室，可以发送语音短信功能，不受任何限制。【非VIP用户无法使用此功能】 ",
+                             "https://heydopic-10048692.image.myqcloud.com/1502878559_ed590592425a62fab034c935188a89e1",
+                             1, 6)
+
+    p7 = VipPrivilege.create("门禁卡", "https://heydopic-10048692.image.myqcloud.com/1502881087_2ed91aa1f4921b9950843ab5aef77ffb",
+                             "会员期间内，高级VIP用户每天可以免费获得10个门禁卡，使用门禁卡可以和10个不同的用户进行免费聊天；超级VIP用户每天可以免费获得20个门禁卡，使用门禁卡可以和20个不同用户进行免费聊天；1个门禁卡只针对1次会话有效。【门禁卡单价100钻石】 ",
+                             "https://heydopic-10048692.image.myqcloud.com/1502881137_d358ebda348c45b6547c70ecd4cca716",
+                             1, 7)
+
+    p8 = VipPrivilege.create("漂流瓶", "https://heydopic-10048692.image.myqcloud.com/1502881243_660df9c12f6d15062ea33fa480c0ced9",
+                             "会员期间内，高级VIP用户每天可以免费获得5个漂流瓶，超级VIP用户每天可以免费获得10个漂流瓶；每次使用漂流瓶，可以选择向100个男性或者女性用户发送你的问候语，可以更大几率获得更多异性的青睐。【漂流瓶单价1000钻石】 ",
+                             "https://heydopic-10048692.image.myqcloud.com/1502881188_e6a31d8044e6a68ff21b94d710e2a60b",
+                             1, 8)
+
+    p9 = VipPrivilege.create("千里眼", "https://heydopic-10048692.image.myqcloud.com/1502881278_b0b0b30701e3fae8c5392afbffaebd37",
+                             "会员期间内，高级VIP用户每天可以免费获得3个千里眼，超级VIP用户每天可以免费获得5个千里眼；每次使用千里眼，可以查看5名在线土豪用户信息，让你可以更大几率与土豪交朋友。【千里眼单价1000钻石】 ",
+                             "https://heydopic-10048692.image.myqcloud.com/1502881644_488c832d20672bd50ea1c4f2eac79fdb",
+                             1, 9)
+
+
+
 
 
 

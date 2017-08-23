@@ -28,7 +28,7 @@ class Black_User(BaseHandler):
             # 拉黑
             db_black_user = BlackUser.objects.filter(from_id=user_id, to_id=black_user_id).first()
             if db_black_user:
-                return self.write({"status": "failed", "error": "You have already blacked this user"})
+                return self.write({"status": "failed", "error": _(u"您已把对方拉黑")})
             BlackUser.black_add(user, black_user)
         elif black_type == 2:
             # 取消拉黑

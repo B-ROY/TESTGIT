@@ -24,6 +24,7 @@ INSTALL_HANDLERS = [
     "api.handler.getui_controller",
     "api.handler.community",
     "api.handler.videos",
+    "api.handler.chat",
 ]
 
 INSTALL_HANDLERS_NAME = {
@@ -51,4 +52,5 @@ INSTALL_HANDLERS_NAME = {
     "api.handler.black_user": "拉黑用户接口",
     "api.handler.community": "社区接口",
     "api.handler.videos": "视频相关接口",
+    "api.handler.chat": "聊天相关接口",
 }

@@ -51,8 +51,9 @@ class RankListCharm(BaseHandler):
             self.write({
                 "status": "success",
                 "charm_list": charm_data,
-                "wealth_list": wealth_data
-
+                "wealth_list": wealth_data,
+                "charm_data_yesterday": charm_data_yesterday,
+                "wealth_data_yesterday": wealth_data_yesterday,
             })
 
 @handler_define

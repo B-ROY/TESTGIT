@@ -41,3 +41,9 @@ def convert_user_moment(user_moment, with_detail=False):
 
 def convert_comment(comment, with_detail=False):
     return comment.normal_info()
+
+def convert_vip_privilege(privilege, with_detail=False):
+    return privilege.normal_info()
+
+def convert_about_me_message(message, with_detail=False):
+    return message.normal_info()

@@ -232,11 +232,18 @@ class MessageSender:
                 "pic_channel": pic_channel,
                 "source": source
             }
-        elif source == 2 or source == 3:
-            # 2: 社区动态 图片    3:个人相册
+        elif source == 2:
+            # 2: 社区动态 图片
             body = {
                 "obj_id": obj_id,
                 "source": source
+            }
+        elif source == 3:
+            #  3:个人相册
+            body = {
+                "pic_urls": pic_url,  # 多个用逗号分隔
+                "source": source,
+                "user_id": user_id
             }
         else:
             return 400
@@ -270,4 +277,34 @@ class MessageSender:
             return 200
         elif result.get("status_code") == 400:
             logging.error("send text_check message to mq error")
+            return 400
+
+    @classmethod
+    def send_about_me_message(cls, user_id):
+        body = {}
+        body["user_id"] = user_id
+        path = "/tecent/about_me"
+        data = RequestApi.post_body_request_http(path=path, body=json.dumps(body), headers={}, host=cls.Host)
+        result = json.loads(data)
+        print result.get("status_code")
+        if result.get("status_code") == 200:
+            return 200
+        elif result.get("status_code") == 400:
+            logging.error("send about me message to mq error")
+            return 400
+
+
+    @classmethod
+    def send_return_tool(cls, from_id, to_id, type):
+        body = {}
+        body["from_id"] = from_id
+        body["to_id"] = to_id
+        body["type"] = type
+        path = "/tecent/return_tool"
+        data = RequestApi.post_body_request_http(path=path, body=json.dumps(body), headers={}, host=cls.Host)
+        result = json.loads(data)
+        if result.get("status_code") == 200:
+            return 200
+        elif result.get("status_code") == 400:
+            logging.error("send_return_tool to mq error")
             return 400

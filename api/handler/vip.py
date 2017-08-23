@@ -137,7 +137,6 @@ class Buy_Vip_Adv(BaseHandler):
         self.write({"status": "success", "data": data})
 
 
-
 @handler_define
 class Get_User_Vip(BaseHandler):
     @api_define("get user vip", r'/vip/get_user_vip', [
@@ -153,3 +152,16 @@ class Get_User_Vip(BaseHandler):
 
         return self.write({"status": "success"})
 
+
+@handler_define
+class VipPrivilegeList(BaseHandler):
+    @api_define("vip privilege list", r'/vip/privilege_lsit', [], description="vip特权列表")
+    def get(self):
+        data = []
+        privileges = VipPrivilege.objects.filter(delete_status=1).order_by("sort_num")
+        if privileges:
+            for privilege in privileges:
+                dic = convert_vip_privilege(privilege)
+                data.append(dic)
+
+        return self.write({"status": "success", "data": data, })

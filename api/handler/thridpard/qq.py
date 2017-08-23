@@ -84,9 +84,9 @@ class QQAPI(object):
         result["headimgurl"] = result.get("figureurl_qq_2","")
         if result.get("u'gender"):
             if result.get("gender") == u"男":
-                result["gender"] = 1
+                result["sex"] = 1
             else:
-                result["gender"] = 2
+                result["sex"] = 2
         else:
             result["gender"] = 0
         # {

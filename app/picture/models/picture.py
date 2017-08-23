@@ -2,12 +2,14 @@
 from mongoengine import *
 import logging
 import datetime
-from app.picture.models.comment import *
-from app.customer.models.user import *
+from app.customer.models.user import User, UploadImage
+from base.core.util.dateutils import datetime_to_timestamp
 from django.db import models
 from PIL import Image, ImageFilter
 import multiprocessing
 from base.settings import CHATPAMONGO
+from app.customer.models.vip import UserVip
+from app.customer.models.community import UserMoment
 
 
 connect(CHATPAMONGO.db, host=CHATPAMONGO.host, port=CHATPAMONGO.port, username=CHATPAMONGO.username,
@@ -298,7 +300,7 @@ class PictureInfo(Document):
         return pictures
 
     @classmethod
-    def generate_blurred_picture(cls, lock, picture_url, lock_type, picture_id):
+    def generate_blurred_picture(cls, picture_url, picture_id):
 
         from PIL.ExifTags import TAGS
         import urllib2
@@ -310,8 +312,7 @@ class PictureInfo(Document):
         pic.write(img)
         pic.close()
 
-        radius_list = [30, 40, 50]
-        radius = radius_list[lock_type - 1]
+        radius = 50
 
         image = Image.open(name)
         exifinfo = image._getexif()
@@ -364,9 +365,106 @@ class PictureInfo(Document):
 
         new_url = data.get("data", {}).get('download_url', '')
         picture = PictureInfo.objects.get(id=picture_id)
-        # picture.picture_url = new_url
         picture.picture_url = User.convert_http_to_https(new_url)
         picture.save()
+
+    @classmethod
+    def check_count(cls, new_count, user, type):
+        """
+            VIP：
+            3）相册：普通上线20张，精华上线20张
+            播主VIP：
+            3）相册：普通上线20张，精华上线20张
+
+            播主：
+            3）相册：普通上线10张，精华上线10张
+
+            普通用户：
+            3）相册：普通上线5张，精华不可上传
+        """
+        vip_count_normal = 20
+        vip_count = 20
+        anchor_vip_count = 20
+        anchor_vip_count_normal = 20
+        anchor_count_normal = 20
+        anchor_count = 20
+        user_count_normal = 10
+
+        is_video = user.is_video_auth
+        user_vip = UserVip.objects.filter(user_id=user.id).first()
+
+        now = datetime.datetime.now()
+        starttime = now.strftime("%Y-%m-%d 00:00:00")
+        endtime = now.strftime('%Y-%m-%d 23:59:59')
+        today_count = PictureInfo.objects.filter(user_id=int(user.id), status=0, type=type, show_status__ne=2).count()
+
+        code = 1
+        message = ""
+
+        total = today_count + int(new_count)
+
+        if type == 1:
+            # 普通相册
+            if user_vip:
+                if int(is_video) == 1:
+                    # 播住vip
+                    if total > anchor_vip_count_normal:
+                        code = 2
+                        message = u"播主VIP,普通相册最多20张"
+                        return code, message
+                else:
+                    # 用户vip
+                    if total > vip_count_normal:
+                        code = 2
+                        message = u"用户VIP,普通相册最多20张"
+                        return code, message
+            else:
+                if int(is_video) == 1:
+                    # 播主:
+                    if total > anchor_count_normal:
+                        code = 2
+                        message = u"播主普通相册最多20张"
+                        return code, message
+                else:
+                    # 普通用户
+                    if total > user_count_normal:
+                        code = 2
+                        message = u"普通用户普通相册最多10张"
+                        return code, message
+
+        if type == 2:
+            # 精华相册
+
+            if user_vip:
+                if int(is_video) == 1:
+                    # 播住vip
+                    if total > anchor_vip_count:
+                        code = 2
+                        message = u"播主VIP,精美相册最多20张"
+                        return code, message
+                else:
+                    # 用户vip
+                    if total > vip_count:
+                        code = 2
+                        message = u"用户VIP,精美相册最多20张"
+                        return code, message
+            else:
+                if int(is_video) == 1:
+                    # 播主:
+                    if total > anchor_count:
+                        code = 2
+                        message = u"播主精美相册最多20张"
+                        return code, message
+                else:
+                    # 普通用户
+                    if total > 0:
+                        code = 2
+                        message = u"普通用户不可上传精美相册"
+                        return code, message
+
+        return code, message
+
+
 
 
 

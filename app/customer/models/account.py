@@ -39,7 +39,7 @@ class Account(Document):
         tar.before_balance = self.diamond
         tar.after_balance = self.diamond + diamond
         tar.desc = desc
-        tar.diamon = diamond
+        tar.diamon = diamond + diamond_bonus
         tar.trade_type = trade_type
         tar.created_time = datetime.datetime.now()
         tar.save()
@@ -47,9 +47,8 @@ class Account(Document):
         TicketAccount.add_inviter_charge_ticket(self.user.id, diamond)
 
         self.last_diamond = self.diamond
-        self.diamond += diamond
+        self.diamond += diamond + diamond_bonus
         self.charge += diamond
-        self.diamond_bonus += diamond_bonus
         self.update_time = datetime.datetime.now()
         self.save()
         #发送充值漂流瓶
@@ -169,7 +168,7 @@ class Account(Document):
 
     @classmethod
     def fill_in(cls, order_id):
-        from app.customer.models.first_charge_activity import FirstChargeActivity
+        from app.customer.models.vip import UserVip, Vip
         order = TradeBalanceOrder.objects.filter(id=order_id).first()
         if not order:
             logging.error(u"order not exist %s" % order_id)
@@ -186,8 +185,15 @@ class Account(Document):
             order.save()
 
             user = order.user
+
+            user_vip = UserVip.objects.filter(user_id=user.id).first()
+            diamond_bonus = 0
+            if user_vip:
+                vip = Vip.objects.filter(id=user_vip.vip_id).first()
+                if vip.vip_type == 2:
+                    diamond_bonus = order.rule.free_diamon
+
             account = Account.objects.get(user=user)
-            diamond_bonus = order.rule.free_diamon
             account.diamond_trade_in(order.diamon, diamond_bonus, u"充值", TradeDiamondRecord.TradeTypeExchange)
 
             # try:
@@ -339,6 +345,7 @@ class TradeDiamondRecord(Document):
     TradeTypeBottle = 9  # 漂流瓶消耗余额
     TradeTypeVIP = 10  # 购买会员
     TradeTypeClairvoyant = 11  # 千里眼消耗金额
+    TradeTypePrivateVideo = 12  # 千里眼消耗金额
 
     TradeType = [
         (0, u'兑换'),
@@ -353,6 +360,7 @@ class TradeDiamondRecord(Document):
         (9, u'漂流瓶消耗余额'),
         (10, u'购买会员'),
         (11, u'千里眼消耗金额'),
+        (12, u'购买私房视频'),
     ]
 
     user = GenericReferenceField("User", verbose_name=u'用户')
@@ -378,6 +386,7 @@ class TradeTicketRecord(Document):
     TradeTypeShare = 5  # 分享
     TradeTypeMessage = 6  # 消息门槛送礼
     TradeTypeVideo = 7  # 视频聊天
+    TradeTypePrivateVideo = 8  # 私房视频购买
 
 
     TradeType = [
@@ -389,6 +398,7 @@ class TradeTicketRecord(Document):
         (5, u'分享'),
         (6, u'消息门槛送礼'),
         (7, u'视频聊天'),
+        (8, u'私房视频购买'),
     ]
 
     user = GenericReferenceField("User", verbose_name=u'用户')
@@ -457,6 +467,7 @@ class TradeBalanceRule(Document):
         return {
             "money": self.money,
             "diamon": self.diamon,
+            "free_diamon": self.free_diamon,
             "desc": self.desc,
             "apple_product_id": self.apple_product_id,
             "platform": self.platform,
@@ -540,6 +551,7 @@ class TradeBalanceOrder(Document):
         (5, u'其他'),
         (6, u'后台添加余额'),
         (7, u'goole支付'),
+        (8, u'扫码支付'),
         (9, u'helipay'),
     ]
 

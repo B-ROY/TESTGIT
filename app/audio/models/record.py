@@ -456,3 +456,15 @@ class AudioRoomRecord(Document):
         room = cls.objects.get(id=room_id)
         room.update(set__audit_status=1)
 
+
+    @classmethod
+    def get_homepage_data(cls):
+        pass
+
+
+
+
+
+
+
+

@@ -5,6 +5,7 @@ from api.document.doc_tools import *
 from api.view.base import *
 from django.conf import settings
 from api.convert.convert_user import *
+from app.customer.models.video import PrivateVideo
 
 from api.util.agoratools.voicekeyutil import generate_media_channel_key, generate_signalingkey
 import time
@@ -13,6 +14,8 @@ from app.customer.models.user import *
 from app.customer.models.gift import GiftManager
 from app.picture.models.picture import PictureInfo, PicturePriceList
 from app.picture.models.comment import CommentInfo
+from app.customer.models.vip import UserVip
+from app.customer.models.community import UserMoment, UserComment
 
 
 # 创建新的图片
@@ -137,7 +140,7 @@ class GetPictureListV2(BaseHandler):
             uid = current_user_id
         else:
             uid = user_id
-        pictures = PictureInfo.objects.filter(user_id=int(uid), status=0).order_by('-created_at')[(page-1)*page_count:page*page_count]
+        pictures = PictureInfo.objects.filter(user_id=int(uid), status=0, type__ne=2, show_status__ne=2).order_by('-created_at')[(page-1)*page_count:page*page_count]
         data = []
         for picture in pictures:
             pic_url = picture.picture_url
@@ -149,6 +152,78 @@ class GetPictureListV2(BaseHandler):
                 data.append(dic)
 
         self.write({"status": "success", "data": data, })
+
+
+# 图片列表_精简版_V3
+@handler_define
+class GetPictureListV2(BaseHandler):
+    @api_define("Get Picture List", r'/picture/list_v3', [
+        Param('user_id', False, str, "", "", u' user_id'),
+    ], description=u'简版_获取图片列表V3')
+    @login_required
+    def get(self):
+        user_id = self.arg("user_id","0")
+        current_user_id = self.current_user_id
+        user = self.current_user
+
+        user_vip = UserVip.objects.filter(user_id=current_user_id).first()
+        if not user_id:
+            uid = current_user_id
+        else:
+            uid = user_id
+        if int(uid) == int(current_user_id):
+            pictures = PictureInfo.objects.filter(user_id=int(uid), status=0, show_status__ne=2).order_by('-created_at')
+        else:
+            pictures = PictureInfo.objects.filter(user_id=int(uid), status=0, show_status=1).order_by('-created_at')
+        data = []
+        for picture in pictures:
+            if int(uid) == int(current_user_id) or user_vip:
+                pic_url = picture.picture_url
+            else:
+                if picture.type == 2:
+                    pic_url = ""
+                else:
+                    pic_url = picture.picture_url
+            dic = {
+                "id": str(picture.id),
+                "picture_url": pic_url,
+                "type": picture.type
+            }
+            data.append(dic)
+
+        # 本人相册返回  可上传个数相关信息
+        now = datetime.datetime.now()
+        starttime = now.strftime("%Y-%m-%d 00:00:00")
+        endtime = now.strftime('%Y-%m-%d 23:59:59')
+        if int(uid) == int(current_user_id):
+            # 普通相册总剩余张数:
+            normal_count = PictureInfo.objects.filter(user_id=int(current_user_id), status=0, type=1, show_status__ne=2).count()
+
+            is_video = user.is_video_auth
+            if not user_vip and is_video != 1:
+                normal_rest_count = 10 - normal_count
+            else:
+                normal_rest_count = 20 - normal_count
+
+            # 精华相册今天剩余张数:
+            if user_vip:
+                today_count = PictureInfo.objects.filter(user_id=int(current_user_id), status=0, type=2, show_status__ne=2,
+                                                     created_at__gte=starttime, created_at__lte=endtime).count()
+                today_rest_count = 9 - today_count
+            else:
+                today_rest_count = 0
+
+            # 精华相册总剩余张数
+            if user_vip:
+                total_count = PictureInfo.objects.filter(user_id=int(current_user_id), status=0, type=2, show_status__ne=2).count()
+                total_rest_count = 20 - total_count
+            else:
+                total_rest_count = 0
+
+            return self.write({"status": "success", "data": data, "normal_rest_count": normal_rest_count,
+                               "today_rest_count": today_rest_count, "total_rest_count": total_rest_count})
+        else:
+            return self.write({"status": "success", "data": data, })
 
 
 # 解锁人列表
@@ -313,7 +388,9 @@ class GetPriceList(BaseHandler):
 @handler_define
 class UserPictureCreate(BaseHandler):
     @api_define("Create User picture", r'/user_picture/create', [
-        Param('picture_urls', True, str, "", "", u'图片url, 多个逗号相隔')
+        Param('picture_urls', True, str, "", "", u'图片url, 多个逗号相隔'),
+        Param('type', False, str, "1", "", u'相册类型 1:普通相册  2:精华相册'),
+        Param('publish_status', False, str, "1", "", u'是否发布到动态 1:不发布  2:发布'),
     ], description=u'保存用户相册图片')
     @login_required
     def get(self):
@@ -321,21 +398,208 @@ class UserPictureCreate(BaseHandler):
         picture_urls = self.arg('picture_urls')
         picture_url_list = picture_urls.split(',')
         picture_ids = []
+        type = self.arg_int("type", 1)
+        publish_status = self.arg_int("publish_status", 1)
 
+        """
+        发布相册规则:
+        vip 认证用户可以发精美相册
+        最多每天发9张
+        精华照片在 精华相册中展示,并且同步到动态.
+        """
+        new_count = len(picture_url_list)
+        user = User.objects.filter(id=user_id).first()
+
+        code, message = PictureInfo.check_count(new_count, user, type)
+
+        if code == 2:
+            return self.write({"status": "failed", "error": _(message)})
+
+        moment_pic_ids = []
         if picture_url_list:
             created_at = datetime.datetime.now()
             for temp_pic_url in picture_url_list:
-                pic_url = User.convert_http_to_https(temp_pic_url)
                 pic_info = PictureInfo()
+                pic_url = User.convert_http_to_https(temp_pic_url)
+                pic_info.picture_url = pic_url
+                pic_info.picture_real_url = pic_url
                 pic_info.user_id = user_id
                 pic_info.lock_type = 0
-                pic_info.picture_url = pic_url
                 pic_info.created_at = created_at
                 pic_info.type = 1
+                pic_info.status = 0
+                pic_info.show_status = 3
                 pic_info.save()
+
+                if type == 2:
+                    # 精华相册
+                    pic_info.update(set__type=2)
+                    moment_pic_ids.append(str(pic_info.id))
+                    # PictureInfo.generate_blurred_picture(pic_url, str(pic_info.id))
+                else:
+                    pic_info.update(set__type=1)
+                    moment_pic_ids.append(str(pic_info.id))
+
                 picture_ids.append(str(pic_info.id))
+
+        MessageSender.send_picture_detect(pic_url=picture_urls, user_id=user_id, pic_channel=0, source=3, obj_id=None)
+
+        # 同步到动态
+        if publish_status == 2:
+            picture_url_list = []
+            for moment_pic_id in moment_pic_ids:
+                moment_pic = PictureInfo.objects.filter(id=moment_pic_id, show_status__ne=2).first()
+                if moment_pic:
+                    picture_url_list.append(moment_pic.picture_real_url)
+
+            code, message = UserMoment.check_moment_count(user)
+            if code == 2:
+                return self.write({'status': "fail", 'error': _(message)})
+
+            user_moment = UserMoment()
+            user_moment.user_id = user_id
+            user_moment.like_count = 0
+            user_moment.like_user_list = []
+            user_moment.comment_count = 0
+
+            if picture_url_list:
+                for picture_url in picture_url_list:
+                    if picture_url:
+                        pic_url = User.convert_http_to_https(picture_url)
+                        if type == 2:
+                            dict = {
+                                "url": pic_url,
+                                "status": 1,
+                                "is_essence": 1,
+                            }
+                            user_moment.content = ""
+                            user_moment.type = 2
+                        else:
+                            dict = {
+                                "url": pic_url,
+                                "status": 1
+                            }
+                            user_moment.content = ""
+                            user_moment.type = 4
+                        user_moment.img_list.append(dict)
+
+            user_moment.show_status = 1
+            user_moment.delete_status = 1
+            user_moment.ispass = 2
+            user_moment.is_public = 1
+            user_moment.create_time = datetime.datetime.now()
+            user_moment.save()
+            MessageSender.send_picture_detect(pic_url="", user_id=0, pic_channel=0, source=2, obj_id=str(user_moment.id))
 
         if picture_ids:
             self.write({"status": "success", "picture_ids": picture_ids})
         else:
             self.write({"status": "failed", })
+
+
+
+@handler_define
+class UserPictureCreate(BaseHandler):
+    @api_define("Create User picture", r'/user_picture/publish_check', [
+    ], description=u'发布检查(相册包括发布动态的检查)')
+    @login_required
+    def get(self):
+        user = self.current_user
+
+        # 动态限制相关
+        moment_vip_count = 5
+        moment_anchor_vip_count = 15
+        moment_anchor_count = 10
+        moment_user_count = 2
+
+        now = datetime.datetime.now()
+        starttime = now.strftime("%Y-%m-%d 00:00:00")
+        endtime = now.strftime('%Y-%m-%d 23:59:59')
+        today_moment_used_count = UserMoment.objects.filter(user_id=user.id, show_status__ne=2,
+                                            is_public=1, create_time__gte=starttime, create_time__lte=endtime).count()
+
+        """
+            VIP：
+            3）相册：普通上线20张，精华上线20张
+            播主VIP：
+            3）相册：普通上线20张，精华上线20张
+
+            播主：
+            3）相册：普通上线10张，精华上线10张
+
+            普通用户：
+            3）相册：普通上线5张，精华不可上传
+        """
+        # 相册限制相关
+        pic_vip_count_normal = 20
+        pic_vip_count = 20
+        pic_anchor_vip_count = 20
+        pic_anchor_vip_count_normal = 20
+        pic_anchor_count_normal = 10
+        pic_anchor_count = 10
+        pic_user_count_normal = 5
+        pic_user_count = 0
+
+        pic_used_count = 0
+        pic_normal_used_count = 0
+        pictures = PictureInfo.objects.filter(user_id=int(user.id), status=0, show_status__ne=2)
+        if pictures:
+            for pic in pictures:
+                if int(pic.type) == 1:
+                    pic_normal_used_count += 1
+                if int(pic.type) == 2:
+                    pic_used_count += 1
+
+        # 评论限制
+        comment_vip_count = 15
+        comment_anchor_vip_count = 15
+        comment_anchor_count = 10
+        comment_user_count = 2
+        ignore_moments = UserMoment.objects.filter(is_public=2)
+        ignore_moment_ids = []
+        if ignore_moments:
+            for ignore_moment in ignore_moments:
+                ignore_moment_ids.append(str(ignore_moment.id))
+        today_comment_used_count = UserComment.objects.filter(user_id=user.id, delete_status=1, comment_type=1, user_moment_id__nin=ignore_moment_ids,
+                                            create_time__gte=starttime, create_time__lte=endtime).count()
+
+        # 私房视频限制相关
+        videos_vip_count = 0
+        videos_anchor_vip_count = 20
+        videos_anchor_count = 10
+        videos_user_count = 0
+        videos_used_count = PrivateVideo.objects.filter(user_id=user.id, delete_status=1, show_status__ne=2).count()
+
+        data = {
+            "moment_vip_count": moment_vip_count,
+            "moment_anchor_vip_count": moment_anchor_vip_count,
+            "moment_anchor_count": moment_anchor_count,
+            "moment_user_count": moment_user_count,
+            "today_moment_used_count": today_moment_used_count,
+            "pic_vip_count_normal": pic_vip_count_normal,
+            "pic_vip_count": pic_vip_count,
+            "pic_anchor_vip_count": pic_anchor_vip_count,
+            "pic_anchor_vip_count_normal": pic_anchor_vip_count_normal,
+            "pic_anchor_count_normal": pic_anchor_count_normal,
+            "pic_anchor_count": pic_anchor_count,
+            "pic_user_count_normal": pic_user_count_normal,
+            "pic_user_count": pic_user_count,
+            "pic_used_count": pic_used_count,
+            "pic_normal_used_count": pic_normal_used_count,
+            "comment_vip_count": comment_vip_count,
+            "comment_anchor_vip_count": comment_anchor_vip_count,
+            "comment_anchor_count": comment_anchor_count,
+            "comment_user_count": comment_user_count,
+            "today_comment_used_count": today_comment_used_count,
+            "videos_vip_count": videos_vip_count,
+            "videos_anchor_vip_count": videos_anchor_vip_count,
+            "videos_anchor_count": videos_anchor_count,
+            "videos_user_count": videos_user_count,
+            "videos_used_count": videos_used_count
+        }
+
+        return self.write({"status": "success", "data": data})
+
+
+
+

@@ -16,12 +16,13 @@ class CharmRank(Document):
     user = GenericReferenceField("User", verbose_name=u'用户')
     charm = IntField(verbose_name=u"主播近三天魅力值")
     change_status = IntField(verbose_name=u"较上次位置变化情况")
+    type = IntField(verbose_name=u"榜单类型")
 
     rank = IntField(verbose_name=u"当前排名", default=0)
 
     @classmethod
     def get_rank_list(self, interval, count):
-        charm_rank_list = CharmRank.objects.filter(rank__lte=count).order_by("rank")
+        charm_rank_list = CharmRank.objects.filter(rank__lte=count)
 
         return charm_rank_list
 
@@ -37,11 +38,12 @@ class WealthRank(Document):
     wealth = IntField(verbose_name=u"用户近三天财富值")
     change_status = IntField(verbose_name=u"较上次位置变化情况")
     rank = IntField(verbose_name=u"当前排名")
+    type = IntField(verbose_name=u"榜单类型")  # 1:周榜  2:日榜
 
 
     @classmethod
     def get_rank_list(self, interval, count):
-        wealth_rank_list = WealthRank.objects.filter(rank__lte=count).order_by("rank")
+        wealth_rank_list = WealthRank.objects.filter(rank__lte=count)
 
         return wealth_rank_list
 
@@ -86,3 +88,43 @@ class NewAnchorRank(Document):
 
 class ClairvoyantRank(Document):
     user_id = IntField(verbose_name=u"用户id")
+
+
+class CharmRankNew(Document):
+    CHANGE = [
+        (0, u"不变"),
+        (1, u"上升"),
+        (2, u"下降"),
+
+    ]
+    user = GenericReferenceField("User", verbose_name=u'用户')
+    charm = IntField(verbose_name=u"主播近三天魅力值")
+    change_status = IntField(verbose_name=u"较上次位置变化情况")
+    type = IntField(verbose_name=u"榜单类型")  # 1:周榜  2:日榜
+    rank = IntField(verbose_name=u"当前排名", default=0)
+
+    @classmethod
+    def get_rank_list(self, count, type):
+        charm_rank_list = CharmRankNew.objects.filter(rank__lte=count, type=int(type))
+
+        return charm_rank_list
+
+
+class WealthRankNew(Document):
+    CHANGE = [
+        (0, u"不变"),
+        (1, u"上升"),
+        (2, u"下降"),
+
+    ]
+    user = GenericReferenceField("User", verbose_name=u'用户')
+    wealth = IntField(verbose_name=u"用户近三天财富值")
+    change_status = IntField(verbose_name=u"较上次位置变化情况")
+    rank = IntField(verbose_name=u"当前排名")
+    type = IntField(verbose_name=u"榜单类型")  # 1:周榜  2:日榜
+
+    @classmethod
+    def get_rank_list(self, count, type):
+        wealth_rank_list = WealthRankNew.objects.filter(rank__lte=count, type=int(type))
+
+        return wealth_rank_list

@@ -11,7 +11,7 @@ from django.conf import settings
 from mongoengine import *
 from app.util.messageque.msgsender import MessageSender
 from app_redis.room.room import RoomRedis
-
+import international
 
 connect(CHATPAMONGO.db, host=CHATPAMONGO.host, port=CHATPAMONGO.port, username=CHATPAMONGO.username,
         password=CHATPAMONGO.password)
@@ -145,7 +145,7 @@ class Gift(Document):
             from_user_account = Account.objects.get(user=from_user)
             from_user_money = from_user_account.diamond
             if from_user_money < gift_total_price:
-                return False, 4001, "余额不足"
+                return False, 4001, _(u"余额不足")
 
             # big_gift_发送公告
             if gift_total_price >= cls.BIG_GIFT_THRESHOLD:
@@ -302,7 +302,7 @@ class GiftManager(object):
 
             cost = price*times
 
-            if from_user_account.diamond < (price * times):
+            if from_user_account.diamond < price:
                 return False, from_user_account.diamond
             from_user_account.diamond_trade_out(price=cost, desc=u"语音聊天id=%s" % room_id,trade_type=TradeDiamondRecord.TradeTypeAudio)
 

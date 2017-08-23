@@ -55,7 +55,7 @@ class Initial(BaseHandler):
             # 强升
             if ua_version < version.min_version:
                 version_info["upgrade_type"] = 1
-            elif version.min_version <= ua_version < version.version_code:
+            elif version.min_version <= ua_version < version.version:
                 version_info["upgrade_type"] = version.upgrade_type
             else:
                 version_info["upgrade_type"] = 0
@@ -67,6 +67,8 @@ class Initial(BaseHandler):
             version_info["upgrade_type"] = 0
             version_info["download_url"] = ""
             version_info["desc"] = ""
+
+        version_info["version_code"] = 1000000
 
         audit_info = ChannelAuditInfo.get_audit_info(channel)
 
@@ -89,5 +91,6 @@ class Initial(BaseHandler):
             "report_interval": UserHeartBeat.REPORT_INTERVAL,
             "share_url": share_url,
             "invite_url": invite_url,
-            "ins_img_url": ins_img_url
+            "ins_img_url": ins_img_url,
+            "pollingtime":60
         })

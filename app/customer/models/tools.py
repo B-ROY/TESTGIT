@@ -6,6 +6,8 @@ from base.settings import CHATPAMONGO
 from app.customer.models.account import Account, TradeDiamondRecord
 from app.customer.models.user import User
 from django.db.models import F
+from app.customer.models.user import VideoManagerVerify
+from app.util.messageque.msgsender import MessageSender
 
 
 connect(CHATPAMONGO.db, host=CHATPAMONGO.host, port=CHATPAMONGO.port, username=CHATPAMONGO.username,
@@ -50,6 +52,112 @@ class Tools(Document):
             return url
         else:
             return url.replace("http", "https")
+
+    @classmethod
+    def send_activity_tools(cls, user_id):
+        now = datetime.datetime.now()
+        now_str = now.strftime('%Y-%m-%d 23:59:59')
+        hm = cls.get_hm(now)
+        activity_id = ""
+        user = User.objects.filter(id=user_id).first()
+        receive_data = {}
+
+        if user.is_video_auth == 1:
+            #  主播
+            verify = VideoManagerVerify.objects.filter(user_id=user_id).first()
+            if not verify:
+                return
+            verify_time = verify.verify_time
+            temp_end_time = verify_time + datetime.timedelta(days=7)
+            endtime = temp_end_time.strftime('%Y-%m-%d 23:59:59')
+
+            # 6-22 之前认证的都属于老主播
+            compare_time = datetime.datetime(2017, 6, 21)
+
+            if verify_time < compare_time or datetime.datetime.strptime(endtime, "%Y-%m-%d %H:%M:%S") < now:
+                # 老主播
+                status, activity = cls.check_receive(2, now, user_id)
+                if status == 3:
+                    receive_data = eval(activity.tools_data)
+                    activity_id = str(activity.id)
+            else:
+                # 新主播
+                status, activity = cls.check_receive(1, now, user_id)
+                if status == 3:
+                    receive_data = eval(activity.tools_data)
+                    activity_id = str(activity.id)
+        else:
+            #  非主播
+            status, activity = cls.check_receive(3, now, user_id)
+            if status == 3:
+                receive_data = eval(activity.tools_data)
+                activity_id = str(activity.id)
+
+        if receive_data:
+            for key, value in receive_data.items():
+                tools = Tools.objects.filter(tools_type=int(key)).first()  # 道具
+                user_tools = UserTools()
+                user_tools.user_id = user_id
+                user_tools.tools_id = str(tools.id)
+                user_tools.tools_count = int(value)
+                user_tools.time_type = 0
+                user_tools.get_type = 4
+                invalid_time = now + datetime.timedelta(days=1)
+                user_tools.invalid_time = invalid_time
+                user_tools.save()
+
+                tools_record = UserToolsRecord()
+                tools_record.user_id = user_id
+                tools_record.tools_id = str(tools.id)
+                tools_record.tools_count = 1
+                tools_record.time_type = 0
+                tools_record.oper_type = 4
+                tools_record.create_time = now
+                tools_record.save()
+
+            activity_record = ToolsActivityRecord()
+            activity_record.user_id = user_id
+            activity_record.date_time = datetime.datetime(now.year, now.month, now.day)
+            activity_record.tools_activity_id = activity_id
+            activity_record.save()
+
+            desc = u"<html><p>" + _(u"您的活动奖励已发送至您的账户，请注意查收，希望您在我们平台玩得开心～") + u"</p></br></html>"
+            MessageSender.send_system_message(user.sid, desc)
+
+    @classmethod
+    def check_receive(cls, role, date_time, user_id):
+        hm = cls.get_hm(date_time)
+        now_str = date_time.strftime('%Y-%m-%d 23:59:59')
+
+        activity = ToolsActivity.objects.filter(delete_status=1, role__contains=str(role), end_time__gte=now_str,
+                                                start_hms__lte=hm, end_hms__gte=hm).first()
+        if not activity:
+            return 1, None  # 活动过期
+        else:
+            date_now = datetime.datetime(date_time.year, date_time.month, date_time.day)
+            activity_id = str(activity.id)
+            record = ToolsActivityRecord.objects.filter(date_time=date_now, user_id=user_id, tools_activity_id=activity_id).first()
+            if record:
+                return 2, None  # 已经领取
+            return 3, activity
+
+    @classmethod
+    def get_hm(cls, now):
+        hour = now.hour
+        minute = now.minute
+
+        if hour < 10:
+            hour_str = '0'+str(hour)
+        else:
+            hour_str = str(hour)
+
+        if minute < 10:
+            minute_str = '0'+str(minute)
+        else:
+            minute_str = str(minute)
+
+        return hour_str + ":" + minute_str
+
 
 
 # 用户拥有道具
@@ -170,6 +278,7 @@ class UserTools(Document):
         record.oper_type = 0
         record.create_time = datetime.datetime.now()
         record.save()
+        return time_type
 
 
 # 用户道具 记录表
