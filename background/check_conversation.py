@@ -65,8 +65,8 @@ def check_conversation():
                         user_tools.save()
                     else:
                         db_user_tools.update(inc__tools_count=1)
-                    MessageSender.send_return_tool(conversation.from_user_id, conversation.to_user_id, 1)
-                    MessageSender.send_return_tool(conversation.to_user_id, conversation.from_user_id, 2)
+                    MessageSender.send_return_tool(conversation.from_user_id, conversation.to_user_id, 2)  # 2:告诉你长时间未回复对方
+                    MessageSender.send_return_tool(conversation.to_user_id, conversation.from_user_id, 1)  # 1:告诉对方长时间未回复
                     print "close........"
         if conversation.type == 3:
             # 道具解锁状态

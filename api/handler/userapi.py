@@ -2240,9 +2240,8 @@ class MessageSendToolV2(BaseHandler):
             if conversation_id:
                 conversation = UserConversation.objects.filter(id=conversation_id).first()
                 if not conversation:
-                    pass
-                conversation.update(set__from_user_id=send_id)
-                conversation.update(set__to_user_id=receive_id)
+                    return
+                conversation.update(set__send_id=send_id)
                 conversation.update(set__is_send_tool=1)
                 conversation.update(set__tool_time_type=time_type)
             dic = {
