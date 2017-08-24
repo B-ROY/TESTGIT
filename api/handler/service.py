@@ -5,41 +5,32 @@ from api.view.base import *
 from app.customer.models.personal_tags import UserTags
 from app.customer.models.rank import *
 from app.customer.models.share import *
+from app.util.messageque.msgsender import MessageSender
 from app.customer.models.bottle_message import *
 from app.customer.models.tools import *
-
+import international
+from app.customer.models.vip import *
+from api.convert.convert_user import *
 
 @handler_define
 class RankListCharm(BaseHandler):
     @api_define("day's ranklist", "/service/ranklist",
                 [
-                    Param("type", True, int, 0, 0, "?~N~R?~L?~\类?~^~K?~H1?~L?~E?~J~[ 2?~L 财?~L 3?~L ?~E?~J~[?~J| 财?~L"),
-                    Param("interval", False, int, 0, 0, "计?~W?~Q??~\~_(0:天?~L1:?~Q?,2?~Z?~\~H,3:?~I天")
-                ], description=u"")
+                    Param("type", True, int, 0, 0, "排行榜类型（1，魅力 2， 财富 3， 魅力加财富"),
+                    Param("interval", False, int, 0,0, "计算周期(0:天，1:周,2：月,3:三天")
+                ], description=u"排行榜")
     def get(self):
         list_type = self.arg_int("type", 3)
         interval = self.arg_int("interval", 10)
         if list_type == 3:
             charm_rank_list = CharmRank.get_rank_list(interval=interval, count=30)
-            ids = [
-                3078733,
-                3078732,
-                3078731,
-                3078730,
-                3078729,
-                3078728,
-                3078727,
-                3078726,]
-
             charm_data = []
-            for id in ids:
+            for charm_rank in charm_rank_list:
                 dic = {}
-                user = User.objects.get(identity=id)
-                dic["user"] = user.get_normal_dic_info()
-                dic["charm"] = user.charm_value
-                dic["change_status"] = 0
+                dic["user"] = charm_rank.user.get_normal_dic_info()
+                dic["charm"] = charm_rank.charm
+                dic["change_status"] = charm_rank.change_status
                 charm_data.append(dic)
-            charm_data.sort(key=lambda item: item["charm"], reverse=True)
             wealth_rank_list = WealthRank.get_rank_list(interval=interval, count=30)
             wealth_data = []
             for wealth_rank in wealth_rank_list:
@@ -51,10 +42,91 @@ class RankListCharm(BaseHandler):
             self.write({
                 "status": "success",
                 "charm_list": charm_data,
+                "wealth_list": wealth_data
+
+            })
+
+
+@handler_define
+class RankListCharmV1(BaseHandler):
+    @api_define("day's ranklistv1", "/service/ranklist_v1",
+        [
+            Param("type", True, int, 0, 0, "排行榜类型（1，魅力 2， 财富 3， 魅力加财富"),
+            Param("interval", False, int, 0,0, "计算周期(0:天，1:周,2：月,3:三天")
+        ], description=u"排行榜")
+    def get(self):
+        list_type = self.arg_int("type", 3)
+        interval = self.arg_int("interval", 10)
+        if list_type == 3:
+            charm_rank_list = CharmRankNew.get_rank_list(count=30, type=1)
+            charm_data = []
+            for charm_rank in charm_rank_list:
+                dic = {}
+                user = charm_rank.user
+                if user:
+                    user_vip = UserVip.objects.filter(user_id=user.id).first()
+                    if user_vip:
+                        vip = Vip.objects.filter(id=user_vip.vip_id).first()
+                        dic["vip"] = convert_vip(vip)
+                    dic["user"] = charm_rank.user.get_normal_dic_info()
+                    dic["charm"] = charm_rank.charm
+                    dic["change_status"] = charm_rank.change_status
+                    charm_data.append(dic)
+
+            charm_rank_list_yesterday = CharmRankNew.get_rank_list(count=30, type=2)
+            charm_data_yesterday = []
+            for charm_rank in charm_rank_list_yesterday:
+                dic = {}
+                user = charm_rank.user
+                if user:
+                    user_vip = UserVip.objects.filter(user_id=user.id).first()
+                    if user_vip:
+                        vip = Vip.objects.filter(id=user_vip.vip_id).first()
+                        dic["vip"] = convert_vip(vip)
+                    dic["user"] = charm_rank.user.get_normal_dic_info()
+                    dic["charm"] = charm_rank.charm
+                    dic["change_status"] = charm_rank.change_status
+                    charm_data_yesterday.append(dic)
+
+            wealth_rank_list = WealthRankNew.get_rank_list(count=30, type=1)
+            wealth_data = []
+            for wealth_rank in wealth_rank_list:
+                dic = {}
+                user = wealth_rank.user
+                if user:
+                    user_vip = UserVip.objects.filter(user_id=user.id).first()
+                    if user_vip:
+                        vip = Vip.objects.filter(id=user_vip.vip_id).first()
+                        dic["vip"] = convert_vip(vip)
+
+                    dic["user"] = wealth_rank.user.get_normal_dic_info()
+                    dic["wealth"] = wealth_rank.wealth
+                    dic["change_status"] = wealth_rank.change_status
+                    wealth_data.append(dic)
+
+            wealth_rank_list_yesterday = WealthRankNew.get_rank_list(count=30, type=2)
+            wealth_data_yesterday = []
+            for wealth_rank in wealth_rank_list_yesterday:
+                dic = {}
+                user = wealth_rank.user
+                if user:
+                    user_vip = UserVip.objects.filter(user_id=user.id).first()
+                    if user_vip:
+                        vip = Vip.objects.filter(id=user_vip.vip_id).first()
+                        dic["vip"] = convert_vip(vip)
+
+                    dic["user"] = wealth_rank.user.get_normal_dic_info()
+                    dic["wealth"] = wealth_rank.wealth
+                    dic["change_status"] = wealth_rank.change_status
+                    wealth_data_yesterday.append(dic)
+            self.write({
+                "status": "success",
+                "charm_list": charm_data,
                 "wealth_list": wealth_data,
                 "charm_data_yesterday": charm_data_yesterday,
                 "wealth_data_yesterday": wealth_data_yesterday,
             })
+
 
 @handler_define
 class BottleMessageSend(BaseHandler):
@@ -67,18 +139,23 @@ class BottleMessageSend(BaseHandler):
         user = self.current_user
         message_content = BottleMessageText.get_one_mesasge_text(0).message
         if user.is_video_auth == 1 and user.disturb_mode == 0:
-            self.write({"status":"success"})
+            status_code = MessageSender.send_bottle_message(user.id, message_content)
+            count = UserHeartBeat.get_bottle_users_count()
+            if status_code == 200:
+                return self.write({"status": "success", "count": count})
+            else:
+                return self.write({"status": "failed", "error_code": status_code, "error": _(u"漂流瓶消息发送失败")})
         elif user.is_video_auth != 1:
             self.write({
                 "status": "failed",
                 "errcode": 30001,
-               "error": u"尚未通过视频认证"
+               "error": _(u"尚未通过视频认证")
             })
         else:
             self.write({
                 "status": "failed",
                 "errcode": 30002,
-                "error": u"勿扰模式下，不能发送漂流瓶"
+                "error": _(u"勿扰模式下，不能发送漂流瓶")
             })
 
 
@@ -189,20 +266,25 @@ class BottleMessaegSend_V2(BaseHandler):
         message_content = self.arg("message")
         #todo 加上判断
         if user.is_video_auth == 1 and user.disturb_mode == 0:
-
-            return self.write({"status": "success", "count": 101})
-
+            status_code = MessageSender.send_bottle_message(user.id, message_content)
+            count = UserHeartBeat.get_bottle_users_count()
+            if status_code == 200:
+                # todo  创建一条 漂流瓶记录
+                BottleRecord.create_bottle_record(user.id, label, message_content, 0, count)
+                return self.write({"status": "success", "count": count})
+            else:
+                return self.write({"status": "failed", "error_code": status_code, "error": _(u"漂流瓶消息发送失败")})
         elif user.is_video_auth != 1:
             self.write({
                 "status": "failed",
                 "errcode": 30001,
-                "error": u"尚未通过视频认证"
+                "error": _(u"尚未通过视频认证")
             })
         else:
             self.write({
                 "status": "failed",
                 "errcode": 30002,
-                "error": u"勿扰模式下，不能发送漂流瓶"
+                "error": _(u"勿扰模式下，不能发送漂流瓶")
             })
 
 
@@ -224,32 +306,36 @@ class BottleMessaegSend_V3(BaseHandler):
 
         #todo 加上判断
         if user.disturb_mode == 0:
-
+            status_code = MessageSender.send_bottle_message_v3(user.id, message_content, gender)
+            count = UserHeartBeat.get_bottle_users_count()
+            if status_code == 200:
                 # todo  创建一条 漂流瓶记录
-            BottleRecord.create_bottle_record(user.id, label, message_content, 0, 103)
+                BottleRecord.create_bottle_record(user.id, label, message_content, 0, count)
 
-            # 消耗道具 或者 消耗余额
-            tools = Tools.objects.filter(tools_type=1).first()
-            user_tools = UserTools.objects.filter(user_id=user.id, tools_id=str(tools.id)).first()
-            if user_tools:
-                # 消耗道具
-                UserTools.reduce_tools(user_id=user.id, tools_id=str(tools.id))
+                # 消耗道具 或者 消耗余额
+                tools = Tools.objects.filter(tools_type=1).first()
+                user_tools = UserTools.objects.filter(user_id=user.id, tools_id=str(tools.id)).first()
+                if user_tools:
+                    # 消耗道具
+                    UserTools.reduce_tools(user_id=user.id, tools_id=str(tools.id))
+                else:
+                    # 消耗余额
+                    # 用户账号余额
+                    account = Account.objects.filter(user=user).first()
+                    # account.last_diamond = account.diamond
+                    # account.diamond -= tools.price
+                    # account.update_time = datetime.datetime.now()
+                    # account.save()
+                    account.diamond_trade_out(price=tools.price, desc=u"漂流瓶消耗金额", trade_type=TradeDiamondRecord.TradeTypeBottle)
+
+                return self.write({"status": "success", "count": count})
             else:
-                # 消耗余额
-                # 用户账号余额
-                account = Account.objects.filter(user=user).first()
-                # account.last_diamond = account.diamond
-                # account.diamond -= tools.price
-                # account.update_time = datetime.datetime.now()
-                # account.save()
-                account.diamond_trade_out(price=tools.price, desc=u"漂流瓶消耗金额", trade_type=TradeDiamondRecord.TradeTypeBottle)
-
-                return self.write({"status": "success", "count": 103})
+                return self.write({"status": "failed", "error_code": status_code, "error": _(u"漂流瓶消息发送失败")})
         else:
             self.write({
                 "status": "failed",
                 "errcode": 30002,
-                "error": u"勿扰模式下，不能发送漂流瓶"
+                "error": _(u"勿扰模式下，不能发送漂流瓶")
             })
 
 
