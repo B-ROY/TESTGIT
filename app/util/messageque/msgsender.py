@@ -233,6 +233,13 @@ class MessageSender:
                 "source": source,
                 "user_id": user_id
             }
+        elif source == 4:
+            #  4:聊天图片鉴定
+            body = {
+                "pic_url": pic_url,
+                "source": source,
+                "obj_id": obj_id
+            }
         else:
             return 400
 
@@ -286,7 +293,7 @@ class MessageSender:
         body = {}
         body["from_id"] = from_id
         body["to_id"] = to_id
-        body["type"] = type
+        body["close_type"] = type
         path = "/tecent/return_tool"
         data = RequestApi.post_body_request_http(path=path, body=json.dumps(body), headers={}, host=cls.Host)
         result = json.loads(data)
