@@ -281,6 +281,7 @@ class MessageSender:
 
     @classmethod
     def send_about_me_message(cls, user_id):
+        return 200
         body = {}
         body["user_id"] = user_id
         path = "/tecent/about_me"
@@ -296,6 +297,7 @@ class MessageSender:
 
     @classmethod
     def send_return_tool(cls, from_id, to_id, type):
+        return 200
         body = {}
         body["from_id"] = from_id
         body["to_id"] = to_id

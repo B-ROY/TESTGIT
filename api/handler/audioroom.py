@@ -125,6 +125,24 @@ class GenerateChannelKey(BaseHandler):
 
         room_user = User.objects.get(id=ruid)
         if room_user.user_type == 2:
+            if not channelname:
+                room = AudioRoomRecord(
+                    user_id=ruid,
+                    is_video=0,
+                    is_video_auth=1 if room_user.is_video_auth == 1 else 0,
+                    user_gender=room_user.gender,
+                    open_time=datetime.datetime.now(),
+                    now_price=room_user.now_price,
+                    status=1,
+                    listen_url=room_user.listen_url,
+                    pay_times=0,
+                    spend=0,
+                    gift_value=0,
+                )
+                room.save()
+                room_user.audio_room_id = str(room.id)
+                room_user.save()
+                channelname = str(room.id)
             channelkey = generate_media_channel_key(appID, appCertificate, channelname, unixts, randomint, uid,
                                                     expiredts)
             return self.write({'status': "success", 'channelKey': channelkey, 'channel_id': channelname})
