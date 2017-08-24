@@ -51,7 +51,7 @@ class Follow_User_List(BaseHandler):
         user = self.current_user
         page = self.arg_int('page')
         page_count = self.arg_int('page_count')
-        follow_users = FollowUser.objects.filter(from_id=user.id)[(page - 1) * page_count:page * page_count]
+        follow_users = FollowUser.objects.filter(from_id=user.id).order_by("-create_time")[(page - 1) * page_count:page * page_count]
         data = []
         for follow_user in follow_users:
             u = User.objects.filter(id=follow_user.to_id).first()
@@ -81,7 +81,7 @@ class Fans_User_List(BaseHandler):
         page = self.arg_int('page')
         page_count = self.arg_int('page_count')
 
-        fans_users = FollowUser.objects.filter(to_id=user.id)[(page - 1) * page_count:page * page_count]
+        fans_users = FollowUser.objects.filter(to_id=user.id).order_by("-create_time")[(page - 1) * page_count:page * page_count]
         data = []
         for fans_user in fans_users:
             u = User.objects.filter(id=fans_user.from_id).first()
