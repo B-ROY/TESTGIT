@@ -134,6 +134,11 @@ class GenerateChannelKey(BaseHandler):
                 "room_status": "20001",
             })
 
+        if channelname:
+            room = AudioRoomRecord.objects.get(id=channelname)
+            if room.status == 0:
+                channelname = User.objects.get(id=room.user_id).audio_room_id
+
         if not channelname:
             try:
                 room = AudioRoomRecord(
@@ -158,15 +163,12 @@ class GenerateChannelKey(BaseHandler):
             except Exception, e:
                 logging.error("create room record error:{0}".format(e))
                 return self.write({"status": "failed", "error": str(e)})
-        else:
-            room = AudioRoomRecord.objects.get(id=channelname)
 
         if is_video == 1:
             room.now_price = room_user.video_price
         else:
             room.now_price = room_user.now_price
-        if room.status == 0:
-            channelname = User.objects.get(id=room.user_id).audio_room_id
+
 
         user_account = Account.objects.get(user=User.objects.get(id=uid))
         if uid != ruid and user_account.diamond < room.now_price:

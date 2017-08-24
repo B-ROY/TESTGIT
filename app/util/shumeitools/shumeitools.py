@@ -75,4 +75,5 @@ def shumei_text_spam(text, timeout, user_id, channel, nickname,phone,ip):
     encode_result = json.loads(shumei_result)
     #shumei_result = requests.post(shumei_url, data=body, timeout=timeout)
     #encode_result = json.loads(shumei_result.text)
+    return 1, 1
     return encode_result, duration
