@@ -251,7 +251,17 @@ class MomentListV3(BaseHandler):
 
         page_count = self.arg_int('page_count')
 
-        moments = UserMoment.objects.filter(show_status__in=[1, 3, 4], delete_status=1, is_public=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
+        momentsid =["599d16092040e46ae1243870","599d3bb92040e438a3f9b4fc","599d193c2040e46ae2243880",
+                    "599d05672040e46ae224386e","599d1b7b2040e46ae324388c","599d1eda2040e46ae324389b",
+                    "599d2e402040e438a1f9b4cc","599d30e22040e438a2f9b4cf","599d33b72040e438a1f9b4d0",
+                    "599d36252040e438a2f9b4d5","599d4ebc2040e438a3f9b539","599d3d072040e438a2f9b4f3",
+                    "599d46fb2040e438a1f9b525","599d48252040e438a3f9b52a","599d48fe2040e438a3f9b52f",
+                    "599d4a6b2040e438a2f9b535","599d52342040e438a2f9b542","59968acb18ce427fa73c9d3b",
+                    "5996a20b18ce427fa73c9d54","5996a73d18ce427fa83c9d96","5996b9e318ce427fa83c9db5",
+                    "599d45c32040e438a1f9b516"]
+        # moments = UserMoment.objects.filter(show_status__in=[1, 3, 4], delete_status=1, is_public=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
+        moments = UserMoment.objects.filter(id__in=momentsid).order_by("-create_time")[(page - 1) * page_count:page * page_count]
+        print "=========",moments.count()
         if moments:
             for moment in moments:
                 if moment:

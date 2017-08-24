@@ -1002,7 +1002,7 @@ class GetNewAnchorList(BaseHandler):
         self.write({"status": "success", "data": data, })
 @handler_define
 class GetVoiceRoomListV3(BaseHandler):
-    @api_define("Get voice room list v3", r'/audio/room/list_v3', [
+    @api_define("Get voice room list v3", r'/audio/11room/list_v311', [
         Param('page', True, str, "1", "1", u'page'),
         Param('page_count', True, str, "10", "10", u'page_count'),
         Param('time_stamp', False, str, "10", "10", u"最后一个人的时间戳(page=1不用传)"),
@@ -1142,86 +1142,124 @@ class GetVoiceRoomListV3(BaseHandler):
         result_advs = []
         hot_list = []
         video_list = []
-        advs = Adv.get_list()
-        for adv in advs or []:
-            result_advs.append(adv.normal_info())
 
-        recommed_list = UserRedis.get_recommed_list_v3()
-        recommed_data = eval(UserRedis.get_recommed_v3())
-        if recommed_list:
-            try:
-                for recommed in recommed_list:
-                    hot_list.append(json.loads(recommed_data[recommed]))
-            except Exception,e:
-                print e
-        else:
-            print "空的推荐列表"
-        if not hot_list:
-            import time
-            time = int(time.time())
-            pre_time = time - 120
-            user_beats = UserHeartBeat.objects.filter(last_report_time__gte=pre_time)
-            if user_beats:
-                for heart in user_beats:
-                    if heart.user.is_video_auth == 1 and heart.user.disturb_mode == 0:
-                        is_online = 1
-                        # 视频认证状态
-                        real_video = RealVideoVerify.objects(user_id=heart.user.id, status__ne=2).order_by("-update_time").first()
-                        show_video = RealVideoVerify.objects(user_id=heart.user.id, status=1).order_by("-update_time").first()
+        hot_ids = [
+            3065228,
+            3065232,
+            3065233,
+            3065234,
+            3065235,
 
-                        personal_tags = UserTags.get_usertags(user_id=heart.user.id)
-                        if not personal_tags:
-                            personal_tags = []
-                        user_vip = UserVip.objects.filter(user_id=heart.user.id).first()
+        ]
+        for hot_id in hot_ids:
+            user = User.objects.get(identity=hot_id)
+            personal_tags = UserTags.get_usertags(user_id=user.id)
+            user_vip = UserVip.objects.filter(user_id=user.id).first()
 
-                        if user_vip:
-                            vip = Vip.objects.filter(id=user_vip.vip_id).first()
-                            dic = {
-                                "user":{
-                                    "_uid": heart.user.sid,
-                                    "logo_big":heart.user.image,
-                                    "nickname":heart.user.nickname,
-                                    "desc":heart.user.desc
-                                },
-                                "personal_tags": personal_tags,
-                                "vip":{
-                                    "vip_type": vip.vip_type,
-                                    "icon_url": Vip.convert_http_to_https(vip.icon_url)
-                                },
-                                "is_online": is_online
-                            }
-                        else:
-                            dic = {
-                                "user": {
-                                    "_uid": heart.user.sid,
-                                    "logo_big":heart.user.image,
-                                    "nickname":heart.user.nickname,
-                                    "desc":heart.user.desc
-                                },
-                                "personal_tags": personal_tags,
-                                "is_online": is_online
-                            }
+            if user_vip:
+                vip = Vip.objects.filter(id=user_vip.vip_id).first()
+                dic = {
+                    "user":{
+                        "_uid": user.sid,
+                        "logo_big":user.image,
+                        "nickname":user.nickname,
+                        "desc":user.desc
+                    },
+                    "personal_tags": personal_tags,
+                    "vip":{
+                        "vip_type": vip.vip_type,
+                        "icon_url": Vip.convert_http_to_https(vip.icon_url)
+                    },
+                    "is_online": 1
+                }
+            else:
+                dic = {
+                    "user": {
+                        "_uid": user.sid,
+                        "logo_big":user.image,
+                        "nickname":user.nickname,
+                        "desc":user.desc
+                    },
+                    "personal_tags": personal_tags,
+                    "is_online": 1
+                }
+                dic["check_real_video"] = 3
+            hot_list.append(dic)
 
-                        if show_video:
-                            dic["check_real_video"] = show_video.status
-                        else:
-                            if real_video:
-                                dic["check_real_video"] = real_video.status
-                            else:
-                                dic["check_real_video"] = 3
-                        hot_list.append(dic)
-        anchor_list = UserRedis.get_index_anchor_list_v3(0,-1)
-        anchor_data = eval(UserRedis.get_index_anchor_v3())
-        if len(anchor_list) > 0:
-            for anchor in anchor_list:
-                video_list.append(json.loads(anchor_data[anchor]))
 
+        ids = {
+            1: [
+                3065237,
+                3065238,
+                3065239,
+                3065240,
+                3065241,
+                3065243,
+                3065246,
+                3065244,
+                3065242,
+                3065248,
+                3102710,
+                3080151,
+                3080148,
+                3080146,
+                3065247
+            ]
+        }
+
+        users = User.objects.filter(identity__in=ids[1])
+        for user in users:
+            #if not user.audio_room_id:
+            #   continue
+
+            if user.id == 1 or user.id == 2:
+                continue
+            is_online =1
+            # # 视频认证状态
+            # real_video = RealVideoVerify.objects(user_id=user.id, status__ne=2).order_by("-update_time").first()
+            # show_video = RealVideoVerify.objects(user_id=user.id, status=1).order_by("-update_time").first()
+
+            personal_tags = UserTags.get_usertags(user_id=user.id)
+            if not personal_tags:
+                personal_tags = []
+            user_vip = UserVip.objects.filter(user_id=user.id).first()
+            if user_vip:
+                vip = Vip.objects.filter(id=user_vip.vip_id).first()
+                dic = {
+                    "user":{
+                        "_uid": user.sid,
+                        "logo_big":user.image,
+                        "nickname":user.nickname,
+                        "desc":user.desc
+                    },
+                    "personal_tags": personal_tags,
+                    "vip":{
+                        "vip_type": vip.vip_type,
+                        "icon_url": Vip.convert_http_to_https(vip.icon_url)
+                    },
+                    "is_online": is_online
+                }
+                video_list.append(dic)
+            else:
+                dic = {
+                    "user": {
+                        "_uid": user.sid,
+                        "logo_big":user.image,
+                        "nickname":user.nickname,
+                        "desc":user.desc
+                    },
+                    "personal_tags": personal_tags,
+                    "is_online": is_online
+                }
+                dic["check_real_video"] = 3
+                video_list.append(dic)
         self.write({
             "status": "success",
             "banners": result_advs,
             "video_list": video_list,
             "hot_list": hot_list,
         })
+
 
 # 新人驾到  (在线的, 认证主播 认证时间倒序)
 @handler_define
@@ -1269,7 +1307,7 @@ class GetNewAnchorList(BaseHandler):
 
 @handler_define
 class GetVoiceRoomListV3(BaseHandler):
-    @api_define("Get voice room list v3", r'/audio/room/list_v3', [
+    @api_define("Get voice room list v3", r'/audio/room12/list_v312', [
         Param('page', True, str, "1", "1", u'page'),
         Param('page_count', True, str, "10", "10", u'page_count'),
         Param('time_stamp', False, str, "10", "10", u"最后一个人的时间戳(page=1不用传)"),
@@ -1395,7 +1433,7 @@ class GetVoiceRoomListV3(BaseHandler):
         uas = ua.split(";")
         app_name = uas[0]
 
-        if app_name == "reliaozaixian":
+        if app_name == "tiantianyouliao":
             ids = {
                 2: [
                     3078705,
