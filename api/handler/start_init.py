@@ -39,6 +39,7 @@ class Initial(BaseHandler):
             'upgrade_type': '',
             'download_url': '',
             'desc': '',
+            'version_code': 1000000
         }
         app_name = ua.split(";")[0]
         uas = ua.split(";")
@@ -55,7 +56,7 @@ class Initial(BaseHandler):
             # 强升
             if ua_version < version.min_version:
                 version_info["upgrade_type"] = 1
-            elif version.min_version <= ua_version < version.version_code:
+            elif version.min_version <= ua_version < version.version:
                 version_info["upgrade_type"] = version.upgrade_type
             else:
                 version_info["upgrade_type"] = 0

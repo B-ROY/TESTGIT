@@ -31,7 +31,7 @@ def new_anchors():
     # 获取当前时间的前五分钟
     import time
     time = int(time.time())
-    pre_time = time - 60 * 5
+    pre_time = time - 60 * 60
 
     verify_list = VideoManagerVerify.objects.filter(status=1).order_by("-verify_time")[0:400]
     for verify in verify_list:
