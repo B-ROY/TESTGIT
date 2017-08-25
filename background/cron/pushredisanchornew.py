@@ -30,7 +30,7 @@ import json
 def pushredis(self):
     now_time = int(time.time())
     #pre_time = now_time - 120
-    pre_time = now_time - 120
+    pre_time = now_time - 3600
     # heartbeats = UserHeartBeat.objects.filter(last_report_time__gte=pre_time)
     stuilabel ="598d7a2418ce423b1222d645"
     usersss = User.objects.filter(is_video_auth = 1).order_by("is_vip")
@@ -204,7 +204,7 @@ def push_index_anchor(self):
                 # 是否在线 查看心跳
                 import time
                 time = int(time.time())
-                pre_time = time - 120
+                pre_time = time - 3600
                 user_beat = UserHeartBeat.objects.filter(user=user, last_report_time__gte=pre_time).first()
                 roomrecord = AudioRoomRecord.objects.filter(user_id = user.id).order_by("-open_time").first()
                 if user_beat and user.disturb_mode != 1:
@@ -257,7 +257,6 @@ def push_index_anchor(self):
     deleteanchor()
     UserRedis.add_index_id_v3(index_id)
     UserRedis.add_index_anchor_v3(usermap)
-    print "=============index_id",index_id
     print "=============首页数据入redis完毕"
 
 def deletetui():
