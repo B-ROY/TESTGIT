@@ -568,7 +568,7 @@ class UserPictureCreate(BaseHandler):
         videos_anchor_vip_count = 20
         videos_anchor_count = 10
         videos_user_count = 0
-        videos_used_count = PrivateVideo.objects.filter(user_id=user.id, delete_status=1, show_status__ne=2).count()
+        videos_used_count = PrivateVideo.objects.filter(user_id=user.id, show_status__ne=2).count()
 
         data = {
             "moment_vip_count": moment_vip_count,
