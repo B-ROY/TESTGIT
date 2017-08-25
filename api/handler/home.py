@@ -23,8 +23,8 @@ class RecommendList(BaseHandler):
         video_list = []
         hot_list = []
         recommed_list = UserRedis.get_recommed_list()
-        recommed_data = eval(UserRedis.get_recommed())
         if recommed_list:
+            recommed_data = eval(UserRedis.get_recommed())
             try:
                 for recommed in recommed_list:
                     hot_list.append(recommed_data[recommed])

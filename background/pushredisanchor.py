@@ -31,7 +31,7 @@ import json
 def pushredis(self):
     now_time = int(time.time())
     # pre_time = now_time - 120
-    pre_time = now_time - 3600
+    pre_time = now_time - 120
     # heartbeats = UserHeartBeat.objects.filter(last_report_time__gte=pre_time)
     stuilabel ="598d7a2418ce423b1222d645"
     usersss = User.objects.filter(is_video_auth = 1).order_by("is_vip")
@@ -71,8 +71,10 @@ def pushredis(self):
     # if not hots:
     #     hots = User.objects.filter(is_video_auth=1).order_by("-charm_value")[0:4]
     for h in hots:
+        roomrecord = AudioRoomRecord.objects.filter(user_id = h.id).order_by("-open_time").first()
         if h not in users:
-            users.append(h)
+            if not roomrecord or roomrecord.status == 1:
+                users.append(h)
 
     for user in users:
         personal_tags = UserTags.get_usertags(user_id=user.id)
@@ -119,8 +121,9 @@ def pushredis(self):
         self.append(user.id)
         usermap[str(user.id)] = json.dumps(dic)
     deletetui()
-    UserRedis.add_user_recommed_id(user_recommed_id)
-    UserRedis.add_user_recommed(usermap)
+    if user_recommed_id:
+        UserRedis.add_user_recommed_id(user_recommed_id)
+        UserRedis.add_user_recommed(usermap)
     push_index_anchor(self)
 
 def push_index_anchor(self):
@@ -130,6 +133,7 @@ def push_index_anchor(self):
     xinggan = "597ef93418ce420b7d46ce17"
     yujie="597ef86b18ce420b6f46ce3c"
     qingcun = "597ef85718ce420b7d46ce11"
+    nodisllpay = "59956dfb18ce427fa83c9cec"
     valist1 =[]
     valist2 =[]
     valist3 =[]
@@ -194,7 +198,7 @@ def push_index_anchor(self):
         if user.id == 1 or user.id == 2:
             continue
         try:
-            if user.id not in self:
+            if user.id not in self and nodisllpay not in user.label:
                 audioroom = AudioRoomRecord.objects.get(id=user.audio_room_id)
                 personal_tags = UserTags.get_usertags(user_id=user.id)
                 if not personal_tags:
@@ -204,45 +208,44 @@ def push_index_anchor(self):
                 # 是否在线 查看心跳
                 import time
                 time = int(time.time())
-                pre_time = time - 3600
+                pre_time = time - 120
                 user_beat = UserHeartBeat.objects.filter(user=user, last_report_time__gte=pre_time).first()
-                if user_beat:
-                    is_online = 1
-                # else:
-                #     is_online = 0
+                roomrecord = AudioRoomRecord.objects.filter(user_id = user.id).order_by("-open_time").first()
+                if user_beat and user.disturb_mode != 1:
+                    if not roomrecord or roomrecord.status == 1:
+                        is_online = 1
+                        # 视频认证状态
+                        real_video = RealVideoVerify.objects(user_id=user.id, status__ne=2).order_by("-update_time").first()
+                        show_video = RealVideoVerify.objects(user_id=user.id, status=1).order_by("-update_time").first()
 
-                    # 视频认证状态
-                    real_video = RealVideoVerify.objects(user_id=user.id, status__ne=2).order_by("-update_time").first()
-                    show_video = RealVideoVerify.objects(user_id=user.id, status=1).order_by("-update_time").first()
-
-                    if user_vip:
-                        vip = Vip.objects.filter(id=user_vip.vip_id).first()
-                        dic = {
-                            "audioroom": convert_audioroom(audioroom),
-                            "user": convert_user(user),
-                            "personal_tags": personal_tags,
-                            "time_stamp": datetime_to_timestamp(audioroom.open_time),
-                            "vip": convert_vip(vip),
-                            "is_online": is_online
-                        }
-                    else:
-                        dic = {
-                            "audioroom": convert_audioroom(audioroom),
-                            "user": convert_user(user),
-                            "personal_tags": personal_tags,
-                            "time_stamp": datetime_to_timestamp(audioroom.open_time),
-                            "is_online": is_online
-                        }
-
-                    if show_video:
-                        dic["check_real_video"] = show_video.status
-                    else:
-                        if real_video:
-                            dic["check_real_video"] = real_video.status
+                        if user_vip:
+                            vip = Vip.objects.filter(id=user_vip.vip_id).first()
+                            dic = {
+                                "audioroom": convert_audioroom(audioroom),
+                                "user": convert_user(user),
+                                "personal_tags": personal_tags,
+                                "time_stamp": datetime_to_timestamp(audioroom.open_time),
+                                "vip": convert_vip(vip),
+                                "is_online": is_online
+                            }
                         else:
-                            dic["check_real_video"] = 3
-                    index_id.append(user.id)
-                    usermap[str(user.id)] = json.dumps(dic)
+                            dic = {
+                                "audioroom": convert_audioroom(audioroom),
+                                "user": convert_user(user),
+                                "personal_tags": personal_tags,
+                                "time_stamp": datetime_to_timestamp(audioroom.open_time),
+                                "is_online": is_online
+                            }
+
+                        if show_video:
+                            dic["check_real_video"] = show_video.status
+                        else:
+                            if real_video:
+                                dic["check_real_video"] = real_video.status
+                            else:
+                                dic["check_real_video"] = 3
+                        index_id.append(user.id)
+                        usermap[str(user.id)] = json.dumps(dic)
         except Exception,e:
             print e
                 #UserRedis.add_index_anchor(str(user.id),json.dumps(dic))
