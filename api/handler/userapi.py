@@ -2497,7 +2497,7 @@ class OnlineChargeCount(BaseHandler):
         count = OnlineCount.objects.all().first()
         if not count:
             count = OnlineCount()
-            online_count = random.randint(500, 1000)
+            online_count = random.randint(1000, 2000)
             charge_count = random.randint(200, 500)
             count.online_count = online_count
             count.charge_count = charge_count
@@ -2513,8 +2513,8 @@ class OnlineChargeCount(BaseHandler):
                 online_delta = random.randint(-20, 20)
                 charge_delta = random.randint(-10, 10)
                 change = False
-                if 500 < count.online_count < 1000 or (count.online_count <= 500 and online_delta > 0) or (
-                        count.online_count >= 1000 and online_delta < 0):
+                if 1000 < count.online_count < 2000 or (count.online_count <= 1000 and online_delta > 0) or (
+                        count.online_count >= 2000 and online_delta < 0):
                     count.update(inc__online_count=online_delta)
                     change = True
 
