@@ -33,12 +33,9 @@ class TwitterAPI(object):
         #access_token = "877437266544570369-3nOyHrXxHLMtpgLjPn1dUuUV3gT996o"
         #access_token = "898153207653740546-VWW0XEnlqlX9HDxZMzIZBEuWEMSfMCo"
         #user_id = 877437266544570369
-        print  access_token
         api = Api(cls.CONSUMER_KEY, cls.CONSUMER_SECRET, access_token, access_token_secret)
         user = api.GetUser(user_id=user_id)
         end_time = int(time.time())
-        print "total cost time is " + str(end_time-start_time)
-        print user
         user_dict = user.AsDict()
         result = {}
         if "screen_name" in user_dict:
