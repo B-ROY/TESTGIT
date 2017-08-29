@@ -168,6 +168,8 @@ class BaseHandler(RequestHandler):
             user_id = self.current_user_id
             try:
                 user = User.objects.get(pk=user_id)
+                if user.is_block == 1:
+                    raise HTTPError(401)
             except Exception:
                 user = None
             finally:
