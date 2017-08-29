@@ -303,7 +303,6 @@ class MessageSender:
 
 
     @classmethod
-<<<<<<< HEAD
     def send_return_tool(cls, from_id, to_id, type):
         return 200
 
