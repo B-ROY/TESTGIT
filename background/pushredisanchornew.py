@@ -52,7 +52,7 @@ def pushredis(self):
     stuilist = []
     for stui in stuianchors:
         user_heart = UserHeartBeat.objects.get(user=stui)
-        if user_heart.last_report_time > pre_time :
+        if user_heart.last_report_time > pre_time and stui.disturb_mode!=1:
             show_video = RealVideoVerify.objects(user_id=stui.id, status=1).order_by("-update_time").first()
             if show_video:
                 stuilist.insert(0,stui)
