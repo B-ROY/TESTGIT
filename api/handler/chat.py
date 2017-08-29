@@ -12,6 +12,7 @@ import time
 import datetime
 from app.customer.models.chat import ChatMessage, UserConversation
 from app.util.shumeitools.shumeitools import *
+import international
 
 
 @handler_define
@@ -50,7 +51,7 @@ class ChatMessageCreate(BaseHandler):
                         is_pass = 1
                 if not is_pass:
                     return self.write({'status': "fail",
-                                       'error': u"经系统检测,您的内容涉及违规因素,请重新编辑"})
+                                       'error': _(u"经系统检测,您的内容涉及违规因素,请重新编辑")})
 
         # 本会话第一次发聊天信息, 开始 "十分钟" 倒计时
         conversation_id = self.arg("conversation_id", "")

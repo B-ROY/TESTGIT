@@ -8,6 +8,7 @@ from app.customer.models.user import User
 from django.db.models import F
 from app.customer.models.user import VideoManagerVerify
 from app.util.messageque.msgsender import MessageSender
+import international
 
 
 connect(CHATPAMONGO.db, host=CHATPAMONGO.host, port=CHATPAMONGO.port, username=CHATPAMONGO.username,
@@ -196,13 +197,13 @@ class UserTools(Document):
         # 判断道具是否为下架道具
         if tools.is_valid == 0:
             status = -1
-            message = "此道具已下架,不可再购买"
+            message = u"此道具已下架,不可再购买"
             return status, message
 
 
         if account.diamond < tools.price:
             status = -1
-            message = "您的账户余额不足"
+            message = u"余额不足"
             return status, message
         try:
 
