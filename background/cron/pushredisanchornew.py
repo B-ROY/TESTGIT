@@ -33,7 +33,7 @@ def pushredis(self):
     pre_time = now_time - 3600
     # heartbeats = UserHeartBeat.objects.filter(last_report_time__gte=pre_time)
     stuilabel ="598d7a2418ce423b1222d645"
-    usersss = User.objects.filter(is_video_auth = 1).order_by("is_vip")
+    usersss = User.objects.filter(is_video_auth = 1,is_block__ne =1).order_by("is_vip")
     stuianchors =[]
     for u in usersss:
         if stuilabel in u.label:
@@ -141,7 +141,7 @@ def push_index_anchor(self):
     valist4 =[]
     valist5 =[]
     index_id = []
-    anchors = User.objects.filter(is_video_auth = 1).order_by("is_vip")
+    anchors = User.objects.filter(is_video_auth = 1,is_block__ne =1).order_by("is_vip")
     for anchor in anchors:
         if gaoyanzhi in anchor.label and xinggan in anchor.label:
                 show_video = RealVideoVerify.objects(user_id=anchor.id, status=1).order_by("-update_time").first()
