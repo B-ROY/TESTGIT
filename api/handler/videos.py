@@ -136,7 +136,7 @@ class PrivateVideoCreate(BaseHandler):
         video.price = price
         video.create_time = datetime.datetime.now()
         video.delete_status = 1
-        video.show_status = 1
+        video.show_status = 3
         video.is_valid = 1
         video.save()
 
