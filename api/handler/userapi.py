@@ -1335,7 +1335,7 @@ class UserHomepageV2(BaseHandler):
         count = 0
         moment_img_list = []
         moment_list = []
-        if int(current_user_id) == int(home_id):
+        if current_user_id and int(current_user_id) == int(home_id):
             moment_count = UserMoment.objects.filter(user_id=home_id, show_status__ne=2, delete_status=1, is_public=1).count()
         else:
             moment_count = UserMoment.objects.filter(user_id=home_id, show_status__in=[1, 3, 4], delete_status=1, is_public=1).count()
@@ -1397,7 +1397,7 @@ class UserHomepageV2(BaseHandler):
         # 私房视频列表
         video_list = []
         user_id = self.current_user_id
-        if int(home_id) == int(current_user_id):
+        if current_user_id and int(home_id) == int(current_user_id):
             videos = PrivateVideo.objects.filter(show_status__ne=2, user_id=home_id, delete_status=1).order_by("-create_time")
         else:
             videos = PrivateVideo.objects.filter(show_status=1, user_id=home_id, delete_status=1).order_by("-create_time")
