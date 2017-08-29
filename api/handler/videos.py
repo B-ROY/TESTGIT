@@ -104,12 +104,12 @@ class PrivateVideoCreate(BaseHandler):
         desc = self.arg('desc', "")
         price = self.arg_int('price', 0)
 
-        # if int(user.real_video_auth) != 1:
-        #     return self.write({"status": "fail"})
+        if int(user.real_video_auth) != 1:
+            return self.write({"status": "fail", 'error': _(u"视频认证通过后才可发布私房视频")})
 
         code, message = PrivateVideo.check_video_count(user)
         if code == 2:
-            return self.write({"status": "fail"})
+            return self.write({"status": "fail", 'error': _(message)})
 
         if desc:
             # 文本内容鉴黄
