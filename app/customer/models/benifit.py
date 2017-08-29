@@ -16,17 +16,17 @@ class TicketAccount(Document):
         record the user'e benifit
     """
     user = GenericReferenceField("User", verbose_name=u'用户')
-    total_ticket = FloatField(verbose_name=u"总收益", default=0)
-    gift_ticket = FloatField(verbose_name=u"礼物收益", default=0)
-    call_ticket = FloatField(verbose_name=u"通话收益", default=0)
-    friend_charge_ticket = FloatField(verbose_name=u"好友充值收益",default=0)
-    friend_benifit_ticket = FloatField(verbose_name=u"好友收益收益", default=0)
-    money_requesting = FloatField(verbose_name=u"申请中的提现", default=0)
-    money = FloatField(verbose_name=u"可提现金额", default=0)
-    money_withdrawed = FloatField(verbose_name=u"已提现额", default=0)
+    total_ticket = FloatField(verbose_name=u"总收益")
+    gift_ticket = FloatField(verbose_name=u"礼物收益")
+    call_ticket = FloatField(verbose_name=u"通话收益")
+    friend_charge_ticket = FloatField(verbose_name=u"好友充值收益")
+    friend_benifit_ticket = FloatField(verbose_name=u"好友收益收益")
+    money_requesting = FloatField(verbose_name=u"申请中的提现")
+    money = FloatField(verbose_name=u"可提现金额")
+    money_withdrawed = FloatField(verbose_name=u"已提现额")
     bonus_ticket = FloatField(verbose_name=u"由bonus_diamond获得的额外收益")
-    last_ticket = FloatField(verbose_name=u"最后一次变更之前的收益", default=0)
-    update_time = DateTimeField(verbose_name=u"最后更新时间", default=datetime.datetime.now())
+    last_ticket = FloatField(verbose_name=u"最后一次变更之前的收益")
+    update_time = DateTimeField(verbose_name=u"最后更新时间")
 
 
     WITHDRAW_RATIO = 0.6

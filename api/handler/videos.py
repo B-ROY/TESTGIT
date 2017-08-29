@@ -19,6 +19,7 @@ from app.util.messageque.msgsender import MessageSender
 from app.customer.models.video import InviteMessage
 from app.customer.models.benifit import TicketAccount
 from app.customer.models.account import TradeDiamondRecord, TradeTicketRecord, Account
+import international
 
 
 @handler_define
@@ -103,12 +104,14 @@ class PrivateVideoCreate(BaseHandler):
         desc = self.arg('desc', "")
         price = self.arg_int('price', 0)
 
-        # if int(user.real_video_auth) != 1:
-        #     return self.write({"status": "fail"})
+        real_video_auth = RealVideoVerify.get_status(user_id)
+
+        if int(real_video_auth) != 1:
+            return self.write({"status": "fail", 'error': _(u"视频认证通过后才可发布私房视频")})
 
         code, message = PrivateVideo.check_video_count(user)
         if code == 2:
-            return self.write({"status": "fail"})
+            return self.write({"status": "fail", 'error': _(message)})
 
         if desc:
             # 文本内容鉴黄
@@ -125,7 +128,7 @@ class PrivateVideoCreate(BaseHandler):
                     # todo +人工审核逻辑
                     is_pass = 1
             if not is_pass:
-                return self.write({'status': "fail", 'error': u"经系统检测,您的内容涉及违规因素,请重新编辑"})
+                return self.write({'status': "fail", 'error': _(u"经系统检测,您的内容涉及违规因素,请重新编辑")})
 
         video = PrivateVideo()
         video.desc = desc
@@ -135,7 +138,7 @@ class PrivateVideoCreate(BaseHandler):
         video.price = price
         video.create_time = datetime.datetime.now()
         video.delete_status = 1
-        video.show_status = 1
+        video.show_status = 3
         video.is_valid = 1
         video.save()
 
@@ -180,14 +183,14 @@ class BuyPrivateVideo(BaseHandler):
         video_id = self.arg('video_id')
         video = PrivateVideo.objects.filter(id=video_id, delete_status=1).first()
         if not video:
-            return self.write({"status": "fail", "error": u"视频已删除"})
+            return self.write({"status": "fail", "error": _(u"视频已删除")})
 
         to_user_id = video.user_id
         to_user = User.objects.filter(id=to_user_id).first()
 
         account = Account.objects.filter(user=user).first()
         if account.diamond < video.price:
-            return self.write({"status": "fail", "error": u"余额不足"})
+            return self.write({"status": "fail", "error": _(u"余额不足")})
         try:
             old_record = VideoPurchaseRecord.objects.filter(user_id=user.id, video_id=video_id).first()
             if old_record:

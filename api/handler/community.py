@@ -15,6 +15,7 @@ from app.customer.models.black_user import BlackUser
 from app.customer.models.vip import UserVip, Vip
 from app.customer.models.video import VideoPurchaseRecord, VipWatchVideoRecord, PrivateVideo
 from app.customer.models.real_video_verify import RealVideoVerify
+import international
 
 
 # 发布社区动态
@@ -30,7 +31,7 @@ class CreateMoment(BaseHandler):
         picture_urls = self.arg('picture_urls', "")
         content = self.arg('content', "")
         if not picture_urls and not content:
-            return self.write({'status': "fail", 'error': u"内容图片均为空."})
+            return self.write({'status': "fail", 'error': _(u"内容图片均为空")})
 
         code, message = UserMoment.check_moment_count(user)
         if code == 2:
@@ -55,7 +56,7 @@ class CreateMoment(BaseHandler):
                 is_pass = 1
             if not is_pass:
                 return self.write({'status': "fail",
-                                   'error': u"经系统检测,您的内容涉及违规因素,请重新编辑"})
+                                   'error': _(u"经系统检测,您的内容涉及违规因素,请重新编辑")})
         UserMoment.create(user.id, picture_urls, content)
         self.write({"status": "success"})
 
@@ -327,7 +328,7 @@ class GetMoment(BaseHandler):
             data.append(dic)
         else:
             return self.write({'status': "fail",
-                               'error': u"该动态已经被删除"})
+                               'error': _(u"该动态已经被删除")})
         return self.write({"status": "success", "data": data})
 
 
@@ -664,6 +665,8 @@ class AboutMeMessageList(BaseHandler):
             for message in messages:
                 dict = convert_about_me_message(message)
                 moment = UserMoment.objects.filter(id=message.moment_id).first()
+                buy_video_status = VideoPurchaseRecord.get_buy_status(user_id, moment.video_id)
+                dict["moment"]["buy_video_status"] = buy_video_status
                 like_user_list = moment.like_user_list
                 if int(user_id) in like_user_list:
                     is_liked = 1

@@ -1075,16 +1075,15 @@ class AUserInfo(BaseHandler):
         dic["picture_count"] = PictureInfo.objects.filter(user_id=user.id, status=0).count()
         dic["audio_status"] = AudioRoomRecord.get_room_status(user_id=user.id)
         dic["check_real_name"] = RealNameVerify.check_user_verify(user_id=user.id)
-        # dic["check_real_video"] = RealVideoVerify.check_user_verify(user_id=user.id)
-        # 当前认证状态:
-        real_video = RealVideoVerify.objects(user_id=user.id, status__ne=2).order_by("-update_time").first()
-        show_video = RealVideoVerify.objects(user_id=user.id, status=1).order_by("-update_time").first()
 
-        if real_video:
-            dic["check_real_video"] = real_video.status
+        #  当前最新认证状态
+        now_verify = RealVideoVerify.objects(user_id=user.id).order_by("-update_time").first()
+        if now_verify:
+            dic["now_real_video_status"] = now_verify.status
         else:
-            dic["check_real_video"] = 3
+            dic["now_real_video_status"] = 3
 
+        dic["check_real_video"] = RealVideoVerify.get_status(user.id)
 
         # 判断是否是vip
         user_vip = UserVip.objects.filter(user_id=user.id).first()
@@ -1306,7 +1305,6 @@ class UserHomepageV2(BaseHandler):
 
         dic["is_online"] = is_online
 
-
         # 实名认证
         real_name_verify = RealNameVerify.objects.filter(user_id=home_id).order_by("-verify_time").first()
         if not real_name_verify:
@@ -1332,13 +1330,12 @@ class UserHomepageV2(BaseHandler):
             else:
                 dic["check_real_video"] = 3
 
-
-        # 我的动态相关
+            # 我的动态相关
         temp_moments = UserMoment.objects.filter(user_id=home_id, show_status__ne=2, delete_status=1, is_public=1).order_by("-create_time")
         count = 0
         moment_img_list = []
         moment_list = []
-        if int(current_user_id) == int(home_id):
+        if current_user_id and int(current_user_id) == int(home_id):
             moment_count = UserMoment.objects.filter(user_id=home_id, show_status__ne=2, delete_status=1, is_public=1).count()
         else:
             moment_count = UserMoment.objects.filter(user_id=home_id, show_status__in=[1, 3, 4], delete_status=1, is_public=1).count()
@@ -1400,7 +1397,7 @@ class UserHomepageV2(BaseHandler):
         # 私房视频列表
         video_list = []
         user_id = self.current_user_id
-        if int(home_id) == int(current_user_id):
+        if current_user_id and int(home_id) == int(current_user_id):
             videos = PrivateVideo.objects.filter(show_status__ne=2, user_id=home_id, delete_status=1).order_by("-create_time")
         else:
             videos = PrivateVideo.objects.filter(show_status=1, user_id=home_id, delete_status=1).order_by("-create_time")
@@ -1610,7 +1607,7 @@ class UpdateUserInfo(BaseHandler):
                         text_detect.save()
                         return self.write({'status': "fail",
                                            'param': 'nickname',
-                                           'error': u"经系统检测,您的昵称内容涉及违规因素,请重新编辑"})
+                                           'error': _(u"经系统检测,您的内容涉及违规因素,请重新编辑")})
                 user.nickname = nickname
                 is_change = True
 
@@ -2156,7 +2153,7 @@ class MessageSendGift(BaseHandler):
         #此处暂有一个门槛礼物 写死100
         bill_status, return_money = GiftManager.message_bill(send_id=send_id, receive_id=receive_id, money=100)
         if not bill_status:
-            return self.write({"status": "fail", "error": u"支付失败", })
+            return self.write({"status": "fail", "error": _(u"支付失败") })
         else:
             if return_money == 0:
                 return self.write({"status": "fail", "error": _(u"余额不足"), })
@@ -2240,9 +2237,8 @@ class MessageSendToolV2(BaseHandler):
             if conversation_id:
                 conversation = UserConversation.objects.filter(id=conversation_id).first()
                 if not conversation:
-                    pass
-                conversation.update(set__from_user_id=send_id)
-                conversation.update(set__to_user_id=receive_id)
+                    return
+                conversation.update(set__send_id=send_id)
                 conversation.update(set__is_send_tool=1)
                 conversation.update(set__tool_time_type=time_type)
             dic = {
@@ -2498,7 +2494,7 @@ class OnlineChargeCount(BaseHandler):
         count = OnlineCount.objects.all().first()
         if not count:
             count = OnlineCount()
-            online_count = random.randint(500, 1000)
+            online_count = random.randint(1000, 2000)
             charge_count = random.randint(200, 500)
             count.online_count = online_count
             count.charge_count = charge_count
@@ -2514,8 +2510,8 @@ class OnlineChargeCount(BaseHandler):
                 online_delta = random.randint(-20, 20)
                 charge_delta = random.randint(-10, 10)
                 change = False
-                if 500 < count.online_count < 1000 or (count.online_count <= 500 and online_delta > 0) or (
-                        count.online_count >= 1000 and online_delta < 0):
+                if 1000 < count.online_count < 2000 or (count.online_count <= 1000 and online_delta > 0) or (
+                        count.online_count >= 2000 and online_delta < 0):
                     count.update(inc__online_count=online_delta)
                     change = True
 

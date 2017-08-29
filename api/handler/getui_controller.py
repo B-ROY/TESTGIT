@@ -4,6 +4,7 @@ import datetime
 from api.document.doc_tools import *
 from api.view.base import *
 from app.customer.models.getuiusers import GeTuiUsers
+import international
 
 
 @handler_define
@@ -64,7 +65,7 @@ class AddGeTui(BaseHandler):
                     return self.write({"status": "success"})
                 except Exception,e:
                     logging.error("create Getui error:{0}".format(e))
-                    return self.write({"status": "fail","error": u"上报设备信息失败"})
+                    return self.write({"status": "fail","error": _(u"上报设备信息失败")})
             return self.write({"status": "success"})
         else :
                 gtuser = GeTuiUsers()
@@ -85,7 +86,7 @@ class AddGeTui(BaseHandler):
                     return self.write({"status": "success"})
                 except Exception,e:
                     logging.error("create Getui error:{0}".format(e))
-                    return self.write({"status": "fail","error": u"上报设备信息失败"})
+                    return self.write({"status": "fail","error": _(u"上报设备信息失败")})
 
 
 

@@ -6,6 +6,7 @@ import datetime
 from wi_model_util.imodel import *
 from mongoengine import *
 from base.settings import CHATPAMONGO
+from app.util.messageque.msgsender import MessageSender
 
 connect(CHATPAMONGO.db, host=CHATPAMONGO.host, port=CHATPAMONGO.port, username=CHATPAMONGO.username,
         password=CHATPAMONGO.password)
@@ -19,6 +20,7 @@ class ChatMessage(Document):
     content = StringField(max_length=1024, verbose_name=u"消息内容")
     conversation_id = StringField(verbose_name=u"会话id", max_length=64)
     resource_url = StringField(verbose_name=u"图片,音频 资源地址", max_length=512)
+    show_status = IntField(verbose_name=u"图片,音频 鉴定状态")  # 1:通过  2:屏蔽  3:鉴定中
 
     @classmethod
     def create_chat_message(cls, from_user_id, to_user_id, type, content, conversation_id, resource_url):
@@ -35,6 +37,10 @@ class ChatMessage(Document):
         obj_.create_time = datetime.datetime.now()
         obj_.conversation_id = conversation_id
         obj_.resource_url = resource_url
+        if int(type) == 2:
+            obj_.show_status = 3
+        else:
+            obj_.show_status = 1
         obj_.save()
 
         # 改变会话状态:
@@ -55,6 +61,10 @@ class ChatMessage(Document):
                 conversation.update(set__start_time=now)
                 status = 1
                 create_time = now
+
+        if int(type) == 2:
+            #  图片鉴定
+            MessageSender.send_picture_detect(pic_url=resource_url, user_id=0, pic_channel=0, source=4, obj_id=str(obj_.id))
 
         return status, create_time, conversation_id
 

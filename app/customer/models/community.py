@@ -10,6 +10,7 @@ from app.customer.models.real_video_verify import RealVideoVerify
 
 from app.util.messageque.msgsender import MessageSender
 import logging
+import international
 
 
 connect(CHATPAMONGO.db, host=CHATPAMONGO.host, port=CHATPAMONGO.port, username=CHATPAMONGO.username,
@@ -170,7 +171,7 @@ class UserMoment(Document):
         now = datetime.datetime.now()
         starttime = now.strftime("%Y-%m-%d 00:00:00")
         endtime = now.strftime('%Y-%m-%d 23:59:59')
-        today_moment_count = UserMoment.objects.filter(user_id=user.id, show_status__ne=2, delete_status=1, is_public=1,
+        today_moment_count = UserMoment.objects.filter(user_id=user.id, show_status__ne=2, is_public=1,
                                                        create_time__gte=starttime, create_time__lte=endtime).count()
         code = 1
         message = ""
@@ -195,7 +196,7 @@ class UserMoment(Document):
                 # 普通用户
                 if today_moment_count >= user_count:
                     code = 2
-                    message = u"普通用户每日动态发布最多3条"
+                    message = u"普通用户每日动态发布最多2条"
 
         return code, message
 

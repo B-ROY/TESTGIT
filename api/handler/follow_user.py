@@ -8,6 +8,7 @@ from api.handler.thridpard.qcloud.im import *
 from app.customer.models.black_user import *
 from app.customer.models.vip import *
 from app.customer.models.follow_user import *
+import international
 
 
 @handler_define
@@ -25,16 +26,15 @@ class Follow_User(BaseHandler):
 
         black_type = BlackUser.is_black(user.id, follow_user_id)
         if black_type == 1 or black_type == 0:
-            return self.write({'status': "fail",'error': u"您已把对方拉黑"})
+            return self.write({'status': "fail",'error': _(u"您已把对方拉黑")})
         elif black_type == 2:
-            return self.write({'status': "fail",'error': u"对方已把您拉黑"})
+            return self.write({'status': "fail",'error': _(u"对方已把您拉黑")})
 
         if follow_type == 1:
             # 关注
             FollowUser.follow_user_add(user, follow_user)
         elif follow_type == 2:
             # 取消关注
-            print "=============> follow_delete ", follow_user.id
             FollowUser.follow_user_delete(user, follow_user)
 
         return self.write({"status": "success"})
