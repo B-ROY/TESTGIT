@@ -1,8 +1,5 @@
 upstream live_api {
     server 127.0.0.1:9000 fail_timeout=0;
-    server 127.0.0.1:9001 fail_timeout=0;
-    server 127.0.0.1:9002 fail_timeout=0;
-    server 127.0.0.1:9003 fail_timeout=0;
 }
 
 # init lua
