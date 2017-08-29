@@ -1075,16 +1075,15 @@ class AUserInfo(BaseHandler):
         dic["picture_count"] = PictureInfo.objects.filter(user_id=user.id, status=0).count()
         dic["audio_status"] = AudioRoomRecord.get_room_status(user_id=user.id)
         dic["check_real_name"] = RealNameVerify.check_user_verify(user_id=user.id)
-        # dic["check_real_video"] = RealVideoVerify.check_user_verify(user_id=user.id)
-        # 当前认证状态:
-        real_video = RealVideoVerify.objects(user_id=user.id, status__ne=2).order_by("-update_time").first()
-        show_video = RealVideoVerify.objects(user_id=user.id, status=1).order_by("-update_time").first()
 
-        if real_video:
-            dic["check_real_video"] = real_video.status
+        #  当前最新认证状态
+        now_verify = RealVideoVerify.objects(user_id=user.id).order_by("-update_time").first()
+        if now_verify:
+            dic["now_real_video_status"] = now_verify.status
         else:
-            dic["check_real_video"] = 3
+            dic["now_real_video_status"] = 3
 
+        dic["check_real_video"] = RealVideoVerify.get_status(user.id)
 
         # 判断是否是vip
         user_vip = UserVip.objects.filter(user_id=user.id).first()
@@ -1305,13 +1304,6 @@ class UserHomepageV2(BaseHandler):
         dic["black_type"] = black_type
 
         dic["is_online"] = is_online
-
-        now_verify = RealVideoVerify.objects(user_id=home_id).order_by("-update_time").first()
-        if now_verify:
-            dic["now_real_video_status"] = now_verify.status
-        else:
-            dic["now_real_video_status"] = 3
-
 
         # 实名认证
         real_name_verify = RealNameVerify.objects.filter(user_id=home_id).order_by("-verify_time").first()
