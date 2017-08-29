@@ -1306,6 +1306,12 @@ class UserHomepageV2(BaseHandler):
 
         dic["is_online"] = is_online
 
+        now_verify = RealVideoVerify.objects(user_id=home_id).order_by("-update_time").first()
+        if now_verify:
+            dic["now_real_video_status"] = now_verify.status
+        else:
+            dic["now_real_video_status"] = 3
+
 
         # 实名认证
         real_name_verify = RealNameVerify.objects.filter(user_id=home_id).order_by("-verify_time").first()
@@ -1331,12 +1337,6 @@ class UserHomepageV2(BaseHandler):
                 dic["check_real_video"] = real_video.status
             else:
                 dic["check_real_video"] = 3
-
-        if real_video:
-            dic["now_real_video_status"] = real_video.status
-        else:
-            dic["now_real_video_status"] = 3
-
 
             # 我的动态相关
         temp_moments = UserMoment.objects.filter(user_id=home_id, show_status__ne=2, delete_status=1, is_public=1).order_by("-create_time")
