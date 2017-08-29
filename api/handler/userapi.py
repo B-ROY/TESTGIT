@@ -1332,8 +1332,13 @@ class UserHomepageV2(BaseHandler):
             else:
                 dic["check_real_video"] = 3
 
+        if real_video:
+            dic["now_real_video_status"] = real_video.status
+        else:
+            dic["now_real_video_status"] = 3
 
-        # 我的动态相关
+
+            # 我的动态相关
         temp_moments = UserMoment.objects.filter(user_id=home_id, show_status__ne=2, delete_status=1, is_public=1).order_by("-create_time")
         count = 0
         moment_img_list = []
