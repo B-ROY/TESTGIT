@@ -386,8 +386,8 @@ class PictureInfo(Document):
         vip_count = 20
         anchor_vip_count = 20
         anchor_vip_count_normal = 20
-        anchor_count_normal = 20
-        anchor_count = 20
+        anchor_count_normal = 10
+        anchor_count = 10
         user_count_normal = 10
 
         is_video = user.is_video_auth
@@ -423,7 +423,7 @@ class PictureInfo(Document):
                     # 播主:
                     if total > anchor_count_normal:
                         code = 2
-                        message = u"播主普通相册最多20张"
+                        message = u"播主普通相册最多10张"
                         return code, message
                 else:
                     # 普通用户
@@ -453,7 +453,7 @@ class PictureInfo(Document):
                     # 播主:
                     if total > anchor_count:
                         code = 2
-                        message = u"播主精美相册最多20张"
+                        message = u"播主精美相册最多10张"
                         return code, message
                 else:
                     # 普通用户

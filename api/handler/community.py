@@ -31,7 +31,7 @@ class CreateMoment(BaseHandler):
         picture_urls = self.arg('picture_urls', "")
         content = self.arg('content', "")
         if not picture_urls and not content:
-            return self.write({'status': "fail", 'error': _(u"内容图片均为空.")})
+            return self.write({'status': "fail", 'error': _(u"内容图片均为空")})
 
         code, message = UserMoment.check_moment_count(user)
         if code == 2:
