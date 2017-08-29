@@ -655,6 +655,8 @@ class AboutMeMessageList(BaseHandler):
             for message in messages:
                 dict = convert_about_me_message(message)
                 moment = UserMoment.objects.filter(id=message.moment_id).first()
+                buy_video_status = VideoPurchaseRecord.get_buy_status(user_id, moment.video_id)
+                dict["moment"]["buy_video_status"] = buy_video_status
                 like_user_list = moment.like_user_list
                 if int(user_id) in like_user_list:
                     is_liked = 1
