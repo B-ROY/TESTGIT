@@ -10,6 +10,7 @@ from app.customer.models.real_video_verify import RealVideoVerify
 
 from app.util.messageque.msgsender import MessageSender
 import logging
+import international
 
 
 connect(CHATPAMONGO.db, host=CHATPAMONGO.host, port=CHATPAMONGO.port, username=CHATPAMONGO.username,
@@ -195,7 +196,7 @@ class UserMoment(Document):
                 # 普通用户
                 if today_moment_count >= user_count:
                     code = 2
-                    message = u"普通用户每日动态发布最多3条"
+                    message = u"普通用户每日动态发布最多2条"
 
         return code, message
 

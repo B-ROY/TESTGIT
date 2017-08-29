@@ -8,6 +8,7 @@ from api.convert.convert_user import *
 from app.customer.models.activity import *
 from app.customer.models.user import VideoManagerVerify
 from app.customer.models.vip import Vip, UserVip, VipReceiveRecord
+import international
 
 
 @handler_define
@@ -25,14 +26,14 @@ class Buy_Tools(BaseHandler):
 
         tools_id = self.arg("tools_id", "")
         if tools_id == "":
-            return self.write({"status": "failed", "error_message": "请选择道具", })
+            return self.write({"status": "failed", "error_message": _(u"请选择道具") })
 
         status, message = UserTools.buy_tools(user_id, tools_id)
 
         if status == 200:
             return self.write({"status": "success"})
         else:
-            return self.write({"status": "failed", "error_message": message})
+            return self.write({"status": "failed", "error_message": _(message)})
 
 
 @handler_define
@@ -98,7 +99,7 @@ class Can_Receive(BaseHandler):
         if user.is_video_auth == 1:
             verify = VideoManagerVerify.objects.filter(user_id=user_id).first()
             if not verify:
-                return self.write({"status": "failed", "error_message": "认证主播", })
+                return self.write({"status": "failed" })
             verify_time = verify.verify_time
             temp_end_time = verify_time + datetime.timedelta(days=7)
             endtime = temp_end_time.strftime('%Y-%m-%d 23:59:59')

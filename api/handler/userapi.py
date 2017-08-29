@@ -1610,7 +1610,7 @@ class UpdateUserInfo(BaseHandler):
                         text_detect.save()
                         return self.write({'status': "fail",
                                            'param': 'nickname',
-                                           'error': u"经系统检测,您的昵称内容涉及违规因素,请重新编辑"})
+                                           'error': _(u"经系统检测,您的内容涉及违规因素,请重新编辑")})
                 user.nickname = nickname
                 is_change = True
 
@@ -2156,7 +2156,7 @@ class MessageSendGift(BaseHandler):
         #此处暂有一个门槛礼物 写死100
         bill_status, return_money = GiftManager.message_bill(send_id=send_id, receive_id=receive_id, money=100)
         if not bill_status:
-            return self.write({"status": "fail", "error": u"支付失败", })
+            return self.write({"status": "fail", "error": _(u"支付失败") })
         else:
             if return_money == 0:
                 return self.write({"status": "fail", "error": _(u"余额不足"), })
