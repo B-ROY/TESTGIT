@@ -261,8 +261,99 @@ msgstr "İlişkisi var"
 msgid "未填写"
 msgstr "-"
 
-##### 首充
-msgid " 首充活动 "
+#  新增================
+msgid "非VIP用户每天免费文字聊天10个人"
 msgstr ""
+
+msgid "内容图片均为空"
+msgstr ""
+
+msgid "播主VIP,每日动态发布最多15条"
+msgstr ""
+
+msgid "用户VIP,每日动态发布最多5条"
+msgstr ""
+
+msgid "播主每日动态发布最多10条"
+msgstr ""
+
+msgid "普通用户每日动态发布最多2条"
+msgstr ""
+
+msgid "播主VIP,普通相册最多20张"
+msgstr ""
+
+msgid "用户VIP,普通相册最多20张"
+msgstr ""
+
+msgid "播主普通相册最多10张"
+msgstr ""
+
+msgid "普通用户普通相册最多10张"
+msgstr ""
+
+msgid "播主VIP,精美相册最多20张"
+msgstr ""
+
+msgid "用户VIP,精美相册最多20张"
+msgstr ""
+
+msgid "播主精美相册最多10张"
+msgstr ""
+
+msgid "普通用户不可上传精美相册"
+msgstr ""
+
+msgid "您已把对方拉黑"
+msgstr ""
+
+msgid "对方已把您拉黑"
+msgstr ""
+
+msgid "经系统检测,您的内容涉及违规因素,请重新编辑"
+msgstr ""
+
+msgid "今日动态已到达上限"
+msgstr ""
+
+msgid "成为播主可继续发布动态"
+msgstr ""
+
+msgid "升级VIP,可以继续发布动态"
+msgstr ""
+
+msgid "视频已删除"
+msgstr ""
+
+msgid "该动态已经被删除"
+msgstr ""
+
+msgid "只有购买视频才可评论"
+msgstr ""
+
+msgid "请选择道具"
+msgstr ""
+
+msgid "此道具已下架,不可再购买"
+msgstr ""
+
+msgid "支付失败"
+msgstr ""
+
+msgid "%s 邀请您参加播主认证"
+msgstr ""
+
+msgid "%s 邀请您上传视频"
+msgstr ""
+
+msgid "%s 邀请您上传照片"
+msgstr ""
+
+msgid "您的活动奖励已发送至您的账户，请注意查收，希望您在我们平台玩得开心～"
+msgstr ""
+
+
+
+
 
 
