@@ -50,7 +50,7 @@ class CreatePicture(BaseHandler):
         picture_id = PictureInfo.create_picture(user_id=user_id, created_at=created_at, picture_url=picture_url,
                                                 desc=desc, picture_type=picture_type, price=price, is_private=is_private,
                                                 lock_type=lock_type, lock_count=lock_count, location=location,
-                                                mention=mention)
+                                                mention=mention, type=1)
         if picture_id:
             self.write({"status": "success", "picture_id": picture_id, })
         else:

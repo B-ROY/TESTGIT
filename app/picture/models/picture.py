@@ -110,7 +110,7 @@ class PictureInfo(Document):
 
     @classmethod
     def create_picture(cls, user_id, created_at, picture_url, desc=None, picture_type=None, price=0, is_private=1,
-                       lock_type=0, lock_count=0, location=None, mention=None):
+                       lock_type=0, lock_count=0, location=None, mention=None, type=1):
         try:
             picture = PictureInfo(
                 user_id=user_id,
@@ -131,6 +131,7 @@ class PictureInfo(Document):
                 like_count=0,
                 view_count=0,
                 status=0,
+                type=1,
             )
             if price != 0:
                 picture.picture_url = 'https://hdlive-10048692.image.myqcloud.com/5c8ff8bdc5a3645edcd8d4f9313f29e7'
