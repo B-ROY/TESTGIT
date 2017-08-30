@@ -34,6 +34,7 @@ class UserMoment(Document):
     video_url = StringField(verbose_name=u"视频地址", max_length=256)
     price = IntField(verbose_name=u"私房视频价格")
     is_public = IntField(verbose_name=u"是否公开")  # 1:公开 2:未公开
+    rank_score = FloatField(verbose_name=u"排名得分")
 
     @classmethod
     def create(cls, user_id, picture_urls, content):

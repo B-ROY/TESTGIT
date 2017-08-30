@@ -164,7 +164,7 @@ class MomentListV3(BaseHandler):
 
         if list_type == 1:
             # 我的动态
-            moments = UserMoment.objects.filter(user_id=user.id, show_status__ne=2, delete_status=1, is_public=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
+            moments = UserMoment.objects.filter(user_id=user.id, show_status__ne=2, delete_status=1, is_public=1).order_by("-rank_score")[(page - 1) * page_count:page * page_count]
         elif list_type == 2:
             # 我的关注动态
             follow_users = FollowUser.objects.filter(from_id=user.id)
@@ -181,14 +181,14 @@ class MomentListV3(BaseHandler):
                     if fr_uid not in user_ids:
                         user_ids.append(fr_uid)
 
-            moments = UserMoment.objects.filter(user_id__in=user_ids, show_status__in=[1, 3, 4], delete_status=1, is_public=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
+            moments = UserMoment.objects.filter(user_id__in=user_ids, show_status__in=[1, 3, 4], delete_status=1, is_public=1).order_by("-rank_score")[(page - 1) * page_count:page * page_count]
         elif list_type == 3:
             # 临时加一个 判断我的. 稍后客户端把lsit_type修复
             if show_user_id == int(user_id):
-                moments = UserMoment.objects.filter(user_id=user.id, show_status__ne=2, delete_status=1, is_public=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
+                moments = UserMoment.objects.filter(user_id=user.id, show_status__ne=2, delete_status=1, is_public=1).order_by("-rank_score")[(page - 1) * page_count:page * page_count]
             else:
                 # 其他用户动态
-                moments = UserMoment.objects.filter(user_id=show_user_id, show_status__in=[1, 3, 4], delete_status=1, is_public=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
+                moments = UserMoment.objects.filter(user_id=show_user_id, show_status__in=[1, 3, 4], delete_status=1, is_public=1).order_by("-rank_score")[(page - 1) * page_count:page * page_count]
 
         if moments:
             for moment in moments:
@@ -252,7 +252,7 @@ class MomentListV3(BaseHandler):
 
         page_count = self.arg_int('page_count')
 
-        moments = UserMoment.objects.filter(show_status__in=[1, 3, 4], delete_status=1, is_public=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
+        moments = UserMoment.objects.filter(show_status__in=[1, 3, 4], delete_status=1, is_public=1).order_by("-rank_score")[(page - 1) * page_count:page * page_count]
         if moments:
             for moment in moments:
                 if moment:
