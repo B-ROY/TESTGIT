@@ -2107,8 +2107,10 @@ class MessageCheckV2(BaseHandler):
                     start_time = refer_conversation.start_time
                     chat_status = True
                 else:
-                    if refer_conversation.from_user_id == send_id:
-                        chat_status = True
+                    if refer_conversation.send_id:
+                        if refer_conversation.send_id == send_id:
+                            chat_status = True
+
 
                 if refer_conversation.type == 2:
                     if int(refer_conversation.from_user_id) == int(send_id):
