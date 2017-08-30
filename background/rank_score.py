@@ -55,7 +55,7 @@ def update_rank_score():
             look_user_ids = moment_look.user_id_list
             look_count = len(look_user_ids)
         ups = like_count*2 + look_count
-        rank_score = hot(ups, 0, now)
+        rank_score = hot(ups, 0, moment.create_time)
         moment.update(set__rank_score=rank_score)
 
 
