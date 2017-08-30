@@ -212,7 +212,7 @@ class MessageSender:
             return 400
 
     @classmethod
-    def send_picture_detect(cls, pic_url="", user_id=0, pic_channel=0, source=0, obj_id=None):
+    def send_picture_detect(cls, pic_url="", user_id=0, pic_channel=0, source=0, obj_id=None, pic_type=1):
         if source == 1:
             body = {
                 "pic_url": pic_url,
@@ -231,7 +231,8 @@ class MessageSender:
             body = {
                 "pic_urls": pic_url,  # 多个用逗号分隔
                 "source": source,
-                "user_id": user_id
+                "user_id": user_id,
+                "pic_type": pic_type
             }
         elif source == 4:
             #  4:聊天图片鉴定

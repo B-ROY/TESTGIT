@@ -442,7 +442,7 @@ class UserPictureCreate(BaseHandler):
 
                 picture_ids.append(str(pic_info.id))
 
-        MessageSender.send_picture_detect(pic_url=picture_urls, user_id=user_id, pic_channel=0, source=3, obj_id=None)
+        MessageSender.send_picture_detect(pic_url=picture_urls, user_id=user_id, pic_channel=0, source=3, obj_id=None, pic_type=type)
 
         # 同步到动态
         if publish_status == 2:
