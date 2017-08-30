@@ -153,48 +153,49 @@ class Get_Index_Column(BaseHandler):
 
             for anchor in anchor_list:
                 user = User.objects.filter(id=anchor.user_id).first()
-                if user.id == 1 or user.id == 2:
-                    continue
-                if not user.audio_room_id:
-                    continue
-                # 是否在线 查看心跳
-                import time
-                time = int(time.time())
-                pre_time = time - 3600
-                user_beat = UserHeartBeat.objects.filter(user=user, last_report_time__gte=pre_time).first()
-                if user_beat:
-                    is_online = 1
-                else:
-                    is_online = 0
-
-                audioroom = AudioRoomRecord.objects.get(id=user.audio_room_id)
-                personal_tags = UserTags.get_usertags(user_id=user.id)
-                user_vip = UserVip.objects.filter(user_id=user.id).first()
-                if user_vip:
-                    vip = Vip.objects.filter(id=user_vip.vip_id).first()
-                    dic = {
-                        "audioroom": convert_audioroom(audioroom),
-                        "user": convert_user(user),
-                        "personal_tags": personal_tags,
-                        "vip": convert_vip(vip),
-                        "is_online": is_online
-                    }
-                else:
-                    dic = {
-                        "audioroom": convert_audioroom(audioroom),
-                        "user": convert_user(user),
-                        "is_online": is_online,
-                        "personal_tags": personal_tags
-                    }
-                # 视频认证状态
-                real_video = RealVideoVerify.objects(user_id=user.id, status__ne=2).order_by("-update_time").first()
-                show_video = RealVideoVerify.objects(user_id=user.id, status=1).order_by("-update_time").first()
-                if show_video:
-                    dic["check_real_video"] = show_video.status
-                else:
-                    if real_video:
-                        dic["check_real_video"] = real_video.status
+                if user.disturb_mode != 1:
+                    if user.id == 1 or user.id == 2:
+                        continue
+                    if not user.audio_room_id:
+                        continue
+                    # 是否在线 查看心跳
+                    import time
+                    time = int(time.time())
+                    pre_time = time - 3600
+                    user_beat = UserHeartBeat.objects.filter(user=user, last_report_time__gte=pre_time).first()
+                    if user_beat:
+                        is_online = 1
                     else:
-                        dic["check_real_video"] = 3
-                data.append(dic)
+                        is_online = 0
+
+                    audioroom = AudioRoomRecord.objects.get(id=user.audio_room_id)
+                    personal_tags = UserTags.get_usertags(user_id=user.id)
+                    user_vip = UserVip.objects.filter(user_id=user.id).first()
+                    if user_vip:
+                        vip = Vip.objects.filter(id=user_vip.vip_id).first()
+                        dic = {
+                            "audioroom": convert_audioroom(audioroom),
+                            "user": convert_user(user),
+                            "personal_tags": personal_tags,
+                            "vip": convert_vip(vip),
+                            "is_online": is_online
+                        }
+                    else:
+                        dic = {
+                            "audioroom": convert_audioroom(audioroom),
+                            "user": convert_user(user),
+                            "is_online": is_online,
+                            "personal_tags": personal_tags
+                        }
+                    # 视频认证状态
+                    real_video = RealVideoVerify.objects(user_id=user.id, status__ne=2).order_by("-update_time").first()
+                    show_video = RealVideoVerify.objects(user_id=user.id, status=1).order_by("-update_time").first()
+                    if show_video:
+                        dic["check_real_video"] = show_video.status
+                    else:
+                        if real_video:
+                            dic["check_real_video"] = real_video.status
+                        else:
+                            dic["check_real_video"] = 3
+                    data.append(dic)
         return self.write({"status": "success", "data": data, })

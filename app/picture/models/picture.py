@@ -54,7 +54,7 @@ class PictureInfo(Document):
     like_count = IntField(verbose_name=u'点赞数', default=0)
     view_count = IntField(verbose_name=u'浏览次数', default=0)
     status = IntField(verbose_name=u'状态', default=0)
-    type = IntField(verbose_name=u'相册类型', default=0)   # 1: 普通相册照片  2:精华相册照片
+    type = IntField(verbose_name=u'相册类型')   # 1: 普通相册照片  2:精华相册照片
     show_status = IntField(verbose_name=u'显示状态', default=0)   # 1: 数美通过  2:数美屏蔽  3:数美鉴定中
 
     class Meta:
@@ -110,7 +110,7 @@ class PictureInfo(Document):
 
     @classmethod
     def create_picture(cls, user_id, created_at, picture_url, desc=None, picture_type=None, price=0, is_private=1,
-                       lock_type=0, lock_count=0, location=None, mention=None):
+                       lock_type=0, lock_count=0, location=None, mention=None, type=1):
         try:
             picture = PictureInfo(
                 user_id=user_id,
@@ -131,6 +131,7 @@ class PictureInfo(Document):
                 like_count=0,
                 view_count=0,
                 status=0,
+                type=1,
             )
             if price != 0:
                 picture.picture_url = 'https://hdlive-10048692.image.myqcloud.com/5c8ff8bdc5a3645edcd8d4f9313f29e7'
