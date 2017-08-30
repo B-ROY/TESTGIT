@@ -61,7 +61,7 @@ def shumei_image_detect(pic_url, timeout,user_id,channel,sex,phone):
 
 
 def shumei_text_spam(text, timeout, user_id, channel, nickname,phone,ip):
-
+    return {"code": 1100, "riskLevel": "PASS"}, 1
     channel_desc = channel
     data = {"text": text, "tokenId": str(user_id), "channel": channel_desc, "nickname": nickname, "phone":phone, "ip":ip, }
     playload = {"accessKey": ACCESS_KEY, "type": TEXT_TYPE, "data": data}
@@ -75,5 +75,5 @@ def shumei_text_spam(text, timeout, user_id, channel, nickname,phone,ip):
     encode_result = json.loads(shumei_result)
     #shumei_result = requests.post(shumei_url, data=body, timeout=timeout)
     #encode_result = json.loads(shumei_result.text)
-    return 1, 1
+
     return encode_result, duration

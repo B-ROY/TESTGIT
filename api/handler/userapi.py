@@ -1906,8 +1906,8 @@ class IMOnlineOfflineCallback(BaseHandler):
         if user_id:  # 正式服id从2500开始 测试服id从1开始
             user = User.objects.get(id=user_id)
 
-            if action == "Login":
-                Tools.send_activity_tools(user_id)
+            # if action == "Login":
+            #     Tools.send_activity_tools(user_id)
 
             status = OnlineUser.update_online_user(user_id=user_id, action=action)
             if status:
