@@ -380,8 +380,13 @@ class CreateComment(BaseHandler):
                     video = PrivateVideo.objects.filter(id=user_moment.video_id).first()
                     if int(video.price) != 0:
                         purchase_record = VideoPurchaseRecord.objects.filter(user_id=user.id, video_id=user_moment.video_id).first()
-                        if not purchase_record:
-                            return self.write({'status': "fail", 'error': _(u"只有购买视频才可评论")})
+                        looked_today = None
+                        if user_vip:
+                            now = datetime.datetime.now()
+                            create_time = now.strftime("%Y-%m-%d")
+                            looked_today = VipWatchVideoRecord.objects.filter(user_id=user.id, create_time=create_time, video_id=user_moment.video_id).first()
+                        if not purchase_record and not looked_today:
+                            return self.write({'status': "fail", 'error': _(u"只有vip今日观看或购买视频才可评论")})
 
             black_type = BlackUser.is_black(user.id, user_moment.user_id)
             if black_type == 1 or black_type == 0:

@@ -151,7 +151,7 @@ class PrivateVideoCreate(BaseHandler):
         user_moment.img_list = []
         user_moment.content = desc
         user_moment.create_time = datetime.datetime.now()
-        user_moment.show_status = 1  # 1:展示  2:数美屏蔽  3:举报  4:数美部分屏蔽  5:数美鉴定中
+        user_moment.show_status = 5  # 1:展示  2:数美屏蔽  3:举报  4:数美部分屏蔽  5:数美鉴定中
         user_moment.delete_status = 1  # 1:未删除  2:删除
         user_moment.ispass = 2
         user_moment.type = 3
