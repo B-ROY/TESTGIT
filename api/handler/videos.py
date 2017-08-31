@@ -142,10 +142,6 @@ class PrivateVideoCreate(BaseHandler):
         video.is_valid = 1
         video.save()
 
-        code, message = UserMoment.check_moment_count(user)
-        if code == 2:
-            return self.write({'status': "fail", 'error': _(message)})
-
         user_moment = UserMoment()
         user_moment.user_id = user_id
         user_moment.like_count = 0
@@ -165,6 +161,9 @@ class PrivateVideoCreate(BaseHandler):
         user_moment.price = video.price
         # 同步到动态
         if publish_status == 2:
+            code, message = UserMoment.check_moment_count(user)
+            if code == 2:
+                return self.write({'status': "fail", 'error': _(message)})
             user_moment.is_public = 1
         else:
             user_moment.is_public = 2
