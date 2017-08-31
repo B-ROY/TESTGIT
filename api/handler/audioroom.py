@@ -1169,7 +1169,7 @@ class GetVoiceRoomListV3(BaseHandler):
             3065233,
             3065234,
             3065235,
-
+            3065247
         ]
         for hot_id in hot_ids:
             user = User.objects.get(identity=hot_id)
@@ -1223,7 +1223,6 @@ class GetVoiceRoomListV3(BaseHandler):
                 3080151,
                 3080148,
                 3080146,
-                3065247
             ]
         }
 
