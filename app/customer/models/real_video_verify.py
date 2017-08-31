@@ -27,6 +27,7 @@ class RealVideoVerify(Document):
     update_time = DateTimeField(verbose_name=u"更新时间")
     status = IntField(verbose_name=u"审核状态", choices=VERIFY_STATUS)
     is_valid = IntField(verbose_name=u"是否移除", default=1)  # 1.不移除 2.移除
+    file_id = StringField(verbose_name=u"file_id", max_length=128)
 
     class Meta:
         app_label = "customer"
