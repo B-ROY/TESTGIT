@@ -56,7 +56,7 @@ def update_rank_score():
             look_user_ids = moment_look.user_id_list
             look_count = len(look_user_ids)
 
-        if int(moment.type) == 2 or int(moment.type) == 3:
+        if int(moment.type) == 3:
             ups = like_count*2 + look_count + int(30*(random.random()) + 1)
         else:
             ups = like_count*2 + look_count
