@@ -27,11 +27,13 @@ class RealVideoVerifyUpload(BaseHandler):
     @api_define("real video upload", "/video/upload_verify", [
                     Param("cover_url", True, str, "", "", u"封面地址"),
                     Param("video_url", True, str, "", "", u"视频地址"),
+                    Param("file_id", False, str, "", "", u"file_id"),
                 ], description=u"视频认证上传")
     @login_required
     def get(self):
         cover_url = self.arg("cover_url")
         video_url = self.arg("video_url")
+        file_id = self.arg("file_id", "")
         user_id = self.current_user_id
         video_verify = RealVideoVerify()
         now = datetime.datetime.now()
@@ -43,6 +45,7 @@ class RealVideoVerifyUpload(BaseHandler):
         video_verify.update_time = now
         video_verify.status = 0
         video_verify.is_valid = 1
+        video_verify.file_id = file_id
         video_verify.save()
 
         self.write({"status": "success"})
@@ -93,6 +96,7 @@ class PrivateVideoCreate(BaseHandler):
         Param('publish_status', False, str, "1", "", u'是否发布到动态 1:不发布  2:发布'),
         Param('desc', False, str, "", "", u'描述'),
         Param('price', True, str, "0", "", u'视频价格'),
+        Param('file_id', False, str, "", "", u'file_id'),
     ], description=u'保存私房视频')
     @login_required
     def get(self):
@@ -102,6 +106,7 @@ class PrivateVideoCreate(BaseHandler):
         video_url = self.arg('video_url')
         publish_status = self.arg_int('publish_status', 1)
         desc = self.arg('desc', "")
+        file_id = self.arg('file_id', "")
         price = self.arg_int('price', 0)
 
         real_video_auth = RealVideoVerify.get_status(user_id)
@@ -140,6 +145,7 @@ class PrivateVideoCreate(BaseHandler):
         video.delete_status = 1
         video.show_status = 3
         video.is_valid = 1
+        video.file_id = file_id
         video.save()
 
         user_moment = UserMoment()
