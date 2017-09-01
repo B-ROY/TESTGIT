@@ -251,7 +251,9 @@ class MomentListV3(BaseHandler):
         user_id = self.current_user_id
 
         page_count = self.arg_int('page_count')
-
+        ua = self.request.headers.get('User-Agent')
+        uas = ua.split(";")
+        app_name = uas[0]
         momentsid =["599d16092040e46ae1243870","599d3bb92040e438a3f9b4fc","599d193c2040e46ae2243880",
                     "599d05672040e46ae224386e","599d1b7b2040e46ae324388c","599d1eda2040e46ae324389b",
                     "599d2e402040e438a1f9b4cc","599d30e22040e438a2f9b4cf","599d33b72040e438a1f9b4d0",
@@ -260,6 +262,31 @@ class MomentListV3(BaseHandler):
                     "599d4a6b2040e438a2f9b535","599d52342040e438a2f9b542","59968acb18ce427fa73c9d3b",
                     "5996a20b18ce427fa73c9d54","5996a73d18ce427fa83c9d96","5996b9e318ce427fa83c9db5",
                     "599d45c32040e438a1f9b516"]
+        if app_name == "yeseyueai":
+            momentsid =['599e40402040e438a3f9b552',
+                        '599e42242040e438a3f9b55a',
+                        '599e446d2040e438a3f9b567',
+                        '599e4ac32040e43f0ef9b4dc',
+                        '599e678b2040e438a3f9b576',
+                        '599e69342040e438a3f9b57b',
+                        '599e6d992040e438a3f9b586',
+                        '599e70ef2040e438a3f9b589',
+                        '599e76492040e438a3f9b596',
+                        '599e789e2040e43f0ef9b518',
+                        '59a77ebb2040e46be74fd1ea',
+                        '59a780c42040e46be84fd207',
+                        '59a78c3f2040e46be74fd1fa',
+                        '59a7a4972040e46be74fd201',
+                        '59a7ab702040e46be74fd20e',
+                        '59a7b2f42040e46be84fd23f',
+                        '59a7be902040e423224fd231',
+                        '59a7bff02040e46be74fd230',
+                        '59a7a9822040e423224fd1fd',
+                        '59a7b0f72040e46be84fd233',
+                        '59a7b3e92040e46be84fd245',
+                        '59a7baa12040e423224fd222',
+                        '59a7bdce2040e46be74fd223',
+                        '59a7d7202040e46be84fd26a']
         # moments = UserMoment.objects.filter(show_status__in=[1, 3, 4], delete_status=1, is_public=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
         moments = UserMoment.objects.filter(id__in=momentsid).order_by("-create_time")[(page - 1) * page_count:page * page_count]
         print "=========",moments.count()

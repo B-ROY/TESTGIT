@@ -1163,6 +1163,9 @@ class GetVoiceRoomListV3(BaseHandler):
         hot_list = []
         video_list = []
 
+        ua = self.request.headers.get('User-Agent')
+        uas = ua.split(";")
+        app_name = uas[0]
         hot_ids = [
             3065228,
             3065232,
@@ -1171,6 +1174,60 @@ class GetVoiceRoomListV3(BaseHandler):
             3065235,
             3065247
         ]
+
+        ids = {
+            1: [
+                3065237,
+                3065238,
+                3065239,
+                3065240,
+                3065241,
+                3065243,
+                3065246,
+                3065244,
+                3065242,
+                3065248,
+                3102710,
+                3080151,
+                3080148,
+                3080146,
+            ]
+        }
+
+        if app_name == "yeseyueai":
+            hot_ids = [
+                3065249,
+                3065250,
+                3065251,
+                3065252,
+                3065253,
+                3065254,
+                3065255,
+                3065256
+            ]
+            ids = {
+                1:[
+                    3065257,
+                    3065258,
+                    3065264,
+                    3065265,
+                    3065266,
+                    3065268,
+                    3065269,
+                    3065272,
+                    3065274,
+                    3065276,
+                    3065277,
+                    3065270,
+                    3065271,
+                    3065273,
+                    3065274,
+                    3065275,
+                    3065278
+
+                ]
+            }
+
         for hot_id in hot_ids:
             user = User.objects.get(identity=hot_id)
             personal_tags = UserTags.get_usertags(user_id=user.id)
@@ -1207,24 +1264,6 @@ class GetVoiceRoomListV3(BaseHandler):
             hot_list.append(dic)
 
 
-        ids = {
-            1: [
-                3065237,
-                3065238,
-                3065239,
-                3065240,
-                3065241,
-                3065243,
-                3065246,
-                3065244,
-                3065242,
-                3065248,
-                3102710,
-                3080151,
-                3080148,
-                3080146,
-            ]
-        }
 
         users = User.objects.filter(identity__in=ids[1])
         for user in users:
