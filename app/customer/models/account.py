@@ -191,6 +191,7 @@ class Account(Document):
                 vip = Vip.objects.filter(id=user_vip.vip_id).first()
                 if vip.vip_type == 2:
                     diamond_bonus = order.rule.free_diamon
+                    order.update(set__free_diamon=diamond_bonus)
 
             account = Account.objects.get(user=user)
             account.diamond_trade_in(order.diamon, diamond_bonus, u"充值", TradeDiamondRecord.TradeTypeExchange)
@@ -600,6 +601,8 @@ class TradeBalanceOrder(Document):
     user = GenericReferenceField("User", verbose_name=u'用户')
     rule = GenericReferenceField("TradeBalanceRule", verbose_name=u'交易规则')
     diamon = IntField(verbose_name=u'交易引力币')
+    free_diamon = IntField(verbose_name=u'赠送钻石')
+
     money = IntField(verbose_name=u'交易金额')
     desc = StringField(verbose_name=u"描述", max_length=20, default='')
     user_agent = StringField(verbose_name=u"ua", max_length=128, default='')
