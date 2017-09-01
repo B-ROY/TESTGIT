@@ -37,7 +37,7 @@ class ChatMessageCreate(BaseHandler):
         if type == 1:
             if content:
                 # 文本内容鉴黄
-                ret, duration = shumei_text_spam(text=content, timeout=1, user_id=user.id, channel="DYNAMIC_COMMENT", nickname=user.nickname,
+                ret, duration = shumei_text_spam(text=content, timeout=1, user_id=user.id, channel="MESSAGE", nickname=user.nickname,
                                                  phone=user.phone, ip=self.user_ip)
                 print ret
                 is_pass = 0
