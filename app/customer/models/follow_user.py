@@ -17,6 +17,7 @@ class FollowUser(Document):
     from_id = IntField(verbose_name=u'用户id', required=True)
     to_id = IntField(verbose_name=u'关注用户_id', required=True)
     create_time = DateTimeField(verbose_name=u"创建时间", default=datetime.datetime.now())
+    unique_code = StringField(verbose_name=u'唯一性标识', unique=True)  # unique=True
 
 
     @classmethod
@@ -47,6 +48,7 @@ class FollowUser(Document):
             follow_user.from_id = from_user.id
             follow_user.to_id = to_user.id
             follow_user.create_time = datetime.datetime.now()
+            follow_user.unique_code = str(from_user.id) + "_" + str(to_user.id)
             follow_user.save()
 
             record = FollowUserRecord()
@@ -72,6 +74,7 @@ class FollowUser(Document):
                 follow_user_new.from_id = to_user.id
                 follow_user_new.to_id = from_user.id
                 follow_user.create_time = datetime.datetime.now()
+                follow_user.unique_code = str(to_user.id) + "_" + str(from_user.id)
                 follow_user_new.save()
 
         rever_friend_user = FriendUser.objects.filter(to_id=from_user.id, from_id=to_user.id).first()
