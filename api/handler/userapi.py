@@ -1071,7 +1071,6 @@ class AUserInfo(BaseHandler):
         dic = {}
         dic = convert_user(user)
         dic["diamond"] = Account.objects.get(user=user).diamond
-        dic["ticket"] = TicketAccount.objects.get(user=user).total_ticket
         dic["picture_count"] = PictureInfo.objects.filter(user_id=user.id, status=0).count()
         dic["audio_status"] = AudioRoomRecord.get_room_status(user_id=user.id)
         dic["check_real_name"] = RealNameVerify.check_user_verify(user_id=user.id)

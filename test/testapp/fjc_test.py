@@ -287,6 +287,14 @@ def fix_friend():
                 u.save()
 
 
+def follow_unique():
+    from app.customer.models.follow_user import FollowUser
+    follower_users = FollowUser.objects.all()
+    for follow in follower_users:
+        unique_code = str(follow.from_id) + "_" + str(follow.to_id)
+        follow.update(set__unique_code=unique_code)
+
+
 
 
 

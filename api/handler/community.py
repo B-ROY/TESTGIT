@@ -252,7 +252,8 @@ class MomentListV3(BaseHandler):
 
         page_count = self.arg_int('page_count')
 
-        moments = UserMoment.objects.filter(show_status__in=[1, 3, 4], delete_status=1, is_public=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
+        # moments = UserMoment.objects.filter(show_status__in=[1, 3, 4], delete_status=1, is_public=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
+        moments = UserMoment.get_index_moments(page, page_count)
         if moments:
             for moment in moments:
                 if moment:

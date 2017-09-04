@@ -89,10 +89,11 @@ class Tools(Document):
                     activity_id = str(activity.id)
         else:
             #  非主播
-            status, activity = cls.check_receive(3, now, user_id)
-            if status == 3:
-                receive_data = eval(activity.tools_data)
-                activity_id = str(activity.id)
+            if int(user.gender) == 1:
+                status, activity = cls.check_receive(3, now, user_id)
+                if status == 3:
+                    receive_data = eval(activity.tools_data)
+                    activity_id = str(activity.id)
 
         if receive_data:
             for key, value in receive_data.items():

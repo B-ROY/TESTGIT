@@ -14,8 +14,10 @@ class UserRedis():
     __KEY_ANCHOR = "index_anchor"
 
     __KEY_RECOMMEND_ID_V3 = "user_recommed_id_v3"
+    __KEY_RECOMMEND_ID_ALL = "user_recommed_id_all"
     __KEY_RECOMMEND_V3 = "user_recommed_v3"
     __KEY_ANCHOR_ID_V3 = "index_anchor_id_v3"
+    __KEY_ANCHOR_ID_ALL = "index_anchor_id_all"
     __KEY_ANCHOR_V3 = "index_anchor_v3"
 
     @classmethod
@@ -105,6 +107,10 @@ class UserRedis():
         RQueueClient.getInstance().redis.rpush(cls.__KEY_RECOMMEND_ID_V3,*userids)
 
     @classmethod
+    def add_user_recommed_id_all(cls,userids):
+        RQueueClient.getInstance().redis.rpush(cls.__KEY_RECOMMEND_ID_ALL,*userids)
+
+    @classmethod
     def add_user_recommed_v3(cls,usermap):
         RQueueClient.getInstance().redis.set(cls.__KEY_RECOMMEND_V3,usermap)
 
@@ -120,12 +126,37 @@ class UserRedis():
     def delete_user_recommed_id_v3(cls):
         RQueueClient.getInstance().redis.delete(cls.__KEY_RECOMMEND_ID_V3)
     @classmethod
+    def delete_user_recommed_id_all(cls):
+        RQueueClient.getInstance().redis.delete(cls.__KEY_RECOMMEND_ID_ALL)
+    @classmethod
     def delete_user_recommed_v3(cls):
         RQueueClient.getInstance().redis.delete(cls.__KEY_RECOMMEND_V3)
+
+    # // added by biwei
+    @classmethod
+    def delete_user_recommed_id_v3_one(cls, _id):
+        RQueueClient.getInstance().redis.lrem(cls.__KEY_RECOMMEND_ID_V3, 1, _id)
+        RQueueClient.getInstance().redis.lrem(cls.__KEY_ANCHOR_ID_V3, _id)
+        pass
+    @classmethod
+    def delete_index_anchor_id_v3_one(cls, _id):
+        RQueueClient.getInstance().redis.lrem(cls.__KEY_ANCHOR_ID_V3, _id)
+    @classmethod
+    def add_user_recommed_id_v3_one(cls, _id):
+        #
+        hot_list = cls.get_recommed_list_v3()
+        anchor_list = cls.get_index_anchor_list_v3(0,-1)
+        if _id not in hot_list and _id not in anchor_list:
+            RQueueClient.getInstance().redis.rpush(cls.__KEY_ANCHOR_ID_V3, _id)
+    # //
 
     @classmethod
     def add_index_id_v3(cls,userids):
         RQueueClient.getInstance().redis.rpush(cls.__KEY_ANCHOR_ID_V3,*userids)
+
+    @classmethod
+    def add_index_id_all(cls,userids):
+        RQueueClient.getInstance().redis.rpush(cls.__KEY_ANCHOR_ID_ALL,*userids)
 
     @classmethod
     def add_index_anchor_v3(cls,usermap):
@@ -134,6 +165,9 @@ class UserRedis():
     @classmethod
     def delete_index_anchor_id_v3(cls):
         RQueueClient.getInstance().redis.delete(cls.__KEY_ANCHOR_ID_V3)
+    @classmethod
+    def delete_index_anchor_id_all(cls):
+        RQueueClient.getInstance().redis.delete(cls.__KEY_ANCHOR_ID_ALL)
     @classmethod
     def delete_index_anchor_v3(cls):
         RQueueClient.getInstance().redis.delete(cls.__KEY_ANCHOR_V3)
