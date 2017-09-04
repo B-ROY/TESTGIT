@@ -78,7 +78,7 @@ class User(Document):
 
     ONLINE_STATUS = [
         (1, u'在线'),
-        (2, u'离线')
+        (2, u'离线'),
     ]
 
 
@@ -171,7 +171,9 @@ class User(Document):
 
     #上次登录设备
     last_guid = StringField(verbose_name=u"上次登录guid")
+    audio_status = IntField(verbose_name=u"通话状态") # 1.正在通话中 2. 空闲中
 
+    last_room_id = StringField(verbose_name=u"上次锁在房间")
 
     class Meta:
         app_label = "customer"
