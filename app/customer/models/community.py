@@ -243,10 +243,7 @@ class UserMoment(Document):
 
     @classmethod
     def get_index_moments(cls, page, page_count):
-        now = datetime.datetime.now()
-        start_time = now - datetime.timedelta(minutes=60)
-        moments_p1 = cls.objects.filter(show_status__in=[1, 3, 4], delete_status=1, is_public=1,
-                                        create_time__gte=start_time, create_time__lte=now).order_by("-create_time")[(page - 1) * page_count:page * page_count]
+        moments_p1 = cls.objects.filter(show_status__in=[1, 3, 4], delete_status=1, is_public=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
 
         ids = []
         moments_list = []
