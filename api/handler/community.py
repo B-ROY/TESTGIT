@@ -262,7 +262,7 @@ class MomentListV3(BaseHandler):
                     "599d4a6b2040e438a2f9b535","599d52342040e438a2f9b542","59968acb18ce427fa73c9d3b",
                     "5996a20b18ce427fa73c9d54","5996a73d18ce427fa83c9d96","5996b9e318ce427fa83c9db5",
                     "599d45c32040e438a1f9b516"]
-        if app_name == "yeseyueai":
+        if app_name == "tianmireyue":
             momentsid =['599e40402040e438a3f9b552',
                         '599e42242040e438a3f9b55a',
                         '599e446d2040e438a3f9b567',

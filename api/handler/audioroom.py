@@ -1194,7 +1194,7 @@ class GetVoiceRoomListV3(BaseHandler):
             ]
         }
 
-        if app_name == "yeseyueai":
+        if app_name == "tianmireyue":
             hot_ids = [
                 3065249,
                 3065250,
