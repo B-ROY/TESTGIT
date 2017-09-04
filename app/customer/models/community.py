@@ -267,7 +267,7 @@ class UserMoment(Document):
 
                 return moments_list
         else:
-            score_moments = cls.objects.filter(show_status__in=[1, 3, 4], delete_status=1, is_public=1, id__nin=ids).order_by("-rank_score")[(rest_count + (page - 1) * page_count):page * page_count]
+            score_moments = cls.objects.filter(show_status__in=[1, 3, 4], delete_status=1, is_public=1, id__nin=ids).order_by("-rank_score")[((page - 1) * page_count):page * page_count]
             return score_moments
 
 class UserComment(Document):
