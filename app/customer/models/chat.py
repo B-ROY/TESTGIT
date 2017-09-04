@@ -7,6 +7,8 @@ from wi_model_util.imodel import *
 from mongoengine import *
 from base.settings import CHATPAMONGO
 from app.util.messageque.msgsender import MessageSender
+from app.customer.models.user import User
+from app.util.shumeitools.shumeitools import *
 
 connect(CHATPAMONGO.db, host=CHATPAMONGO.host, port=CHATPAMONGO.port, username=CHATPAMONGO.username,
         password=CHATPAMONGO.password)
@@ -23,11 +25,8 @@ class ChatMessage(Document):
     show_status = IntField(verbose_name=u"图片,音频 鉴定状态")  # 1:通过  2:屏蔽  3:鉴定中
 
     @classmethod
-    def create_chat_message(cls, from_user_id, to_user_id, type, content, conversation_id, resource_url):
+    def create_chat_message(cls, from_user_id, to_user_id, type, content, conversation_id, resource_url, user_ip):
 
-        # if not conversation_id:
-        #     con = UserConversation.create_conversation_message(from_user_id, to_user_id, 2, 2)
-        #     conversation_id = str(con.id)
 
         obj_ = cls()
         obj_.from_user_id = from_user_id
@@ -41,7 +40,30 @@ class ChatMessage(Document):
             obj_.show_status = 3
         else:
             obj_.show_status = 1
-        obj_.save()
+
+        if int(type) == 1:
+            # 文本内容鉴黄
+            user = User.objects.filter(id=from_user_id).first()
+            ret, duration = shumei_text_spam(text=content, timeout=1, user_id=from_user_id, channel="MESSAGE", nickname=user.nickname,
+                                             phone=user.phone, ip=user_ip)
+            is_pass = 0
+            if ret["code"] == 1100:
+                if ret["riskLevel"] == "PASS":
+                    is_pass = 1
+                    obj_.show_status = 1
+                if ret["riskLevel"] == "REJECT":
+                    is_pass = 0
+                    obj_.show_status = 2
+                if ret["riskLevel"] == "REVIEW":
+                    # todo +人工审核逻辑
+                    is_pass = 1
+                    obj_.show_status = 1
+
+                obj_.save()
+
+            if not is_pass:
+                message = u"经系统检测,您的内容涉及违规因素,请重新编辑"
+                return 2, None, None, message
 
         # 改变会话状态:
         status = 0
@@ -66,7 +88,7 @@ class ChatMessage(Document):
             #  图片鉴定
             MessageSender.send_picture_detect(pic_url=resource_url, user_id=0, pic_channel=0, source=4, obj_id=str(obj_.id))
 
-        return status, create_time, conversation_id
+        return status, create_time, conversation_id, ""
 
 
 class UserConversation(Document):
