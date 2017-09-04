@@ -32,6 +32,9 @@ from app.customer.models.rank import *
 from redis_model.redis_client import *
 from app.picture.models.picture import PictureInfo
 from app.customer.models.real_video_verify import RealVideoVerify
+from app_redis.user.models.user import *
+
+
 
 appID = settings.Agora_AppId
 appCertificate = settings.Agora_appCertificate
@@ -535,7 +538,8 @@ class AudioRoomAnswer(BaseHandler):
         join_id = self.arg("join_id")
         start_time = datetime.datetime.now()
         status = AudioRoomRecord.start_roomrecord(user_id=user_id, join_id=join_id, start_time=start_time)
-
+        # 接听电话
+        UserRedis.delete_user_recommed_id_v3_one(user_id)
         if status:
             self.write({"status": "success", })
         else:
@@ -911,7 +915,8 @@ class GetVoiceRoomListV3(BaseHandler):
             recommed_data = eval(UserRedis.get_recommed_v3())
             try:
                 for recommed in recommed_list:
-                    hot_list.append(json.loads(recommed_data[recommed]))
+                    if recommed in recommed_data:
+                        hot_list.append(json.loads(recommed_data[recommed]))
             except Exception,e:
                 print e
         else:
@@ -938,16 +943,48 @@ class GetNewAnchorList(BaseHandler):
     ], description=u"新人驾到")
     def get(self):
 
-        from app.customer.models.rank import NewAnchorRank
+        # from app.customer.models.rank import NewAnchorRank
+        # page = self.arg_int('page')
+        # page_count = self.arg_int('page_count')
+        #
+        # anchor_list = NewAnchorRank.objects.all()[(page - 1) * page_count:page * page_count]
+        # data = []
+        # for anchor in anchor_list:
+        #     user = User.objects.filter(id=anchor.user_id).first()
+        #     if user.id == 1 or user.id == 2:
+        #         continue
+        #     if not user.audio_room_id:
+        #         continue
+        #     audioroom = AudioRoomRecord.objects.get(id=user.audio_room_id)
+        #     personal_tags = UserTags.get_usertags(user_id=user.id)
+        #     user_vip = UserVip.objects.filter(user_id=user.id).first()
+        #     if user_vip:
+        #         vip = Vip.objects.filter(id=user_vip.vip_id).first()
+        #         dic = {
+        #             "audioroom": convert_audioroom(audioroom),
+        #             "user": convert_user(user),
+        #             "personal_tags": personal_tags,
+        #             "vip": convert_vip(vip)
+        #         }
+        #     else:
+        #         # 测试
+        #         # vip = Vip.objects.filter(id="5928e5ee2040e4079fff2322").first()
+        #         dic = {
+        #             "audioroom": convert_audioroom(audioroom),
+        #             "user": convert_user(user),
+        #             "personal_tags": personal_tags
+        #         }
+        #     data.append(dic)
         page = self.arg_int('page')
         page_count = self.arg_int('page_count')
+        n = datetime.datetime.now() + datetime.timedelta(days=1)
+        t = datetime.datetime(year=n.year, month=n.month, day=n.day)
+        seven_days_ago = t - datetime.timedelta(days=60)
 
-        anchor_list = NewAnchorRank.objects.all()[(page - 1) * page_count:page * page_count]
+        # 返回新注册
+        users = User.objects.filter(gender=2).order_by("-created_at")[page*page_count:(page+1)*page_count]
         data = []
-        for anchor in anchor_list:
-            user = User.objects.filter(id=anchor.user_id).first()
-            if user.id == 1 or user.id == 2:
-                continue
+        for user in users:
             if not user.audio_room_id:
                 continue
             audioroom = AudioRoomRecord.objects.get(id=user.audio_room_id)
@@ -962,15 +999,14 @@ class GetNewAnchorList(BaseHandler):
                     "vip": convert_vip(vip)
                 }
             else:
-                # 测试
-                # vip = Vip.objects.filter(id="5928e5ee2040e4079fff2322").first()
                 dic = {
                     "audioroom": convert_audioroom(audioroom),
                     "user": convert_user(user),
                     "personal_tags": personal_tags
                 }
             data.append(dic)
-        self.write({"status": "success", "data": json.data, })
+
+        self.write({"status": "success", "data": data, })
 
 
 @handler_define

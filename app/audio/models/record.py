@@ -230,6 +230,7 @@ class AudioRoomRecord(Document):
             data['spend_exp'] = roomrecord.gift_value
             data['new_id'] = new_id
             RoomRedis.close_room(room_id)
+            UserRedis.delete_user_recommed_id_v3_one(roomrecord.user_id)
         except Exception,e:
             logging.error("finish room record error:{0}".format(e))
             return False
@@ -273,7 +274,8 @@ class AudioRoomRecord(Document):
                     if join_status == 3:
                         AudioRoomRecord.set_room_status(user_id=join_id, status=1)
                 roomrecord.save()
-
+                RoomRedis.close_room(room_id)
+                UserRedis.delete_user_recommed_id_v3_one(roomrecord.user_id)
         except Exception,e:
             logging.error("be finished roomrecord:{0}".format(e))
             return False

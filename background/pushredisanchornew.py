@@ -26,13 +26,14 @@ from app.customer.models.vip import Vip, UserVip
 from app_redis.user.models.user import UserRedis
 from app.audio.models import AudioRoomRecord
 import json
+import random
 
 def pushredis(self):
     now_time = int(time.time())
     #pre_time = now_time - 120
     pre_time = now_time - 3600
     # heartbeats = UserHeartBeat.objects.filter(last_report_time__gte=pre_time)
-    stuilabel ="598d7a2418ce423b1222d645"
+    stuilabel ="598d7a2418ce423b1222d645" #首推标签id
     usersss = User.objects.filter(is_video_auth = 1,is_block__ne =1).order_by("is_vip")
     stuianchors =[]
     for u in usersss:
@@ -58,6 +59,9 @@ def pushredis(self):
                 stuilist.insert(0,stui)
             else:
                 stuilist.append(stui)
+    # hot 和 stulist
+    random.shuffle(hots)
+    random.shuffle(stuilist)
 
     hots = hots + stuilist
     for h in hots:
@@ -174,6 +178,14 @@ def push_index_anchor(self):
                     valist5.insert(0,anchor)
                 else:
                     valist5.append(anchor)
+
+    # 将主播在各项内随机
+    random.shuffle(valist1)
+    random.shuffle(valist2)
+    random.shuffle(valist3)
+    random.shuffle(valist4)
+    random.shuffle(valist5)
+
     for gaoxing in valist1:
         if gaoxing not in users and gaoxing.disturb_mode ==0 and gaoxing.audio_room_id !="":
             users.append(gaoxing)
