@@ -917,10 +917,12 @@ class GetVoiceRoomListV3(BaseHandler):
                 for recommed in recommed_list:
                     if recommed in recommed_data:
                         hot_list.append(json.loads(recommed_data[recommed]))
+
             except Exception,e:
                 print e
         else:
             print "空的推荐列表"
+        print recommed_list
         anchor_list = UserRedis.get_index_anchor_list_v3(0,-1)
         if len(anchor_list) > 0:
             anchor_data = eval(UserRedis.get_index_anchor_v3())
