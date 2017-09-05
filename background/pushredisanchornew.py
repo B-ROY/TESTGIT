@@ -70,6 +70,9 @@ def pushredis(self):
 
 
     for user in hots:
+        if user.id in users:
+            continue
+        users.append(user.id)
         personal_tags = UserTags.get_usertags(user_id=user.id)
         if not personal_tags:
             personal_tags = []
