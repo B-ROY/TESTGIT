@@ -1555,6 +1555,8 @@ class UpdateUserInfo(BaseHandler):
 
         if self.has_arg("gender"):
             user.gender = self.arg_int("gender")
+            if user.gender == 1:
+                Tools.send_activity_tools(int(user.id))
             is_change = True
 
         if self.has_arg("height"):
