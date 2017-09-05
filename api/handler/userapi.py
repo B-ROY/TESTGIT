@@ -1885,6 +1885,8 @@ class UpdateLocation(BaseHandler):
         country = self.arg("country", "")
         province = self.arg("province", "")
         city = self.arg("city", "")
+        if not city:
+            self.write({"status": "success", })
         district = self.arg("district", "")
         longitude = float(self.arg("longitude", "0.00"))
         latitude = float(self.arg("latitude", "0.00"))
