@@ -155,27 +155,22 @@ class UserRedis():
         hot_list = cls.get_recommed_list_v3()
         anchor_list = cls.get_index_anchor_list_v3(0,-1)
 
-        print _id
-        print type(_id)
-        print hot_list_all
-        print anchor_list_all
-        print hot_list
         if str(_id) in hot_list_all and str(_id) not in hot_list:
             index = hot_list_all.index(str(_id))
             print index
             if index == 0:
-                a=RQueueClient.getInstance().redis.lpush(cls.__KEY_RECOMMEND_ID_V3, _id)
+                RQueueClient.getInstance().redis.lpush(cls.__KEY_RECOMMEND_ID_V3, _id)
             else:
                 v = hot_list_all[index-1]
-                a=RQueueClient.getInstance().redis.linsert(cls.__KEY_RECOMMEND_ID_V3, "after", v, _id)
-            print a
+                RQueueClient.getInstance().redis.linsert(cls.__KEY_RECOMMEND_ID_V3, "after", v, _id)
+
         elif str(_id) in anchor_list_all and str(_id) not in anchor_list:
             index = anchor_list_all.index(str(_id))
             if index == 0:
-                a = RQueueClient.getInstance().redis.lpush(cls.__KEY_ANCHOR_ID_V3, _id)
+                RQueueClient.getInstance().redis.lpush(cls.__KEY_ANCHOR_ID_V3, _id)
             else:
                 v = anchor_list_all[index-1]
-                a = RQueueClient.getInstance().redis.linsert(cls.__KEY_ANCHOR_ID_V3, "after", v, _id)
+                RQueueClient.getInstance().redis.linsert(cls.__KEY_ANCHOR_ID_V3, "after", v, _id)
 
     # //
 
