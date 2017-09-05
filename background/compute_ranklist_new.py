@@ -26,9 +26,11 @@ def compute_7_rank_list_first():
     WealthRankNew.objects.filter(type=1).delete()
 
     now_time = datetime.datetime.now()
+    now_date = datetime.datetime(now_time.year, now_time.month, now_time.day)
+    start_date = now_date - datetime.timedelta(days=7)
+    start_time = start_date.strftime("%Y-%m-%d 00:00:00")
+    end_time = start_date.strftime('%Y-%m-%d 23:59:59')
 
-    end_time = datetime.datetime(now_time.year, now_time.month, now_time.day, 3,0,0)
-    start_time = end_time - datetime.timedelta(days=7)
     # 现在只是送礼的时候增加魅力
     charm_record_list = TradeTicketRecord.objects.filter(created_time__gte=start_time, created_time__lt=end_time,
                                                          trade_type=TradeTicketRecord.TradeTypeGift)
@@ -79,9 +81,13 @@ def compute_7_rank_list_first():
 
 
 def compute_7_rank_list_delta():
+
     now_time = datetime.datetime.now()
-    end_time = datetime.datetime(now_time.year, now_time.month, now_time.day, 3,0,0)
-    start_time = end_time - datetime.timedelta(days=7)
+    now_date = datetime.datetime(now_time.year, now_time.month, now_time.day)
+    start_date = now_date - datetime.timedelta(days=7)
+    start_time = start_date.strftime("%Y-%m-%d 00:00:00")
+    end_time = start_date.strftime('%Y-%m-%d 23:59:59')
+
     # 现在只是送礼的时候增加魅力
     charm_record_list = TradeTicketRecord.objects.filter(created_time__gte=start_time, created_time__lt=end_time,
                                                          trade_type=TradeTicketRecord.TradeTypeGift)
@@ -170,8 +176,12 @@ def compute_1_rank_list_first():
 
     now_time = datetime.datetime.now()
 
-    end_time = datetime.datetime(now_time.year, now_time.month, now_time.day, 3,0,0)
-    start_time = end_time - datetime.timedelta(days=1)
+    now_date = datetime.datetime(now_time.year, now_time.month, now_time.day)
+    start_date = now_date - datetime.timedelta(days=1)
+
+    start_time = start_date.strftime("%Y-%m-%d 00:00:00")
+    end_time = start_date.strftime('%Y-%m-%d 23:59:59')
+
     # 现在只是送礼的时候增加魅力
     charm_record_list = TradeTicketRecord.objects.filter(created_time__gte=start_time, created_time__lt=end_time,
                                                          trade_type=TradeTicketRecord.TradeTypeGift)
@@ -222,9 +232,13 @@ def compute_1_rank_list_first():
 
 
 def compute_1_rank_list_delta():
+
     now_time = datetime.datetime.now()
-    end_time = datetime.datetime(now_time.year, now_time.month, now_time.day, 3,0,0)
-    start_time = end_time - datetime.timedelta(days=1)
+    now_date = datetime.datetime(now_time.year, now_time.month, now_time.day)
+    start_date = now_date - datetime.timedelta(days=1)
+    start_time = start_date.strftime("%Y-%m-%d 00:00:00")
+    end_time = start_date.strftime('%Y-%m-%d 23:59:59')
+
     # 现在只是送礼的时候增加魅力
     charm_record_list = TradeTicketRecord.objects.filter(created_time__gte=start_time, created_time__lt=end_time,
                                                          trade_type=TradeTicketRecord.TradeTypeGift)

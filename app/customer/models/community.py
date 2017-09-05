@@ -243,12 +243,7 @@ class UserMoment(Document):
 
     @classmethod
     def get_index_moments(cls, page, page_count):
-        now = datetime.datetime.now()
-        start_time = now - datetime.timedelta(minutes=60)
-        moments_p1 = cls.objects.filter(show_status__in=[1, 3, 4], delete_status=1, is_public=1,
-                                        create_time__gte=start_time, create_time__lte=now).order_by("-create_time")[(page - 1) * page_count:page * page_count]
-        new_count = len(moments_p1)
-        rest_count = page_count - new_count
+        moments_p1 = cls.objects.filter(show_status__in=[1, 3, 4], delete_status=1, is_public=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
 
         ids = []
         moments_list = []
@@ -258,16 +253,9 @@ class UserMoment(Document):
                 moments_list.append(moment)
 
         if int(page == 1):
-            if new_count >= int(page_count):
-                return moments_p1
-            else:
-                score_moments = cls.objects.filter(show_status__in=[1, 3, 4], delete_status=1, is_public=1, id__nin=ids).order_by("-rank_score")[0:rest_count]
-                for score_moment in score_moments:
-                    moments_list.append(score_moment)
-
-                return moments_list
+            return moments_p1
         else:
-            score_moments = cls.objects.filter(show_status__in=[1, 3, 4], delete_status=1, is_public=1, id__nin=ids).order_by("-rank_score")[((page - 1) * page_count):page * page_count]
+            score_moments = cls.objects.filter(show_status__in=[1, 3, 4], delete_status=1, is_public=1, id__nin=ids).order_by("-rank_score")[((page - 2) * page_count):page * page_count]
             return score_moments
 
 class UserComment(Document):

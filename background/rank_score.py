@@ -38,12 +38,12 @@ def hot(ups, downs, date):
     order = log(max(abs(s), 1), 10)
     sign = 1 if s > 0 else -1 if s < 0 else 0
     seconds = epoch_seconds(date) - 1134028003
-    return round(order + sign * seconds / 45000, 7)
+    return round(order + sign * seconds / 450000, 7)
 
 
 def update_rank_score():
     now = datetime.datetime.now()
-    start_date = datetime.datetime(now.year, now.month, now.day) - datetime.timedelta(days=7)
+    start_date = datetime.datetime(now.year, now.month, now.day) - datetime.timedelta(days=10)
     moments = UserMoment.objects.filter(create_time__gte=start_date, create_time__lte=now)
     if not moments:
         return

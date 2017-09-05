@@ -49,7 +49,7 @@ class ThridPardLogin(BaseHandler):
         if source == User.SOURCE_PHONE:
             userinfo={}
             userinfo["nickname"] = RegisterInfo.make_nickname()
-            gender = userinfo.get("sex", 1)
+            gender = userinfo.get("sex", 2)
             if gender == 1:
                 img_url = "https://heydopic-10048692.image.myqcloud.com/icon_1501468004"
             else:
@@ -69,7 +69,7 @@ class ThridPardLogin(BaseHandler):
         elif source == User.SOURCE_WEIXIN or source == User.SOURCE_WEIXIN or source == User.SOURCE_QQ or source == User.SOURCE_WEIBO:
             #创建新用户
             # openid, source, nickname, platform=0, image="", channel=""
-            gender = userinfo.get("sex", 1)
+            gender = userinfo.get("sex", 2)
             if gender==1:
                 img_url ="https://heydopic-10048692.image.myqcloud.com/icon_1501468004"
             else:
@@ -86,7 +86,7 @@ class ThridPardLogin(BaseHandler):
                 guid = guid
             )
         else:
-            gender = userinfo.get("sex", 1)
+            gender = userinfo.get("sex", 2)
             if gender == 1:
                 img_url = userinfo.get("headimgurl", "https://heydopic-10048692.image.myqcloud.com/icon_1501468004")
             else:
@@ -109,7 +109,7 @@ class ThridPardLogin(BaseHandler):
     def create_user2(self, openid, access_token, phone, userinfo, source, channel, site_openid=''):
         #获取改用户的guid
         guid = self.arg("guid")
-        gender = userinfo.get("sex", 1)
+        gender = userinfo.get("sex", 2)
         if gender == 1:
             img_url = "https://heydopic-10048692.image.myqcloud.com/icon_1501468004"
         else:
@@ -1555,6 +1555,8 @@ class UpdateUserInfo(BaseHandler):
 
         if self.has_arg("gender"):
             user.gender = self.arg_int("gender")
+            if user.gender == 1:
+                Tools.send_activity_tools(int(user.id))
             is_change = True
 
         if self.has_arg("height"):

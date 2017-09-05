@@ -119,6 +119,10 @@ class UserRedis():
         return  RQueueClient.getInstance().redis.lrange(cls.__KEY_RECOMMEND_ID_V3,0,-1)
 
     @classmethod
+    def get_recommed_list_all(cls):
+        return RQueueClient.getInstance().redis.lrange(cls.__KEY_RECOMMEND_ID_ALL, 0, -1)
+
+    @classmethod
     def get_recommed_v3(cls):
         return RQueueClient.getInstance().redis.get(cls.__KEY_RECOMMEND_V3)
 
@@ -132,22 +136,42 @@ class UserRedis():
     def delete_user_recommed_v3(cls):
         RQueueClient.getInstance().redis.delete(cls.__KEY_RECOMMEND_V3)
 
+
     # // added by biwei
     @classmethod
     def delete_user_recommed_id_v3_one(cls, _id):
-        RQueueClient.getInstance().redis.lrem(cls.__KEY_RECOMMEND_ID_V3, 1, _id)
+        RQueueClient.getInstance().redis.lrem(cls.__KEY_RECOMMEND_ID_V3, _id)
         RQueueClient.getInstance().redis.lrem(cls.__KEY_ANCHOR_ID_V3, _id)
-        pass
+
     @classmethod
     def delete_index_anchor_id_v3_one(cls, _id):
-        RQueueClient.getInstance().redis.lrem(cls.__KEY_ANCHOR_ID_V3, _id)
+        RQueueClient.getInstance().redis.lrem(cls.__KEY_RECOMMEND_ID_ALL, _id)
     @classmethod
     def add_user_recommed_id_v3_one(cls, _id):
         #
+        hot_list_all = cls.get_recommed_list_all()
+        anchor_list_all = cls.get_index_anchor_list_all(0, -1)
+
         hot_list = cls.get_recommed_list_v3()
         anchor_list = cls.get_index_anchor_list_v3(0,-1)
-        if _id not in hot_list and _id not in anchor_list:
-            RQueueClient.getInstance().redis.rpush(cls.__KEY_ANCHOR_ID_V3, _id)
+
+        if str(_id) in hot_list_all and str(_id) not in hot_list:
+            index = hot_list_all.index(str(_id))
+            print index
+            if index == 0:
+                RQueueClient.getInstance().redis.lpush(cls.__KEY_RECOMMEND_ID_V3, _id)
+            else:
+                v = hot_list_all[index-1]
+                RQueueClient.getInstance().redis.linsert(cls.__KEY_RECOMMEND_ID_V3, "after", v, _id)
+
+        elif str(_id) in anchor_list_all and str(_id) not in anchor_list:
+            index = anchor_list_all.index(str(_id))
+            if index == 0:
+                RQueueClient.getInstance().redis.lpush(cls.__KEY_ANCHOR_ID_V3, _id)
+            else:
+                v = anchor_list_all[index-1]
+                RQueueClient.getInstance().redis.linsert(cls.__KEY_ANCHOR_ID_V3, "after", v, _id)
+
     # //
 
     @classmethod
@@ -175,6 +199,10 @@ class UserRedis():
     @classmethod
     def get_index_anchor_list_v3(cls,pageindex,offset):
         return RQueueClient.getInstance().redis.lrange(cls.__KEY_ANCHOR_ID_V3, pageindex, offset)
+
+    @classmethod
+    def get_index_anchor_list_all(cls, pageindex, offset):
+        return RQueueClient.getInstance().redis.lrange(cls.__KEY_ANCHOR_ID_ALL, pageindex, offset)
 
     @classmethod
     def get_index_anchor_v3(cls):

@@ -42,6 +42,7 @@ def pushredis(self):
     hots=[]
     users = []
     user_recommed_id = []
+    user_recommed_id_all = []
     usermap = {}
     anchors = Anchor.objects.filter().order_by("seq")
 
@@ -66,12 +67,12 @@ def pushredis(self):
     random.shuffle(randomstui)
 
     hots = hots + stuilist + randomstui
-    for h in hots:
-        if h not in users:
-            roomrecord = AudioRoomRecord.objects.filter(user_id = h.id).order_by("-open_time").first()
-            if not roomrecord or roomrecord.status == 1:
-                users.append(h)
-    for user in users:
+
+
+    for user in hots:
+        if user.id in users:
+            continue
+        users.append(user.id)
         personal_tags = UserTags.get_usertags(user_id=user.id)
         if not personal_tags:
             personal_tags = []
@@ -85,7 +86,8 @@ def pushredis(self):
             is_online = 1
         # else:
         #     is_online = 0
-
+            user_recommed_id_all.append(user.id)
+            roomrecord = AudioRoomRecord.objects.filter(user_id=user.id).order_by("-open_time").first()
             if not user_vip:
                 dic = {
                     "user":{
@@ -123,13 +125,15 @@ def pushredis(self):
                     dic["check_real_video"] = real_video.status
                 else:
                     dic["check_real_video"] = 3
-            user_recommed_id.append(user.id)
+
             self.append(user.id)
             usermap[str(user.id)] = json.dumps(dic)
+            if not roomrecord or roomrecord.status == 1:
+                user_recommed_id.append(user.id)
     deletetui()
     if user_recommed_id:
         UserRedis.add_user_recommed_id_v3(user_recommed_id)
-        UserRedis.add_user_recommed_id_all(user_recommed_id)
+        UserRedis.add_user_recommed_id_all(user_recommed_id_all)
         UserRedis.add_user_recommed_v3(usermap)
     push_index_anchor(self)
 
@@ -153,6 +157,7 @@ def push_index_anchor(self):
     valist5 =[]
     randomvalist5 =[]
     index_id = []
+    index_id_all = []
     anchors = User.objects.filter(is_video_auth = 1,is_block__ne =1).order_by("is_vip")
     for anchor in anchors:
         if gaoyanzhi in anchor.label and xinggan in anchor.label:
@@ -239,55 +244,58 @@ def push_index_anchor(self):
                 user_beat = UserHeartBeat.objects.filter(user=user, last_report_time__gte=pre_time).first()
                 roomrecord = AudioRoomRecord.objects.filter(user_id = user.id).order_by("-open_time").first()
                 if user_beat and user.disturb_mode != 1:
+                    index_id_all.append(user.id)
+
+                    is_online = 1
+                    # 视频认证状态
+                    real_video = RealVideoVerify.objects(user_id=user.id, status__ne=2).order_by("-update_time").first()
+                    show_video = RealVideoVerify.objects(user_id=user.id, status=1).order_by("-update_time").first()
+
+                    if user_vip:
+                        vip = Vip.objects.filter(id=user_vip.vip_id).first()
+                        dic = {
+                            "user": {
+                                "_uid": user.sid,
+                                "logo_big":user.image,
+                                "nickname":user.nickname,
+                                "desc":user.desc
+                            },
+                            "personal_tags": personal_tags,
+                            "vip": {
+                                "vip_type": vip.vip_type,
+                                "icon_url": Vip.convert_http_to_https(vip.icon_url)
+                            },
+                            "is_online": is_online
+                        }
+                    else:
+                        dic = {
+                            "user": {
+                                "_uid": user.sid,
+                                "logo_big":user.image,
+                                "nickname":user.nickname,
+                                "desc":user.desc
+                            },
+                            "personal_tags": personal_tags,
+                            "is_online": is_online
+                        }
+
+                    if show_video:
+                        dic["check_real_video"] = show_video.status
+                    else:
+                        if real_video:
+                            dic["check_real_video"] = real_video.status
+                        else:
+                            dic["check_real_video"] = 3
+
+                    usermap[str(user.id)] = json.dumps(dic)
                     if not roomrecord or roomrecord.status == 1:
-                        is_online = 1
-                        # 视频认证状态
-                        real_video = RealVideoVerify.objects(user_id=user.id, status__ne=2).order_by("-update_time").first()
-                        show_video = RealVideoVerify.objects(user_id=user.id, status=1).order_by("-update_time").first()
-
-                        if user_vip:
-                            vip = Vip.objects.filter(id=user_vip.vip_id).first()
-                            dic = {
-                                "user": {
-                                    "_uid": user.sid,
-                                    "logo_big":user.image,
-                                    "nickname":user.nickname,
-                                    "desc":user.desc
-                                },
-                                "personal_tags": personal_tags,
-                                "vip": {
-                                    "vip_type": vip.vip_type,
-                                    "icon_url": Vip.convert_http_to_https(vip.icon_url)
-                                },
-                                "is_online": is_online
-                            }
-                        else:
-                            dic = {
-                                "user": {
-                                    "_uid": user.sid,
-                                    "logo_big":user.image,
-                                    "nickname":user.nickname,
-                                    "desc":user.desc
-                                },
-                                "personal_tags": personal_tags,
-                                "is_online": is_online
-                            }
-
-                        if show_video:
-                            dic["check_real_video"] = show_video.status
-                        else:
-                            if real_video:
-                                dic["check_real_video"] = real_video.status
-                            else:
-                                dic["check_real_video"] = 3
                         index_id.append(user.id)
-                        usermap[str(user.id)] = json.dumps(dic)
         except Exception,e:
             print e
                 #UserRedis.add_index_anchor(str(user.id),json.dumps(dic))
     deleteanchor()
     UserRedis.add_index_id_v3(index_id)
-    UserRedis.add_index_id_all(index_id)
+    UserRedis.add_index_id_all(index_id_all)
     UserRedis.add_index_anchor_v3(usermap)
     print "=============首页数据入redis完毕"
 
