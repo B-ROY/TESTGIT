@@ -45,7 +45,7 @@ class QQAPI(object):
             else:
                 result["gender"] = 2
         else:
-            result["gender"] = 0
+            result["gender"] = 2
       
 
         return result
@@ -88,7 +88,7 @@ class QQAPI(object):
             else:
                 result["sex"] = 2
         else:
-            result["gender"] = 0
+            result["gender"] = 2
         # {
         # "ret":0,
         # "msg":"",
