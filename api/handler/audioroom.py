@@ -64,7 +64,6 @@ def get_area_by_ip(ip):
 
             min_ip4 = int(ip4s[0])
             max_ip4 = int(ip4s[1])
-            print min_ip4,max_ip4, ips[3]
             if min_ip4 <= int(ips[3]) <= max_ip4:
                 city = ip4s[2]
                 return city
@@ -812,7 +811,6 @@ class GetVoiceRoomListV2(BaseHandler):
                 else:
                     data = oldanchorlist(gender,is_video,page,page_count)
             except Exception,e:
-                print e
                 data = oldanchorlist(gender,is_video,page,page_count)
         else:
             data = oldanchorlist(gender,is_video,page,page_count)
@@ -919,10 +917,9 @@ class GetVoiceRoomListV3(BaseHandler):
                         hot_list.append(json.loads(recommed_data[recommed]))
 
             except Exception,e:
-                print e
+                logging.error("audio_room_list_v3 error " + str(e))
         else:
             print "空的推荐列表"
-        print recommed_list
         anchor_list = UserRedis.get_index_anchor_list_v3(0,-1)
         if len(anchor_list) > 0:
             anchor_data = eval(UserRedis.get_index_anchor_v3())

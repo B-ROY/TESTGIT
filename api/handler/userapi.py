@@ -135,8 +135,8 @@ class ThridPardLogin(BaseHandler):
         code = self.arg("user_key")
         ua = self.request.headers.get('User-Agent')
         uas = ua.split(";")
-        if uas[2] == "iPhone" or uas[2] == "iPad":
-            channel = "AppStore"
+        if len(uas) < 6:
+            channel = uas[0]
         else:
             channel = uas[5]
 
@@ -166,8 +166,8 @@ class ThridPardLogin(BaseHandler):
         openid = self.arg("openid", "")
         ua = self.request.headers.get('User-Agent')
         uas = ua.split(";")
-        if uas[2] == "iPhone" or uas[2] == "iPad":
-            channel = "AppStore"
+        if len(uas) < 6:
+            channel = uas[0]
         else:
             channel = uas[5]
 
@@ -196,8 +196,8 @@ class ThridPardLogin(BaseHandler):
         uid = self.arg("openid","")
         ua = self.request.headers.get('User-Agent')
         uas = ua.split(";")
-        if uas[2] == "iPhone" or uas[2] == "iPad":
-            channel = "AppStore"
+        if len(uas) < 6:
+            channel = uas[0]
         else:
             channel = uas[5]
 
@@ -224,8 +224,8 @@ class ThridPardLogin(BaseHandler):
         openid = self.arg("openid", "")
         ua = self.request.headers.get('User-Agent')
         uas = ua.split(";")
-        if uas[2] == "iPhone" or uas[2] == "iPad":
-            channel = "AppStore"
+        if len(uas) < 6:
+            channel = uas[0]
         else:
             channel = uas[5]
         #print access_token,openid
@@ -249,8 +249,8 @@ class ThridPardLogin(BaseHandler):
         sms_code = self.arg("sms_code")
         ua = self.request.headers.get('User-Agent')
         uas = ua.split(";")
-        if uas[2] == "iPhone" or uas[2] == "iPad":
-            channel = "AppStore"
+        if len(uas) < 6:
+            channel = uas[0]
         else:
             channel = uas[5]
 
@@ -281,10 +281,12 @@ class ThridPardLogin(BaseHandler):
         ua = self.request.headers.get('User-Agent')
         uas = ua.split(";")
         app_name = uas[0]
-        if app_name == "liaoai_teyue" or app_name == "liaoai_lizhen":
-            channel = "AppStore"
+
+        if len(uas) < 6:
+            channel = uas[0]
         else:
             channel = uas[5]
+
         print access_token,openid
         userinfo = FacebookAPI.get_user_info(access_token=access_token)
         if access_token == "" or openid == "":
@@ -299,7 +301,10 @@ class ThridPardLogin(BaseHandler):
         access_token_secret = self.arg("token_secret", "")
         ua = self.request.headers.get('User-Agent')
         uas = ua.split(";")
-        channel = uas[5]
+        if len(uas) < 6:
+            channel = uas[0]
+        else:
+            channel = uas[5]
         userinfo = TwitterAPI.get_user_info(openid, access_token, access_token_secret)
 
         print access_token
@@ -1880,6 +1885,8 @@ class UpdateLocation(BaseHandler):
         country = self.arg("country", "")
         province = self.arg("province", "")
         city = self.arg("city", "")
+        if not city:
+            self.write({"status": "success", })
         district = self.arg("district", "")
         longitude = float(self.arg("longitude", "0.00"))
         latitude = float(self.arg("latitude", "0.00"))

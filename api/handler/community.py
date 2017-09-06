@@ -152,10 +152,12 @@ class MomentListV3(BaseHandler):
         Param('page', True, str, "1", "1", u'page'),
         Param('page_count', True, str, "10", "10", u'page_count'),
     ], description=u'(我的/关注/其他用户)社区动态列表_V3')
-    @login_required
+
     def get(self):
         user = self.current_user
         user_id = self.current_user_id
+        if not user_id:
+            return self.write({"status": "success", "data": []})
         list_type = self.arg_int("list_type")
         show_user_id = self.arg_int("show_user_id", 0)
         page = self.arg_int('page')
@@ -206,7 +208,7 @@ class MomentListV3(BaseHandler):
                 dic["check_real_video"] = RealVideoVerify.get_status(moment.user_id)
                 data.append(dic)
 
-        self.write({"status": "success", "data": data})
+        return self.write({"status": "success", "data": data})
 
 @handler_define
 class MomentList(BaseHandler):

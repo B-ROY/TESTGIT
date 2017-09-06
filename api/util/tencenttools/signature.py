@@ -17,11 +17,9 @@ def gen_signature(appid, content):
     cmd = '%s/tls_licence_tools gen %s/private_key %s/%s_sig %s %s >&null;cat %s/%s_sig' % (
         tool_path, key_path, sig_path ,content , appid, content, sig_path, content
     )
-    print cmd
-    
+
     p = os.popen(cmd)
     sig = p.read()
-    print sig
     #remove key file
     rm_cmd = 'rm -f %s/%s_sig' % (sig_path, content)
     os.system(rm_cmd)
