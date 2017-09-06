@@ -257,6 +257,8 @@ class RoomEndInfo(BaseHandler):
         data['seconds'] = total_time
         data['price'] = record.price * record.pay_times
         data['spend'] = record.gift_value
+        user = self.current_user
+        user.update(set__audio_status=2)
         return self.write({"status": "success", "data": data})
 
 
@@ -280,9 +282,9 @@ class RoomReport(BaseHandler):
             user.update(set__audio_status=2)
             return self.write({'status': "fail", "error": "房间已经关闭", 'errcode': '3001'})
 
-        if record.user_id == uid:
+        if record.user_id == int(uid):
             record.update(set__report_time_user=datetime.datetime.now())
-        elif record.join_id == uid:
+        elif record.join_id == int(uid):
             record.update(set__report_time_join=datetime.datetime.now())
 
         return self.write({"status":"success"})
@@ -319,7 +321,7 @@ class RoomPaybill(BaseHandler):
         user_account.diamond_trade_out(price=cost, desc=u"语音聊天id=%s" % room_id,
                                             trade_type=TradeDiamondRecord.TradeTypeAudio)
 
-        user.update(cost=cost)
+        user.update(inc__cost=cost)
 
         room_user = User.objects.get(id=record.user_id)
         room_user.update(

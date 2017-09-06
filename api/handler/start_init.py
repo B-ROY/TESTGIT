@@ -82,6 +82,10 @@ class Initial(BaseHandler):
         invite_url = settings.INVITE_URL
         ins_img_url = settings.INS_IMAGE_URL
 
+        user = self.current_user
+        if user:
+            user.update(set__audio_status=2)
+
         self.write({
             'status': "success",
             'start_image': data,
