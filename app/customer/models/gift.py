@@ -3,7 +3,6 @@
 import datetime
 import logging
 
-from app.audio.models.record import AudioRoomRecord
 from app.customer.models.account import TradeDiamondRecord, TradeTicketRecord, Account
 from app.customer.models.benifit import TicketAccount
 from base.settings import CHATPAMONGO
@@ -12,6 +11,9 @@ from mongoengine import *
 from app.util.messageque.msgsender import MessageSender
 from app_redis.room.room import RoomRedis
 import international
+
+from app.audio.models.roomrecord import RoomRecord
+
 
 connect(CHATPAMONGO.db, host=CHATPAMONGO.host, port=CHATPAMONGO.port, username=CHATPAMONGO.username,
         password=CHATPAMONGO.password)
@@ -184,9 +186,9 @@ class Gift(Document):
                               to_id=str(to_user.id), room_id=room_id)
 
             if room_id:
-                room_record = AudioRoomRecord.objects.get(id=room_id)
+                room_record = RoomRecord.objects.get(id=room_id)
                 if from_user.id == room_record.join_id and to_user.id == room_record.user_id:
-                    room_record.add_gift_value(gift_total_price)
+                    room_record.update(inc__gift_value=gift_total_price)
 
 
             return True, None, None
