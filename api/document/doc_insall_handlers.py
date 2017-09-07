@@ -19,9 +19,7 @@ INSTALL_HANDLERS = [
     "api.handler.tools",  # 道具接口
     "api.handler.vip",  # vip会员接口
     "api.handler.friend" , # 好友会员接口
-
-
-    "api.handler.getui_controller"
+    "api.handler.getui_controller",
     "api.handler.follow_user",  # 关注接口
     "api.handler.black_user",  # 拉黑接口
     "api.handler.getui_controller",
@@ -53,8 +51,6 @@ INSTALL_HANDLERS_NAME = {
     "api.handler.tools": "道具接口",
     "api.handler.vip": "会员接口",
     "api.handler.friend": "好友接口",
-    "api.handler.getui_controller":"推送接口"
-
     "api.handler.getui_controller":"推送接口",
     "api.handler.follow_user": "关注用户接口",
     "api.handler.black_user": "拉黑用户接口",

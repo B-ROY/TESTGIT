@@ -50,18 +50,9 @@ def close_room():
                 end_type = 3
 
         if need_close:
-            room.update(set__room_status=2, end_type=end_type)
-            join_user = User.objects.get(id=room.join_id)
-            room_user = User.objects.get(id=room.user_id)
-            if join_user.last_room_id == str(room.id):
-                join_user.update(set__audio_status=2)
-            if room_user.last_room_id == str(room.id):
-                room_user.update(set__audio_status=2)
+            room.finish_room(end_type=end_type)
             logging.info("%s:%s" % ("close", room.id))
-            print join_user.id, room_user.id
-
-
-
+            print room.id, "closed"
 
 
 if __name__ == "__main__":

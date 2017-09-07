@@ -9,6 +9,8 @@ import time,datetime
 from app.customer.models.account import Account, TicketAccount,TradeTicketRecord, TradeDiamondRecord
 from app.audio.models.roomrecord import RoomRecord
 from django.conf import settings
+from app_redis.user.models.user import *
+
 
 appID = settings.Agora_AppId
 appCertificate = settings.Agora_appCertificate
@@ -37,7 +39,7 @@ class RoomCall(BaseHandler):
     @api_define("room call", r'/room/call',
         [
             Param("peer_id", True, str, "", "", u'对方id'),
-            Param("call_type", True, int, 1,1, u'呼叫类型(0:语音,1:视频)')
+            Param("call_type", True, int, 1, 1, u'呼叫类型(0:语音,1:视频)')
         ],
         description=u"呼叫接口"
     )
@@ -67,6 +69,9 @@ class RoomCall(BaseHandler):
         #5. 判断拨打人是否余额足够
         user_account = Account.objects.get(user=user)
         room_price = room_user.video_price if call_type == 1 else room_user.now_price
+        # 主播下首页
+        if room_user.is_video_auth:
+            UserRedis.delete_user_recommed_id_v3_one(peer_id)
 
         if user_account.diamond < room_price:
             return self.write({"status": "failed", "error": u"余额不足一分钟" })
@@ -87,7 +92,7 @@ class RoomCall(BaseHandler):
 @handler_define
 class IsVideoRoom(BaseHandler):
     @api_define("Is Video Room", r'/room/type',[
-                Param('channel_id', False, str, "","",u'房间号')
+                Param('room_id', False, str, "","",u'房间号')
     ], description=u'根据房间号获取房间类型')
     @login_required
     def get(self):
@@ -98,6 +103,22 @@ class IsVideoRoom(BaseHandler):
             "channel_id": channel_id,
             "is_video": is_video
         })
+
+@handler_define
+class GetRoomStatus(BaseHandler):
+    @api_define("Get Uid Room Status", r'/room/status', [
+        Param('uid', True, str, "", "", u"uid"),
+    ], description=u'根据uid获得用户房间状态')
+    @login_required
+    def get(self):
+        user_id = self.arg("uid")
+        user = User.objects.get(id=user_id)
+        if user.audio_status == 2:
+            status = 1
+        else:
+            status = 3
+        self.write({'status': "success", 'room_status': status, })
+
 
 @handler_define
 class RoomAnswer(BaseHandler):
@@ -162,13 +183,7 @@ class RoomRefuse(BaseHandler):
         room_id = self.arg("room_id")
         # todo 拒绝 删除redis 更改数据库
         record = RoomRecord.objects.get(id=room_id)
-
-        room_user = User.objects.get(id=record.user_id)
-        join_user = User.objects.get(id=record.join_id)
-        room_user.update(set__audio_status=2)
-        if join_user.last_room_id == room_id:
-            join_user.update(set__audio_status=2)
-        record.update(set__room_status=2, set__end_time=datetime.datetime.now(), set__end_type=4)
+        record.finish_room(end_type=4)
 
         return self.write({"status": "success"})
 
@@ -184,12 +199,7 @@ class RoomCancel(BaseHandler):
 
         room_id = self.arg("room_id")
         record = RoomRecord.objects.get(id=room_id)
-        room_user = User.objects.get(id=record.user_id)
-        join_user = User.objects.get(id=record.join_id)
-        if room_user.last_room_id == room_id:
-            room_user.update(set__audio_status=2)
-        join_user.update(set__audio_status=2)
-        record.update(set__room_status=2, set__end_time=datetime.datetime.now(), set__end_type=1)
+        record.finish_room(end_type=1)
 
         return self.write({"status": "success"})
 
@@ -217,21 +227,14 @@ class RoomQuit(BaseHandler):
         end_type = 0 #1. 用户取消请请求 2. 用户挂断 3.用户异常挂断 4.主播拒绝 5 主播挂断 6 主播异常挂断
         if is_host and quit_type == 0:
             end_type = 5
-            peer_user = User.objects.get(id=record.join_id)
         elif is_host and quit_type == 1:
             end_type = 3
-            peer_user = User.objects.get(id=record.join_id)
         elif not is_host and quit_type == 0:
             end_type = 2
-            peer_user = User.objects.get(id=record.user_id)
         elif not is_host and quit_type == 1:
             end_type = 6
-            peer_user = User.objects.get(id=record.user_id)
-        record.update(set__end_time=datetime.datetime.now(), set__end_type=end_type, set__room_status=2)
 
-        user.update(set__audio_status=2)
-        if peer_user.last_room_id == room_id:
-            peer_user.update(set__audio_status=2)
+        record.finish_room(end_type=end_type)
 
         total_time = int((datetime.datetime.now() - record.start_time).total_seconds())
         data = {}
@@ -257,8 +260,16 @@ class RoomEndInfo(BaseHandler):
         data['seconds'] = total_time
         data['price'] = record.price * record.pay_times
         data['spend'] = record.gift_value
+        # 只改变用户状态 由后台程序关闭房间
         user = self.current_user
         user.update(set__audio_status=2)
+
+        user_id = self.current_user_id
+        if record.user_id == int(user_id):
+            record.update(set__report_time_user=datetime.datetime.now())
+        elif record.join_id == int(user_id):
+            record.update(set__report_time_join=datetime.datetime.now())
+
         return self.write({"status": "success", "data": data})
 
 

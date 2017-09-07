@@ -47,19 +47,19 @@ class RoomRecord(Document):
         record.save()
         return record
 
+    def finish_room(self, end_type):
+        end_time = datetime.datetime.now()
+        self.update(set__room_status=2, set__end_type=end_type, set__end_time=end_time)
+        room_user = User.objects.get(id=self.user_id)
+        join_user = User.objects.get(id=self.join_id)
+        print room_user.last_room_id, self.id
+        if room_user.last_room_id == str(self.id):
+            room_user.update(set__audio_status=2)
+            print room_user.audio_status, "room_user"
+        if join_user.last_room_id == str(self.id):
+            join_user.update(set__audio_status=2)
 
-    def room_report(self, uid):
-        if self.user_id == uid:
-            self.update(set__report_time_user=datetime.datetime.now())
-        else:
-            self.update(set__report_time_join=datetime.datetime.now())
+        if room_user.is_video_auth == 1:
+            UserRedis.add_user_recommed_id_v3_one(self.user_id)
 
-
-    def finish_room(self):
-
-
-
-
-
-        pass
 

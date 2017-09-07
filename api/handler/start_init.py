@@ -9,6 +9,8 @@ import time
 from app.customer.models.user import UserHeartBeat
 from app.channel.models.audit_info import *
 from django.conf import settings
+from app.audio.models.roomrecord import RoomRecord
+
 
 @handler_define
 class Initial(BaseHandler):
@@ -83,8 +85,12 @@ class Initial(BaseHandler):
         ins_img_url = settings.INS_IMAGE_URL
 
         user = self.current_user
-        if user:
-            user.update(set__audio_status=2)
+        if user and user.audio_status == 1:
+            room = RoomRecord.objects.get(id=user.last_room_id)
+            if user.id == int(room.user_id):
+                room.finish_room(end_type=6)
+            elif user.id == int(room.join_id):
+                room.finish_room(end_type=3)
 
         self.write({
             'status': "success",

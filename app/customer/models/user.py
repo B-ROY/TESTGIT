@@ -337,8 +337,8 @@ class User(Document):
                 online_status=1,
                 current_score=-1,
                 last_guid=guid,
-                is_vip=3
-
+                is_vip=3,
+                audio_status=2,
             )
             user.id = UserRedis.pop_user_id()
             user.identity = UserRedis.pop_user_identity()
