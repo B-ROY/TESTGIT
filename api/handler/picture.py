@@ -560,7 +560,7 @@ class UserPictureCreate(BaseHandler):
         if ignore_moments:
             for ignore_moment in ignore_moments:
                 ignore_moment_ids.append(str(ignore_moment.id))
-        today_comment_used_count = UserComment.objects.filter(user_id=user.id, delete_status=1, comment_type=1, user_moment_id__nin=ignore_moment_ids,
+        today_comment_used_count = UserComment.objects.filter(user_id=user.id, delete_status=1, user_moment_id__nin=ignore_moment_ids,
                                             create_time__gte=starttime, create_time__lte=endtime).count()
 
         # 私房视频限制相关

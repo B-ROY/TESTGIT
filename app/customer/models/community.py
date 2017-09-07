@@ -341,7 +341,7 @@ class UserComment(Document):
         if ignore_moments:
             for ignore_moment in ignore_moments:
                 ignore_moment_ids.append(str(ignore_moment.id))
-        today_comment_used_count = UserComment.objects.filter(user_id=user.id, delete_status=1, comment_type=1, user_moment_id__nin=ignore_moment_ids,
+        today_comment_used_count = UserComment.objects.filter(user_id=user.id, delete_status=1, user_moment_id__nin=ignore_moment_ids,
                                                               create_time__gte=starttime, create_time__lte=endtime).count()
 
         code = 1
@@ -367,7 +367,7 @@ class UserComment(Document):
                 # 普通用户
                 if today_comment_used_count >= user_count:
                     code = 2
-                    message = u"普通用户每日动态评论最多3条"
+                    message = u"普通用户每日动态评论最多2条"
 
         return code, message
 
