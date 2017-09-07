@@ -286,7 +286,7 @@ class MomentListV3(BaseHandler):
                         '59a7b3e92040e46be84fd245',
                         '59a7baa12040e423224fd222',
                         '59a7bdce2040e46be74fd223',
-                        '59a7d7202040e46be84fd26a']
+                      ]
         # moments = UserMoment.objects.filter(show_status__in=[1, 3, 4], delete_status=1, is_public=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
         moments = UserMoment.objects.filter(id__in=momentsid).order_by("-create_time")[(page - 1) * page_count:page * page_count]
         print "=========",moments.count()

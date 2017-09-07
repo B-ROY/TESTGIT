@@ -92,8 +92,8 @@ class Get_Index_Column(BaseHandler):
         if column_type == 2:
             # 新人驾到
             ids = [
-                3078724,
-                3078723,
+                3014372,
+                3014195,
                 3078722,
                 3078721,
             ]

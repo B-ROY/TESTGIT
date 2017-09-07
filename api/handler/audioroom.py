@@ -847,7 +847,6 @@ class GetVoiceRoomListV2(BaseHandler):
                 3078761,
                 3012010,
                 3014151,
-                3012694,
                 3020174,
                 3014372,
                 3002127,
@@ -1196,14 +1195,14 @@ class GetVoiceRoomListV3(BaseHandler):
 
         if app_name == "tianmireyue":
             hot_ids = [
+                3065255,
                 3065249,
+                3065256,
                 3065250,
                 3065251,
                 3065252,
                 3065253,
-                3065254,
-                3065255,
-                3065256
+                3065254
             ]
             ids = {
                 1:[
@@ -1457,7 +1456,6 @@ class GetVoiceRoomListV3(BaseHandler):
                 3078761,
                 3012010,
                 3014151,
-                3012694,
                 3020174,
                 3014372,
                 3002127,
