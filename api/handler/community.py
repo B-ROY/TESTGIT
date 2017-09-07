@@ -287,6 +287,25 @@ class MomentListV3(BaseHandler):
                         '59a7baa12040e423224fd222',
                         '59a7bdce2040e46be74fd223',
                       ]
+        elif app_name == "tongchengyueai":
+            momentsid =["59afc43c6cf5217d0f147146",
+                        "59afc2676cf5217d0f147141",
+                        "59afc10d6cf5217d0e147140",
+                        "59afc0756cf5217d0e147138",
+                        "59afbf2f6cf5217d0e147134",
+                        "59afbe846cf5217d0e147133",
+                        "59afbc646cf5217d0e14712f",
+                        "59afbc016cf5217d0f147127",
+                        "59afba556cf5217d0e147129",
+                        "59afb6b96cf5217d0e14711e",
+                        "59afb5db6cf5217d0f14711d",
+                        "59afb5866cf5217d0e14711d",
+                        "59afb4286cf5217d0e147117",
+                        "59afb2426cf5217d0e147112",
+                        "59afb1fc6cf5217d0f147111",
+                        "59afb1dd6cf5217d0f147110",
+                        "59afaf706cf5217d0f147102"
+                        ]
         # moments = UserMoment.objects.filter(show_status__in=[1, 3, 4], delete_status=1, is_public=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
         moments = UserMoment.objects.filter(id__in=momentsid).order_by("-create_time")[(page - 1) * page_count:page * page_count]
         print "=========",moments.count()

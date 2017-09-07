@@ -1226,6 +1226,31 @@ class GetVoiceRoomListV3(BaseHandler):
 
                 ]
             }
+        elif app_name == "tongchengyueai":
+            hot_ids = [
+                3301381,
+                3301380,
+                3301379,
+                3301378,
+                3301377,
+                3301376
+            ]
+            ids = {
+                1:[
+                    3301375,
+                    3301374,
+                    3301373,
+                    3301372,
+                    3301371,
+                    3301370,
+                    3301369,
+                    3301368,
+                    3301367,
+                    3301366,
+                    3301365,
+                    3301364
+                ]
+            }
 
         for hot_id in hot_ids:
             user = User.objects.get(identity=hot_id)
