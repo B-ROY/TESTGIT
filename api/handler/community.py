@@ -368,10 +368,10 @@ class CreateComment(BaseHandler):
         user = self.current_user
 
         if status == 1:
-            if comment_type == 1:
-                code, message = UserComment.check_comment_count(user)
-                if code == 2:
-                    return self.write({'status': "fail", "error": message})
+            code, message = UserComment.check_comment_count(user)
+            if code == 2:
+                return self.write({'status': "fail", "error": message})
+
             user_moment = UserMoment.objects.filter(id=str(moment_id)).first()
             if int(user_moment.user_id) == int(user.id) and comment_type == 1:
                 return self.write({'status': "fail", 'error': _(u"不可评论自己的动态")})
