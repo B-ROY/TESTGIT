@@ -55,6 +55,7 @@ class Gift(Document):
     gift_type = IntField(verbose_name=u'礼物类型（是否在快捷赠送的列表中显示）',choices=GIFT_TYPE)
     wealth_value = IntField(verbose_name=u'礼物增加送礼人的财富值')
     charm_value = IntField(verbose_name=u'礼物增加送礼人的魅力值')
+    show_status = IntField(verbose_name=u'是否展示')  # 1展示 2不展示
 
     @property
     def logo_small(self):
@@ -81,7 +82,7 @@ class Gift(Document):
 
     @classmethod
     def list(cls, gift_type=1):
-        return cls.objects.filter(status=Gift.STATUS_USING, gift_type=gift_type).order_by("price")
+        return cls.objects.filter(status=Gift.STATUS_USING, gift_type=gift_type, show_status=1).order_by("price")
 
     @classmethod
     def list_all(cls):
@@ -89,7 +90,7 @@ class Gift(Document):
 
     @classmethod
     def list_mall(cls):
-        return cls.objects.filter(status=Gift.STATUS_USING, gift_type__in=[1, 2]).order_by("price")
+        return cls.objects.filter(status=Gift.STATUS_USING, gift_type__in=[1, 2], show_status=1).order_by("price")
 
     @classmethod
     def create(cls, name, price, experience, ticket, continuity, animation_type, logo, is_flower=0, gift_type=0, wealth_value=0, charm_value=0):
