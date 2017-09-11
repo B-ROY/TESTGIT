@@ -56,6 +56,7 @@ class Gift(Document):
     wealth_value = IntField(verbose_name=u'礼物增加送礼人的财富值')
     charm_value = IntField(verbose_name=u'礼物增加送礼人的魅力值')
     show_status = IntField(verbose_name=u'是否展示')  # 1展示 2不展示
+    handy_order = IntField(verbose_name=u'快捷礼物排序')
 
     @property
     def logo_small(self):
@@ -82,7 +83,7 @@ class Gift(Document):
 
     @classmethod
     def list(cls, gift_type=1):
-        return cls.objects.filter(status=Gift.STATUS_USING, gift_type=gift_type, show_status=1).order_by("price")
+        return cls.objects.filter(status=Gift.STATUS_USING, gift_type=gift_type, show_status=1).order_by("handy_order")
 
     @classmethod
     def list_all(cls):
