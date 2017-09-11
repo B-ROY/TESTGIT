@@ -243,19 +243,10 @@ class UserMoment(Document):
 
     @classmethod
     def get_index_moments(cls, page, page_count):
-        moments_p1 = cls.objects.filter(show_status__in=[1, 3, 4], delete_status=1, is_public=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
-
-        ids = []
-        moments_list = []
-        if moments_p1:
-            for moment in moments_p1:
-                ids.append(str(moment.id))
-                moments_list.append(moment)
-
         if int(page == 1):
-            return moments_p1
+            return cls.objects.filter(show_status__in=[1, 3, 4], delete_status=1, is_public=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
         else:
-            score_moments = cls.objects.filter(show_status__in=[1, 3, 4], delete_status=1, is_public=1, id__nin=ids).order_by("-rank_score")[((page - 2) * page_count):(page-1) * page_count]
+            score_moments = cls.objects.filter(show_status__in=[1, 3, 4], delete_status=1, is_public=1).order_by("-rank_score")[((page - 2) * page_count):(page-1) * page_count]
             return score_moments
 
 class UserComment(Document):
