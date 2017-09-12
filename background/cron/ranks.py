@@ -53,7 +53,7 @@ def new_anchors():
 # 千里眼定时任务
 def clairvoyant_rank():
     user_list = []
-    accounts = Account.objects.all().order_by("-diamond")
+    accounts = Account.objects.filter(diamond__gt=1000).order_by("-diamond")
     # 获取当前时间的前五分钟
     import time
     time = int(time.time())
@@ -71,6 +71,22 @@ def clairvoyant_rank():
             else:
                 if user.gender == 1:
                     user_list.append(user.id)
+
+    if len(user_list) < 6:
+        for account in accounts:
+            user = account.user
+            if not user:
+                continue
+            user_id = user.id
+            if user_id not in user_list:
+                if user.is_video_auth == 1:
+                    continue
+
+                if len(user_list) == 6:
+                    break
+                else:
+                    if user.gender == 1:
+                        user_list.append(user.id)
 
     ClairvoyantRank.drop_collection()
 
