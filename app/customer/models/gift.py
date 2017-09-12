@@ -165,14 +165,14 @@ class Gift(Document):
                          (to_user.id, gift_id, str(gift_count), room_id), trade_type=TradeDiamondRecord.TradeTypeGift)
             wealth_value = 0
             if gift.wealth_value:
-                wealth_value = gift.wealth_value
+                wealth_value = gift.wealth_value * gift_count
             from_user.update(
                 inc__wealth_value=wealth_value,
                 inc__cost=gift_total_price,
             )
             charm_value = 0
             if gift.charm_value:
-                charm_value = gift.charm_value
+                charm_value = gift.charm_value * gift_count
             to_user.update(
                 inc__charm_value=charm_value,
                 inc__ticket=gift_total_price
