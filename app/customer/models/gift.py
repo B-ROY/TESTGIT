@@ -163,14 +163,19 @@ class Gift(Document):
             account = Account.objects.get(user=from_user)
             account.diamond_trade_out(price=gift_total_price, desc=u"礼物赠送，收礼方id=%s, 礼物id=%s ,礼物数量=%s, 房间号=%s" %
                          (to_user.id, gift_id, str(gift_count), room_id), trade_type=TradeDiamondRecord.TradeTypeGift)
+            wealth_value = 0
+            if gift.wealth_value:
+                wealth_value = gift.wealth_value
             from_user.update(
-                inc__wealth_value = gift_total_price/10,
-                inc__cost = gift_total_price,
+                inc__wealth_value=wealth_value,
+                inc__cost=gift_total_price,
             )
-
+            charm_value = 0
+            if gift.charm_value:
+                charm_value = gift.charm_value
             to_user.update(
-                inc__charm_value = gift_total_price / 10,
-                inc__ticket = gift_total_price
+                inc__charm_value=charm_value,
+                inc__ticket=gift_total_price
             )
 
             # 2. 收礼人+经验, +粒子数
