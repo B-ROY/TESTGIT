@@ -1067,6 +1067,9 @@ class AUserInfo(BaseHandler):
         else:
             user = User.objects.filter(id=self.arg('uid')).first()
 
+        temp_uid = self.arg_int('uid', 0)
+        current_id = int(self.current_user_id)
+
         if self.current_user.is_blocked:
             return self.write({"status": "fail", "error": _(u"您已被封号！请遵守用户协议！"),"errcode":"2001"})
 
@@ -1080,7 +1083,8 @@ class AUserInfo(BaseHandler):
         dic["audio_status"] = AudioRoomRecord.get_room_status(user_id=user.id)
         dic["check_real_name"] = RealNameVerify.check_user_verify(user_id=user.id)
 
-        dic["is_video_auth"] = user.is_video
+        if temp_uid == current_id:
+            dic["is_video_auth"] = user.is_video
 
         #  当前最新认证状态
         now_verify = RealVideoVerify.objects(user_id=user.id).order_by("-update_time").first()
@@ -1097,8 +1101,8 @@ class AUserInfo(BaseHandler):
             vip = Vip.objects.filter(id=user_vip.vip_id).first()
             dic["vip"] = convert_vip(vip)
 
-        temp_uid = self.arg_int('uid', 0)
-        current_id = int(self.current_user_id)
+
+
         if temp_uid == current_id:
             # 本人的话可以显示认证中的
             show_video = RealVideoVerify.objects(user_id=user.id, status__ne=2).order_by("-update_time").first()

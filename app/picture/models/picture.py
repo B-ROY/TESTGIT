@@ -389,7 +389,7 @@ class PictureInfo(Document):
         anchor_vip_count_normal = 20
         anchor_count_normal = 10
         anchor_count = 10
-        user_count_normal = 10
+        user_count_normal = 5
 
         is_video = user.is_video_auth
         user_vip = UserVip.objects.filter(user_id=user.id).first()
@@ -430,7 +430,7 @@ class PictureInfo(Document):
                     # 普通用户
                     if total > user_count_normal:
                         code = 2
-                        message = u"普通用户普通相册最多10张"
+                        message = u"普通用户普通相册最多5张"
                         return code, message
 
         if type == 2:

@@ -297,9 +297,17 @@ def follow_unique():
 
 def fix_user():
     from app.customer.models.user import User
+    from app.customer.models.real_video_verify import RealVideoVerify
     users = User.objects.all()
     for user in users:
         user.update(set__is_video=user.is_video_auth)
+        status = RealVideoVerify.get_status(user.id)
+        if status == 1:
+            user.update(set__is_video_auth=1)
+        else:
+            user.update(set__is_video_auth=0)
+
+
 
 
 
