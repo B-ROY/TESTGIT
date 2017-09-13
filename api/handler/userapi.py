@@ -1080,6 +1080,8 @@ class AUserInfo(BaseHandler):
         dic["audio_status"] = AudioRoomRecord.get_room_status(user_id=user.id)
         dic["check_real_name"] = RealNameVerify.check_user_verify(user_id=user.id)
 
+        dic["is_video_auth"] = user.is_video
+
         #  当前最新认证状态
         now_verify = RealVideoVerify.objects(user_id=user.id).order_by("-update_time").first()
         if now_verify:
