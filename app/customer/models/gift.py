@@ -57,6 +57,8 @@ class Gift(Document):
     gift_type = IntField(verbose_name=u'礼物类型（是否在快捷赠送的列表中显示）',choices=GIFT_TYPE)
     wealth_value = IntField(verbose_name=u'礼物增加送礼人的财富值')
     charm_value = IntField(verbose_name=u'礼物增加送礼人的魅力值')
+    show_status = IntField(verbose_name=u'是否展示')  # 1展示 2不展示
+    handy_order = IntField(verbose_name=u'快捷礼物排序')
 
     @property
     def logo_small(self):
@@ -83,7 +85,7 @@ class Gift(Document):
 
     @classmethod
     def list(cls, gift_type=1):
-        return cls.objects.filter(status=Gift.STATUS_USING, gift_type=gift_type).order_by("price")
+        return cls.objects.filter(status=Gift.STATUS_USING, gift_type=gift_type, show_status=1).order_by("handy_order")
 
     @classmethod
     def list_all(cls):
@@ -91,7 +93,7 @@ class Gift(Document):
 
     @classmethod
     def list_mall(cls):
-        return cls.objects.filter(status=Gift.STATUS_USING, gift_type__in=[1, 2]).order_by("price")
+        return cls.objects.filter(status=Gift.STATUS_USING, gift_type__in=[1, 2], show_status=1).order_by("price")
 
     @classmethod
     def create(cls, name, price, experience, ticket, continuity, animation_type, logo, is_flower=0, gift_type=0, wealth_value=0, charm_value=0):
@@ -163,14 +165,19 @@ class Gift(Document):
             account = Account.objects.get(user=from_user)
             account.diamond_trade_out(price=gift_total_price, desc=u"礼物赠送，收礼方id=%s, 礼物id=%s ,礼物数量=%s, 房间号=%s" %
                          (to_user.id, gift_id, str(gift_count), room_id), trade_type=TradeDiamondRecord.TradeTypeGift)
+            wealth_value = 0
+            if gift.wealth_value:
+                wealth_value = gift.wealth_value * gift_count
             from_user.update(
-                inc__wealth_value = gift_total_price/10,
-                inc__cost = gift_total_price,
+                inc__wealth_value=wealth_value,
+                inc__cost=gift_total_price,
             )
-
+            charm_value = 0
+            if gift.charm_value:
+                charm_value = gift.charm_value * gift_count
             to_user.update(
-                inc__charm_value = gift_total_price / 10,
-                inc__ticket = gift_total_price
+                inc__charm_value=charm_value,
+                inc__ticket=gift_total_price
             )
 
             # 2. 收礼人+经验, +粒子数

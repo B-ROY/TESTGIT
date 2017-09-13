@@ -152,7 +152,7 @@ class Get_Index_Column(BaseHandler):
             anchor_list = NewAnchorRank.objects.all()[(page - 1) * page_count:page * page_count]
 
             for anchor in anchor_list:
-                user = User.objects.filter(id=anchor.user_id).first()
+                user = User.objects.filter(id=anchor.user_id,is_video_auth=1).first()
                 if user.disturb_mode != 1:
                     if user.id == 1 or user.id == 2:
                         continue
