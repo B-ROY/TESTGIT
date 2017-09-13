@@ -295,6 +295,13 @@ def follow_unique():
         follow.update(set__unique_code=unique_code)
 
 
+def fix_user():
+    from app.customer.models.user import User
+    users = User.objects.all()
+    for user in users:
+        user.update(set__is_video=user.is_video_auth)
+
+
 
 
 
