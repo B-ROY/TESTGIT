@@ -19,6 +19,7 @@ INSTALL_HANDLERS = [
     "api.handler.tools",  # 道具接口
     "api.handler.vip",  # vip会员接口
     "api.handler.friend" , # 好友会员接口
+    "api.handler.getui_controller",
     "api.handler.follow_user",  # 关注接口
     "api.handler.black_user",  # 拉黑接口
     "api.handler.getui_controller",
@@ -26,6 +27,7 @@ INSTALL_HANDLERS = [
     "api.handler.videos",
     "api.handler.chat",
     "api.handler.task",
+    "api.handler.audioroom2",
 ]
 
 INSTALL_HANDLERS_NAME = {
@@ -54,5 +56,10 @@ INSTALL_HANDLERS_NAME = {
     "api.handler.community": "社区接口",
     "api.handler.videos": "视频相关接口",
     "api.handler.chat": "聊天相关接口",
+
     "api.handler.task": "任务中心",
+
+
+    "api.handler.audioroom2": "新版通话接口",
+
 }

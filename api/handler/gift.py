@@ -76,9 +76,11 @@ class SendGift(BaseHandler):
                 "error": "you are on to_user's blacklist"
             })
 
+        ua = self.request.headers.get('User-Agent')
+        ua_version = ua.split(";")[1]
         value, error_code, error_message = Gift.gift_giving(from_user=from_user, to_user=to_user, gift_id=gift_id,
                                                             gift_count=gift_count, gift_price=gift.price,
-                                                            room_id=room_id)
+                                                            room_id=room_id, ua_version=ua_version)
         if not error_code:
             error_code = 4000
         if not error_message:

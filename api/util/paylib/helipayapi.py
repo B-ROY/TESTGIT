@@ -61,6 +61,7 @@ class HeliDoPay():
         request = urllib2.Request(url, postdata)
         response = urllib2.urlopen(request).read()
         response_dict = json.loads(response)
+        print str(response_dict)
         pay_info = json.loads(response_dict["rt8_payInfo"])
 
         prepay_id = pay_info["prepayid"]
