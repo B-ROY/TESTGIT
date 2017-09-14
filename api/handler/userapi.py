@@ -447,10 +447,6 @@ class Login(ThridPardLogin):
             ucpass = SMS()
             ucpass.delSmsCodeCache(self.arg_int('phone'))
 
-        #audio_status = AudioRoomRecord.get_room_status(user_id=user.id)
-        #if audio_status == 4:
-        #    AudioRoomRecord.set_room_status(user_id=user.id, status=1)
-
         self.write(data)
 
 
@@ -723,9 +719,6 @@ class PhoneLogIn(BaseHandler):
             data['sig'] = gen_signature(app_id, user.sid)
             data["status"] = "success"
 
-            #audio_status = AudioRoomRecord.get_room_status(user_id=user.id)
-            #if audio_status == 4:
-            #    AudioRoomRecord.set_room_status(user_id=user.id, status=1)
             AudioRoomRecord.create_roomrecord(user_id=user.id, open_time=datetime.datetime.now())
             user.update(set__last_guid=self.arg("guid"))
             return self.write(data)
@@ -1027,9 +1020,6 @@ class Logout(BaseHandler):
         user.cid = ""
         user.save()
         self.auth_logout()
-        # room_status = AudioRoomRecord.get_room_status(user_id=user.id)
-        # if room_status == 1:
-        #   AudioRoomRecord.set_room_status(user_id=user.id, status=1)
         #获取参数
         self.write({'status': "success"})
 
@@ -1075,16 +1065,23 @@ class AUserInfo(BaseHandler):
 
         data = {"status": "success"}
 
-        # TODO: 性能问题
-        dic = {}
+
         dic = convert_user(user)
         dic["diamond"] = Account.objects.get(user=user).diamond
         dic["picture_count"] = PictureInfo.objects.filter(user_id=user.id, status=0).count()
-        dic["audio_status"] = AudioRoomRecord.get_room_status(user_id=user.id)
+        if user.audio_status == 1:
+            dic["audio_status"] = 3
+        else:
+            dic["audio_status"] = 1
+
         dic["check_real_name"] = RealNameVerify.check_user_verify(user_id=user.id)
 
-        if temp_uid == current_id:
-            dic["is_video_auth"] = user.is_video
+        ua = self.request.headers.get('User-Agent')
+        ua_version = ua.split(";")[1]
+        if ua_version < "2.3.5":
+            if temp_uid == current_id:
+                if user.gender == 2:
+                    dic["is_video_auth"] = 1
 
         #  当前最新认证状态
         now_verify = RealVideoVerify.objects(user_id=user.id).order_by("-update_time").first()

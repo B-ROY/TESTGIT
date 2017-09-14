@@ -9,6 +9,8 @@ import time
 from app.customer.models.user import UserHeartBeat
 from app.channel.models.audit_info import *
 from django.conf import settings
+from app.audio.models.roomrecord import RoomRecord
+
 
 @handler_define
 class Initial(BaseHandler):
