@@ -116,7 +116,6 @@ class User(Document):
     listen_url = StringField(verbose_name=u"试听url", max_length=256)
     url_duration = IntField(verbose_name=u"url时长")
     is_video_auth = IntField(verbose_name=u'是否是视频播主')
-    is_video = IntField(verbose_name=u'是否是视频播主_临时')
     # 视频信息
     video_time = IntField(verbose_name=u'视频总时长')
     video_call_time = IntField(verbose_name=u'视频拨打总时长(秒)')
@@ -316,7 +315,6 @@ class User(Document):
                 now_price=100,
                 listen_url="",
                 is_video_auth=3,
-                is_video=0,
                 url_duration=0,
                 video_time=0,
                 video_call_time=0,

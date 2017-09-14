@@ -153,6 +153,8 @@ class Get_Index_Column(BaseHandler):
 
             for anchor in anchor_list:
                 user = User.objects.filter(id=anchor.user_id,is_video_auth=1).first()
+                if not user:
+                    continue
                 if user.disturb_mode != 1:
                     if user.id == 1 or user.id == 2:
                         continue

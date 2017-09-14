@@ -140,7 +140,7 @@ class Gift(Document):
             logging.error("update Gift error:{0}".format(e))
         return ''
     @classmethod
-    def gift_giving(cls, from_user, to_user, gift_id, gift_count, gift_price, room_id):
+    def gift_giving(cls, from_user, to_user, gift_id, gift_count, gift_price, room_id, ua_version=""):
         try:
 
             gift = Gift.objects.get(id=gift_id)
@@ -193,6 +193,11 @@ class Gift(Document):
                               to_id=str(to_user.id), room_id=room_id)
 
             if room_id:
+                if ua_version and ua_version < "2.3.5":
+                    from app.customer.models.user import User
+                    user = User.objects.get(id=to_user.id)
+                    room_id = user.last_room_id
+
                 room_record = RoomRecord.objects.get(id=room_id)
                 if from_user.id == room_record.join_id and to_user.id == room_record.user_id:
                     room_record.update(inc__gift_value=gift_total_price)
