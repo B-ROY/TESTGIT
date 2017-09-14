@@ -84,14 +84,6 @@ class Initial(BaseHandler):
         invite_url = settings.INVITE_URL
         ins_img_url = settings.INS_IMAGE_URL
 
-        user = self.current_user
-        if user and user.audio_status == 1:
-            room = RoomRecord.objects.get(id=user.last_room_id)
-            if user.id == int(room.user_id):
-                room.finish_room(end_type=6)
-            elif user.id == int(room.join_id):
-                room.finish_room(end_type=3)
-
         self.write({
             'status': "success",
             'start_image': data,

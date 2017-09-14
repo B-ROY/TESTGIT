@@ -39,37 +39,6 @@ from app.audio.models.roomrecord import RoomRecord
 appID = settings.Agora_AppId
 appCertificate = settings.Agora_appCertificate
 
-def get_area_by_ip(ip):
-    """
-    In redis IP Library is preserverd as key-list
-
-    key is the ip's the top three
-    list's memeber is like  a_b_city
-    a and b is the ip's fourth number
-    for example 1.2.4.0 - 1.2.4.2 is Beijing
-                1.2.4.3 - 1.2.4.5 is Shanghai
-            In Redis, they are preserverd as 1.2.4 : [0_2_Beijing, 3_5_Shanghai]
-    This method is used to resolve the city by ip and return the city.
-
-    :param ip: user's ip
-    :return: city if city else None
-    """
-    ips = ip.split(".")
-    k = str(ips[0]) + "." + str(ips[1]) + "." + str(ips[2])
-
-    ip4_list = RQueueClient.getInstance().redis.lrange(k, 0, 100)
-    if ip4_list:
-        for ip4 in ip4_list:
-            ip4s = ip4.split("_")
-
-            min_ip4 = int(ip4s[0])
-            max_ip4 = int(ip4s[1])
-            if min_ip4 <= int(ips[3]) <= max_ip4:
-                city = ip4s[2]
-                return city
-        return None
-    return None
-
 
 #声网登录
 @handler_define
@@ -150,7 +119,7 @@ class GenerateChannelKey(BaseHandler):
 
             return self.write({'status': "success", 'channelKey': channelkey, 'channel_id': room_id})
         else: # 接听
-            room_id = self.arg("channel_id")
+            room_id = self.arg("channel_id","")
             user = self.current_user
             # todo 判断redis中是否有自己的房间 没有可能是对面已经挂断了
             record = RoomRecord.objects.get(id=room_id)
@@ -266,9 +235,11 @@ class GetAudiorecordInfo(BaseHandler):
         room_info['is_video'] = record.room_type
         room_info['join_id'] = record.join_id
         room_info['now_price'] = record.price
+        user_info = convert_user(room_user)
+        user_info["audio_room_id"] = str(record.id)
         data = {
             "audioroom": room_info,
-            "user": convert_user(room_user),
+            "user": user_info,
             "join": convert_user(join_user),
         }
 
@@ -563,15 +534,14 @@ class UpdateNowPrice(BaseHandler):
     ], description=u'更新语音挂单价格')
     @login_required
     def get(self):
-        user_id = self.current_user_id
+        user = self.current_user
         now_price = self.arg("price")
         if not now_price or int(now_price)==0:
             now_price = 10
-        result = AudioRoomRecord.update_now_price(user_id, now_price, 0)
-        if result:
-            self.write({'status': 'success', })
-        else:
-            self.write({'status': 'failed', })
+        user.update(set__now_price=now_price)
+
+        self.write({'status': 'success', })
+
 
 @handler_define
 class UpdateVideoPrice(BaseHandler):
@@ -580,13 +550,10 @@ class UpdateVideoPrice(BaseHandler):
     ],description=u'更新视频挂单价格')
     @login_required
     def get(self):
-        user_id = self.current_user_id
+        user = self.current_user
         now_price = self.arg("price")
-        result = AudioRoomRecord.update_now_price(user_id, now_price, 1)
-        if result:
-            self.write({'status': 'success', })
-        else:
-            self.write({'status': 'failed', })
+        user.update(set__video_price=now_price)
+        self.write({'status': 'success', })
 
 
 @handler_define

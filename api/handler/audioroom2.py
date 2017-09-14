@@ -352,6 +352,25 @@ class RoomPaybill(BaseHandler):
         else:
             return self.write({'status': 'success', 'status_code': 2, })  # 付费成功，用户余额不足3分钟
 
+@handler_define
+class RoomReportClose(BaseHandler):
+    @api_define("room paybill", r'/room/reportclose', [
+        Param("room_id", True, str, "", "", description=u"房间心跳接口")
+    ], description=u"付费接口")
+    @login_required
+    def get(self):
+        room_id = self.arg("room_id")
+        record = RoomRecord.objects.get(id=room_id)
+
+        user_id = self.current_user_id
+        if record.user_id == int(user_id):
+            record.finish_room(end_type=6)
+        elif record.join_id == int(user_id):
+            record.finish_room(end_type=3)
+
+        return self.write({"status": "success"})
+
+
 
 
 

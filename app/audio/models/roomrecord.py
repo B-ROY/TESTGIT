@@ -31,6 +31,7 @@ class RoomRecord(Document):
     room_status = IntField(verbose_name=u"房间状态")# 由于延迟造成的不同步（譬如 用户拨打电话 挂断的同时 主播接听了），
                                                     # 记录一下房间状态 1.开启 2.已结束
     gift_value = IntField(verbose_name=u"房间赠送礼物价值")
+    join_ip = StringField(verbose_name=u"加入者ip")
 
     @classmethod
     def create_room_reocord(cls, user_id, join_id, price, room_type):
