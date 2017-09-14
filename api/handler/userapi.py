@@ -1080,7 +1080,7 @@ class AUserInfo(BaseHandler):
         ua_version = ua.split(";")[1]
         if ua_version < "2.3.5":
             if temp_uid == current_id:
-                if user.gender == 2:
+                if user.is_video_auth == 0:
                     dic["is_video_auth"] = 1
 
         #  当前最新认证状态
@@ -1365,6 +1365,10 @@ class UserHomepageV2(BaseHandler):
             if count2 > 10:
                 break
             if moment2.type == 3:
+                if current_user_id and int(home_id) != int(current_user_id):
+                    if moment2.show_status != 1:
+                        continue
+
                 private_video = PrivateVideo.objects.filter(id=moment2.video_id).first()
                 dict = {
                     "type": moment2.type,
@@ -2366,10 +2370,15 @@ class VideoAuthInfoSubmit(BaseHandler):
         else:
             status = VideoManagerVerify.create_video_manager_verify(user_id=user_id, avtar_auth=avatar_auth,
                                                                     active_auth=active_auth)
+
+            desc = u"<html><p>" + _(u'第一步认证已完成,第二步视频认证完成后就可以成为播主赚钱了,请务必添加审核人员微信:"honeynnm" 完成审核 ') + u"</p></br></br></html>"
+            MessageSender.send_system_message(user_id, desc)
+
             if status:
                 self.write({
                     "status": "success",
                 })
+
             else:
                 self.write({
                     "status": "failed",
