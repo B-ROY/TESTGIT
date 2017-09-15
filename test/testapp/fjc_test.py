@@ -304,7 +304,8 @@ def fix_user():
         if status == 1:
             user.update(set__is_video_auth=1)
         else:
-            user.update(set__is_video_auth=3)
+            if user.is_video_auth == 1:
+                user.update(set__is_video_auth=4)
 
 
 
