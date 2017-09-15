@@ -292,14 +292,14 @@ class BottleMessaegSend_V2(BaseHandler):
 class BottleMessaegSend_V3(BaseHandler):
     @api_define("bottle message send v3 ", "/service/bottle/v3_send",
                 [
-                    Param("label", True, int, 0, 0, description=u"漂流瓶消息标签v3"),
+                    Param("label", False, int, 0, 0, description=u"漂流瓶消息标签v3"),
                     Param("message", True, str, "", "一轮红日"),
                     Param("gender", True, str, "")
                 ],description=u"发送漂流瓶消息v3 新版")
     @login_required
     def get(self):
         user = self.current_user
-        label = self.arg_int("label")
+        label = self.arg_int("label", 0)
         #todo 鉴定label 是否和message匹配 将来加上redis的时候做
         message_content = self.arg("message")
         gender = self.arg_int("gender")
