@@ -305,7 +305,10 @@ def fix_user():
             user.update(set__is_video_auth=1)
         else:
             if user.is_video_auth == 1:
+                desc = u"<html><p>" + _(u'由于您未进行视频认证，将取消您的播主资格，如想再次成为视频播主，请进行申请视频认证，并添加审核人员微信: "honeynnm" ') + u"</p></html>"
+                MessageSender.send_system_message(user.id, desc)
                 user.update(set__is_video_auth=4)
+
 
 
 
