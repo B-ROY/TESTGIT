@@ -1084,7 +1084,7 @@ class AUserInfo(BaseHandler):
                     dic["is_video_auth"] = 1
 
         #  当前最新认证状态
-        now_verify = RealVideoVerify.objects(user_id=user.id).order_by("-update_time").first()
+        now_verify = RealVideoVerify.objects(user_id=user.id, status__ne=2).order_by("-update_time").first()
         if now_verify:
             dic["now_real_video_status"] = now_verify.status
         else:
