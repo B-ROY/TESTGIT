@@ -2,7 +2,7 @@
 import os
 import sys
 
-from app.customer.models.real_video_verify import RealVideoVerify
+
 
 PROJECT_ROOT = os.path.realpath(os.path.dirname(__file__))
 
@@ -24,6 +24,7 @@ import logging
 import datetime
 from app.customer.models.vip import *
 from app.customer.models.rank import *
+from app.customer.models.real_video_verify import RealVideoVerify
 
 
 # 新人驾到

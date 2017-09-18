@@ -103,8 +103,9 @@ class GenerateChannelKey(BaseHandler):
             if user_account.diamond < room_price:
                 return self.write({"status": "failed", "error": u"余额不足一分钟"})
 
+            join_ip = self.user_ip
             # 能否拨通判断完毕，若能拨打则先创建房间 然后修改拨打人状态
-            room_id = str(RoomRecord.create_room_reocord(room_user.id, user.id, room_price, call_type).id)
+            room_id = str(RoomRecord.create_room_reocord(room_user.id, user.id, room_price, call_type, join_ip).id)
             unixts = int(time.time())
             randomint = -2147483647
             expiredts = 0

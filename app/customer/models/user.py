@@ -1083,8 +1083,6 @@ class VideoManagerVerify(Document):
             user = User.objects.get(id=int(user_id))
             user.is_video_auth = 0
             user.save()
-            desc = u"<html><p>" + _(u"亲爱的用户您好，认证申请已成功提交，请等待工作人员审核（1-2工作日）") + u"</p></br></html>"
-            MessageSender.send_system_message(user.sid, desc)
             return True
         except Exception, e:
             logging.error("create real videoManager verify error:{0}".format(e))
