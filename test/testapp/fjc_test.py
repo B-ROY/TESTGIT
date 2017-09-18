@@ -300,12 +300,15 @@ def fix_user():
     from app.customer.models.real_video_verify import RealVideoVerify
     users = User.objects.all()
     for user in users:
-        user.update(set__is_video=user.is_video_auth)
         status = RealVideoVerify.get_status(user.id)
         if status == 1:
             user.update(set__is_video_auth=1)
         else:
-            user.update(set__is_video_auth=0)
+            if user.is_video_auth == 1:
+                desc = u"<html><p>" + _(u'由于您未进行视频认证，将取消您的播主资格，如想再次成为视频播主，请进行申请视频认证，并添加审核人员微信: "honeynnm" ') + u"</p></html>"
+                MessageSender.send_system_message(user.id, desc)
+                user.update(set__is_video_auth=4)
+
 
 
 

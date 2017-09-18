@@ -1080,11 +1080,11 @@ class AUserInfo(BaseHandler):
         ua_version = ua.split(";")[1]
         if ua_version < "2.3.5":
             if temp_uid == current_id:
-                if user.gender == 2:
+                if user.is_video_auth == 0:
                     dic["is_video_auth"] = 1
 
         #  当前最新认证状态
-        now_verify = RealVideoVerify.objects(user_id=user.id).order_by("-update_time").first()
+        now_verify = RealVideoVerify.objects(user_id=user.id, status__ne=2).order_by("-update_time").first()
         if now_verify:
             dic["now_real_video_status"] = now_verify.status
         else:
@@ -1365,6 +1365,10 @@ class UserHomepageV2(BaseHandler):
             if count2 > 10:
                 break
             if moment2.type == 3:
+                if current_user_id and int(home_id) != int(current_user_id):
+                    if moment2.show_status != 1:
+                        continue
+
                 private_video = PrivateVideo.objects.filter(id=moment2.video_id).first()
                 dict = {
                     "type": moment2.type,
@@ -2366,10 +2370,15 @@ class VideoAuthInfoSubmit(BaseHandler):
         else:
             status = VideoManagerVerify.create_video_manager_verify(user_id=user_id, avtar_auth=avatar_auth,
                                                                     active_auth=active_auth)
+
+            desc = u"<html><p>" + _(u'第一步认证已完成,第二步视频认证完成后就可以成为播主赚钱了,请务必添加审核人员微信:"honeynnm" 完成审核 ') + u"</p></br></br></html>"
+            MessageSender.send_system_message(user_id, desc)
+
             if status:
                 self.write({
                     "status": "success",
                 })
+
             else:
                 self.write({
                     "status": "failed",
@@ -2403,6 +2412,8 @@ class UserHeartBeatReport(BaseHandler):
     ], description=u"用户上报心跳")
     def get(self):
         user_id = self.current_user_id
+        if not user_id:
+            return self.write({"status": "success"})
         if self.has_arg("user_id"):# androi多进程导致token可能是上一个登录的人的token
             user_id = self.arg("user_id")
         ua = self.request.headers.get('User-Agent')
@@ -2424,7 +2435,7 @@ class UserHeartBeatReport(BaseHandler):
         heart_beat.user.current_score = random.random() + heart_beat.last_report_time / (5 * UserHeartBeat.REPORT_INTERVAL) * coefficient
         heart_beat.user.save()
         heart_beat.save()
-        self.write({"status": "success"})
+        return self.write({"status": "success"})
 
 @handler_define
 class UserReport(BaseHandler):
