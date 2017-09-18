@@ -34,7 +34,7 @@ class RoomRecord(Document):
     join_ip = StringField(verbose_name=u"加入者ip")
 
     @classmethod
-    def create_room_reocord(cls, user_id, join_id, price, room_type):
+    def create_room_reocord(cls, user_id, join_id, price, room_type, join_ip):
         record = cls()
         record.user_id = user_id
         record.join_id = join_id
@@ -45,6 +45,7 @@ class RoomRecord(Document):
         record.room_status = 1
         record.gift_value = 0
         record.pay_times = 0
+        record.join_ip = join_ip
         record.save()
         return record
 
