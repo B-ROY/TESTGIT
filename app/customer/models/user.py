@@ -662,6 +662,22 @@ class User(Document):
         else:
             return 1  # 可以聊天
 
+    @classmethod
+    def check_online_type(cls, user):
+        if user.disturb_mode == 1:
+            online_type = 1  # 勿扰
+        else:
+            import time
+            time = int(time.time())
+            pre_time = time - 3600
+            user_beat = UserHeartBeat.objects.filter(user=user, last_report_time__gte=pre_time).first()
+            if user_beat:
+                online_type = 2  # 在线
+            else:
+                online_type = 3  # 离线
+
+        return online_type
+
 
 
 class ThridPard(Document):

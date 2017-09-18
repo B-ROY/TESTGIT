@@ -309,6 +309,45 @@ def fix_user():
                 MessageSender.send_system_message(user.id, desc)
                 user.update(set__is_video_auth=4)
 
+def init_topic():
+    from app.customer.models.community import MomentTopic
+    now = datetime.datetime.now()
+
+    topic = MomentTopic()
+    topic.topic_type = 1
+    topic.name = "第一美"
+    topic.hot = 1
+    topic.order = 1
+    topic.delete_status = 1
+    topic.create_time = now
+    topic.save()
+
+    topic2 = MomentTopic()
+    topic2.topic_type = 2
+    topic2.name = "国足二进世界杯"
+    topic2.hot = 1
+    topic2.order = 2
+    topic2.delete_status = 1
+    topic2.create_time = now
+    topic2.save()
+
+    topic3 = MomentTopic()
+    topic3.topic_type = 3
+    topic3.name = "蜘蛛小侠"
+    topic3.hot = 1
+    topic3.order = 3
+    topic3.delete_status = 1
+    topic3.create_time = now
+    topic3.save()
+
+    topic4 = MomentTopic()
+    topic4.topic_type = 4
+    topic4.name = "春风十里"
+    topic4.hot = 2
+    topic4.order = 0
+    topic4.delete_status = 1
+    topic4.create_time = now
+    topic4.save()
 
 
 

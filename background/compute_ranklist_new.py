@@ -29,8 +29,9 @@ def compute_7_rank_list_first():
     now_time = datetime.datetime.now()
     now_date = datetime.datetime(now_time.year, now_time.month, now_time.day)
     start_date = now_date - datetime.timedelta(days=7)
+    end_date = now_date - datetime.timedelta(days=1)
     start_time = start_date.strftime("%Y-%m-%d 00:00:00")
-    end_time = start_date.strftime('%Y-%m-%d 23:59:59')
+    end_time = end_date.strftime('%Y-%m-%d 23:59:59')
 
     gifts = Gift.objects.filter(gift_type__in=[1, 2])
     gift_dict = {}
@@ -107,8 +108,9 @@ def compute_7_rank_list_delta():
     now_time = datetime.datetime.now()
     now_date = datetime.datetime(now_time.year, now_time.month, now_time.day)
     start_date = now_date - datetime.timedelta(days=7)
+    end_date = now_date - datetime.timedelta(days=1)
     start_time = start_date.strftime("%Y-%m-%d 00:00:00")
-    end_time = start_date.strftime('%Y-%m-%d 23:59:59')
+    end_time = end_date.strftime('%Y-%m-%d 23:59:59')
 
     gifts = Gift.objects.filter(gift_type__in=[1, 2])
     gift_dict = {}
@@ -302,6 +304,7 @@ def compute_1_rank_list_delta():
     now_time = datetime.datetime.now()
     now_date = datetime.datetime(now_time.year, now_time.month, now_time.day)
     start_date = now_date - datetime.timedelta(days=1)
+
     start_time = start_date.strftime("%Y-%m-%d 00:00:00")
     end_time = start_date.strftime('%Y-%m-%d 23:59:59')
 

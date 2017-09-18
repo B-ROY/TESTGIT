@@ -47,3 +47,6 @@ def convert_vip_privilege(privilege, with_detail=False):
 
 def convert_about_me_message(message, with_detail=False):
     return message.normal_info()
+
+def convert_moment_topic(topic, with_detail=False):
+    return topic.normal_info()
