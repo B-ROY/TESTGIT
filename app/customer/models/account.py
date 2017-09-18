@@ -442,6 +442,7 @@ class TradeBalanceRule(Document):
         (7, u'google pay'),
         (8, u'扫码支付'),
         (9, u'helipay'),
+        (10, u'官方代充'),
     ]
 
 
@@ -553,6 +554,7 @@ class TradeBalanceOrder(Document):
         (7, u'goole支付'),
         (8, u'扫码支付'),
         (9, u'helipay'),
+        (10, u'官方代充'),
     ]
 
     FILL_IN_TYPE_MAP = {
