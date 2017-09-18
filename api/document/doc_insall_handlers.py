@@ -26,9 +26,8 @@ INSTALL_HANDLERS = [
     "api.handler.community",
     "api.handler.videos",
     "api.handler.chat",
-
+    "api.handler.task",
     "api.handler.audioroom2",
-
 ]
 
 INSTALL_HANDLERS_NAME = {
@@ -57,6 +56,9 @@ INSTALL_HANDLERS_NAME = {
     "api.handler.community": "社区接口",
     "api.handler.videos": "视频相关接口",
     "api.handler.chat": "聊天相关接口",
+
+    "api.handler.task": "任务中心",
+
 
     "api.handler.audioroom2": "新版通话接口",
 
