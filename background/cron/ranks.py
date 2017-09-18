@@ -36,7 +36,7 @@ def new_anchors():
     pre_time = time - 60 * 60
     nodisplay = "59956dfb18ce427fa83c9cec"
 
-    verify_list = RealVideoVerify.objects.filter(status=1).order_by("-create_time")[0:400]
+    verify_list = RealVideoVerify.objects.filter(status=1).order_by("-create_time")[0:200]
     for verify in verify_list:
         user = User.objects.filter(id=verify.user_id).first()
         user_beat = UserHeartBeat.objects.filter(user=user, last_report_time__gte=pre_time)
