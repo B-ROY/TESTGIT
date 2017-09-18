@@ -94,37 +94,28 @@ class Task(Document):
     role = IntField(verbose_name=u"任务所属角色")  # 1:男用户 2:女用户 3:播主
     go_type = IntField(verbose_name=u"前往类型")
     is_valid = IntField(verbose_name=u"是否可用")  # 1:可用 2:不可用
-    order = IntField(verbose_name=u"排序")
+
 
     @classmethod
     def get_list(cls, role, user_id):
-        task_list = cls.objects.filter(is_valid=1, role=1, level=1).order_by("order")
+        task_list = cls.objects.filter(is_valid=1, role=1, level=1)
         data = []
         for task in task_list:
-            if int(role) != 3:
-                id = str(task.id)
-                dic = Task.normal_info(task)
-                dic["data"] = []
-                p2_list = cls.objects.filter(pid=id, is_valid=1, role=1).order_by("order")
-                for t2 in p2_list:
-                    p2_dic = Task.normal_info(t2)
-                    p2_dic["data"] = []
-                    p3_list = cls.objects.filter(pid=str(t2.id), is_valid=1, role=1).order_by("order")
+            id = str(task.id)
+            dic = Task.normal_info(task)
+            dic["data"] = []
+            p2_list = cls.objects.filter(pid=id, is_valid=1, role=1)
+            for t2 in p2_list:
+                p2_dic = Task.normal_info(t2)
+                p2_dic["data"] = []
+                p3_list = cls.objects.filter(pid=str(t2.id), is_valid=1, role=1)
+                if p3_list:
+                    for t3 in p3_list:
+                        p3_dic = Task.normal_info(t3)
+                        p2_dic["data"].append(p3_dic)
 
-                    if not p3_list:
-                        # 只有二级任务
-                        UserTaskRecord.objects.filter(task_id=str(t2.id), user_id=user_id).first()
-
-                    if p3_list:
-                        for t3 in p3_list:
-                            p3_dic = Task.normal_info(t3)
-                            p2_dic["data"].append(p3_dic)
-
-                    dic["data"].append(p2_dic)
-                data.append(dic)
-            else:
-                # 成长任务:
-                pass
+                dic["data"].append(p2_dic)
+            data.append(dic)
 
         return data
 
@@ -144,9 +135,6 @@ class Task(Document):
             "go_type": go_type
         }
 
-
 class UserTaskRecord(Document):
     task_id = StringField(verbose_name=u"任务id")
     user_id = IntField(verbose_name=u"用户id")
-    create_time = DateTimeField(verbose_name=u"创建时间")
-    finish_type = IntField(verbose_name=u"完成状态")  # 1:待领取  2:已完成

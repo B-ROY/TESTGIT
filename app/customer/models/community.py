@@ -509,24 +509,3 @@ class AboutMeMessage(Document):
             vip = Vip.objects.filter(id=user_vip.vip_id).first()
             data["from_user_vip_icon"] = vip.icon_url
         return data
-
-
-#  动态话题
-class MomentTopic(Document):
-    topic_type = IntField(verbose_name=u'话题类型')
-    name = StringField(verbose_name=u"话题名称")
-    hot = IntField(verbose_name=u"是否热门")  # 1:热门(直接展示的)  2:非热门(更多中展示)
-    order = IntField(verbose_name=u"热门排序")
-    delete_status = IntField(verbose_name=u"是否删除")  # 1:未删除  2:删除
-    create_time = DateTimeField(verbose_name=u"创建时间")
-
-    def normal_info(self):
-        data = {
-            "id": str(self.id),
-            "topic_type": self.topic_type,
-            "name": self.name,
-            "hot": self.hot,
-            "order": self.order,
-            "delete_status": self.delete_status,
-        }
-        return data

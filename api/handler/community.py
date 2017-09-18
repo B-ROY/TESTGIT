@@ -7,7 +7,7 @@ from django.conf import settings
 from api.convert.convert_user import *
 import time
 from app.customer.models.user import *
-from app.customer.models.community import UserMoment, UserMomentLook, UserComment, AboutMeMessage, MomentTopic
+from app.customer.models.community import UserMoment, UserMomentLook, UserComment, AboutMeMessage
 from app.util.shumeitools.shumeitools import *
 from app.customer.models.shumeidetect import *
 from app.customer.models.follow_user import FollowUser, FriendUser
@@ -674,69 +674,6 @@ class AboutMeMessageList(BaseHandler):
                 data.append(dict)
 
         return self.write({"status": "success", "data": data})
-
-
-# =============== 新版 ===============
-@handler_define
-class MomentTopicList(BaseHandler):
-    @api_define("moment topic list", r'/community/moment_topic_list', [], description=u'动态话题列表')
-    @login_required
-    def get(self):
-        topic_list = MomentTopic.objects.filter(delete_status=1).order_by("order")
-        hot_list = []
-        more_list = []
-        for topic in topic_list:
-            dic = convert_moment_topic(topic)
-            if topic.hot == 1:
-                hot_list.append(dic)
-            else:
-                more_list.append(dic)
-
-        return self.write({"status": "success", "hot_list": hot_list, "more_list": more_list})
-
-@handler_define
-class CreateMomentV2(BaseHandler):
-    @api_define("Create community", r'/community/create_v2', [
-        Param('picture_urls', False, str, "", "", u'图片url, 多个逗号相隔'),
-        Param('content', False, str, "", "", u'社区动态文字内容'),
-        Param('topic_type', False, str, "", "", u'动态 话题类型'),
-    ], description=u'发布社区动态v2')
-    @login_required
-    def post(self):
-        user = self.current_user
-        picture_urls = self.arg('picture_urls', "")
-        content = self.arg('content', "")
-        if not picture_urls and not content:
-            return self.write({'status': "fail", 'error': _(u"内容图片均为空")})
-
-        code, message = UserMoment.check_moment_count(user)
-        if code == 2:
-            return self.write({'status': "fail", 'error': _(message)})
-
-        if content:
-            if settings.INTERNATIONAL_TYPE == 86:
-                # 文本内容鉴黄
-                ret, duration = shumei_text_spam(text=content, timeout=1, user_id=user.id, channel="DYNAMIC_COMMENT", nickname=user.nickname,
-                                                 phone=user.phone, ip=self.user_ip)
-                print ret
-                is_pass = 0
-                if ret["code"] == 1100:
-                    if ret["riskLevel"] == "PASS":
-                        is_pass = 1
-                    if ret["riskLevel"] == "REJECT":
-                        is_pass = 0
-                    if ret["riskLevel"] == "REVIEW":
-                        # todo +人工审核逻辑
-                        is_pass = 1
-            else:
-                is_pass = 1
-            if not is_pass:
-                return self.write({'status': "fail",
-                                   'error': _(u"经系统检测,您的内容涉及违规因素,请重新编辑")})
-        UserMoment.create(user.id, picture_urls, content)
-        self.write({"status": "success"})
-
-
 
 
 
