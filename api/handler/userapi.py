@@ -2412,6 +2412,8 @@ class UserHeartBeatReport(BaseHandler):
     ], description=u"用户上报心跳")
     def get(self):
         user_id = self.current_user_id
+        if not user_id:
+            return self.write({"status": "success"})
         if self.has_arg("user_id"):# androi多进程导致token可能是上一个登录的人的token
             user_id = self.arg("user_id")
         ua = self.request.headers.get('User-Agent')
@@ -2433,7 +2435,7 @@ class UserHeartBeatReport(BaseHandler):
         heart_beat.user.current_score = random.random() + heart_beat.last_report_time / (5 * UserHeartBeat.REPORT_INTERVAL) * coefficient
         heart_beat.user.save()
         heart_beat.save()
-        self.write({"status": "success"})
+        return self.write({"status": "success"})
 
 @handler_define
 class UserReport(BaseHandler):

@@ -67,5 +67,7 @@ class ChatCancel(BaseHandler):
         from_user_id = self.current_user_id
         to_user_id = self.arg("to_user_id")
         conversation_id = self.arg("conversation_id")
+        if not to_user_id or not conversation_id:
+            return self.write({"status": "success"})
         UserConversation.cancel(conversation_id, from_user_id, to_user_id)
-        self.write({"status": "success"})
+        return self.write({"status": "success"})
