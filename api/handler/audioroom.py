@@ -92,7 +92,7 @@ class GenerateChannelKey(BaseHandler):
                 })
             # 3. 判断用户是否正在通话
             if room_user.audio_status == 1:
-                return self.write({'status': "failed", 'room_status': 1003})
+                return self.write({'status': "failed", 'room_status': 10003})
             # 4 如果是视频电话 判断主播是否认证过
             if call_type == 1 and room_user.is_video_auth != 1:
                 return self.write({'status': "failed", "error": "对方暂未进行视频认证～"})
