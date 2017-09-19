@@ -108,6 +108,19 @@ class Get_Index_Column(BaseHandler):
                     3080100,
                     3080097,
                 ]
+            if app_name == "tongchengyueai":
+                ids = [
+                    3301400,
+                    3301399,
+                    3301398,
+                    3301397,
+                    3301396,
+                    3301395,
+                    3301394,
+                    3301393,
+                    3301392,
+                    3301391
+                ]
             random.shuffle(ids)
 
             for id in ids:
