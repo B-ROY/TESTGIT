@@ -66,7 +66,7 @@ class Account(Document):
                 ACCOUNT_INSUFFICIENT_BALANCE
             )
         if room_id:
-            tar = TradeDiamondRecord.objects.filter(id=room_id).first()
+            tar = TradeDiamondRecord.objects.filter(room_id=room_id).first()
             if tar:
                 tar.update(dec__after_balance=price,
                            inc__diamon=price)
