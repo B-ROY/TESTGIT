@@ -971,6 +971,23 @@ class UserInviteCode(Document):
             return 0, 10001
 
     @classmethod
+    def invite_code_check2(cls, user_id, invite_id, user_guid):
+        try:
+            if int(invite_id) == int(user_id):
+                return 10002  # 不能邀请自己
+            elif int(invite_id) == user_guid:
+                return 10003  # 同一设备不能邀请自己
+            else:
+                guid = UserInviteCode.objects.filter(user_guid=user_guid)
+                if not guid:
+                    return 0  # 成功
+                else:
+                    return 10004   # 同一设备只能邀请一次
+        except Exception, e:
+            logging.error("invite code check error:{0}".format(e))
+            return 10001
+
+    @classmethod
     def get_invite_list(cls, invite_id):
         try:
             invite_list = []
