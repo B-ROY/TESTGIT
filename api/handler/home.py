@@ -34,6 +34,10 @@ class RecommendList(BaseHandler):
                     3080087,
             ]
 	    random.shuffle(hot_ids)
+
+        if app_name == "tianmireyue":
+            hot_ids = []
+
         hot_list = []
         for hot_id in hot_ids:
             user = User.objects.get(identity=hot_id)
@@ -122,6 +126,9 @@ class Get_Index_Column(BaseHandler):
                     3301391
                 ]
             random.shuffle(ids)
+            if app_name == "tianmireyue":
+                ids = []
+
 
             for id in ids:
                 user = User.objects.filter(identity=id).first()
