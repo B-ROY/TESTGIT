@@ -357,7 +357,7 @@ class RoomPaybill(BaseHandler):
 class RoomReportClose(BaseHandler):
     @api_define("room paybill", r'/room/reportclose', [
         Param("room_id", True, str, "", "", description=u"房间心跳接口")
-    ], description=u"付费接口")
+    ], description=u"上报关闭")
     @login_required
     def get(self):
         room_id = self.arg("room_id")
