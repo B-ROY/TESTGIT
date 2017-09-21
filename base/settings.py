@@ -22,7 +22,7 @@ class CHATPAMONGO():
 
     port = 27017
     username = "mini_admin"
-    password = "bw890905"
+    password = "jsd(&)23f@JI2H$^Hiu5r"
 
 
 class CHATPALOGSMONGO():
@@ -31,7 +31,7 @@ class CHATPALOGSMONGO():
     # host = "10.141.15.92"
     port = 27017
     username = "mini_admin"
-    password = "bw890905"
+    password = "jsd(&)23f@JI2H$^Hiu5r"
 
 
 class Manifest(object):

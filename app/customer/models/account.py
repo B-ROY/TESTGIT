@@ -56,7 +56,7 @@ class Account(Document):
             MessageSender.send_charge_bottle_message(self.user.id)
             MessageSender.send_charge_info_message(self.user.id, self.user.nickname, diamond)
 
-    def diamond_trade_out(self, price, desc, trade_type):
+    def diamond_trade_out(self, price, desc, trade_type, room_id=None):
 
         """
         -减钱
@@ -65,18 +65,34 @@ class Account(Document):
             raise AccountException(
                 ACCOUNT_INSUFFICIENT_BALANCE
             )
-
-
-        tar = TradeDiamondRecord(
-            user=self.user,
-            before_balance=self.diamond,
-            after_balance=self.diamond - price,
-            diamon=price,
-            desc=desc,
-            created_time=datetime.datetime.now(),
-            trade_type=trade_type,
-        )
-        tar.save()
+        if room_id:
+            tar = TradeDiamondRecord.objects.filter(room_id=room_id).first()
+            if tar:
+                tar.update(dec__after_balance=price,
+                           inc__diamon=price)
+            else:
+                tar = TradeDiamondRecord(
+                    user=self.user,
+                    before_balance=self.diamond,
+                    after_balance=self.diamond - price,
+                    diamon=price,
+                    desc=desc,
+                    created_time=datetime.datetime.now(),
+                    trade_type=trade_type,
+                    room_id=room_id
+                )
+                tar.save()
+        else:
+            tar = TradeDiamondRecord(
+                user=self.user,
+                before_balance=self.diamond,
+                after_balance=self.diamond - price,
+                diamon=price,
+                desc=desc,
+                created_time=datetime.datetime.now(),
+                trade_type=trade_type,
+            )
+            tar.save()
 
         # 如果账号余额小于 当前价格 抛出异常
 
@@ -370,6 +386,7 @@ class TradeDiamondRecord(Document):
     desc = StringField(verbose_name=u"描述", max_length=256, default='')
     created_time = DateTimeField(verbose_name=u"购买时间", default=datetime.datetime.now())
     trade_type = IntField(verbose_name=u'交易类型', choices=TradeType)
+    room_id = StringField(verbose_name=u"房间付费房间id")
 
     class Meta:
         app_label = "customer"
