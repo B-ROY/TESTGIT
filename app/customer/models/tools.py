@@ -122,8 +122,8 @@ class Tools(Document):
             activity_record.tools_activity_id = activity_id
             activity_record.save()
 
-            desc = u"<html><p>" + _(u"您的活动奖励已发送至您的账户，请注意查收，希望您在我们平台玩得开心～") + u"</p></br></html>"
-            MessageSender.send_system_message(user.sid, desc)
+            # desc = u"<html><p>" + _(u"您的活动奖励已发送至您的账户，请注意查收，希望您在我们平台玩得开心～") + u"</p></br></html>"
+            # MessageSender.send_system_message(user.sid, desc)
 
     @classmethod
     def check_receive(cls, role, date_time, user_id):
