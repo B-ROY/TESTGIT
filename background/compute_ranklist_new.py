@@ -19,6 +19,7 @@ load_django_settings('live_video.base', 'live_video.app')
 from app.customer.models.account import *
 from app.customer.models.rank import CharmRankNew, WealthRankNew
 from operator import attrgetter
+from app.customer.models.gift import GiftRecord, Gift
 
 
 def compute_7_rank_list_first():
@@ -28,32 +29,60 @@ def compute_7_rank_list_first():
     now_time = datetime.datetime.now()
     now_date = datetime.datetime(now_time.year, now_time.month, now_time.day)
     start_date = now_date - datetime.timedelta(days=7)
+    end_date = now_date - datetime.timedelta(days=1)
     start_time = start_date.strftime("%Y-%m-%d 00:00:00")
-    end_time = start_date.strftime('%Y-%m-%d 23:59:59')
+    end_time = end_date.strftime('%Y-%m-%d 23:59:59')
 
-    # 现在只是送礼的时候增加魅力
-    charm_record_list = TradeTicketRecord.objects.filter(created_time__gte=start_time, created_time__lt=end_time,
-                                                         trade_type=TradeTicketRecord.TradeTypeGift)
-    wealth_record_list = TradeDiamondRecord.objects.filter(created_time__gte=start_time, created_time__lt=end_time,
-                                                           trade_type=TradeDiamondRecord.TradeTypeGift)
+    gifts = Gift.objects.filter(gift_type__in=[1, 2])
+    gift_dict = {}
+    charm_value = 0
+    wealth_value = 0
+    for gift in gifts:
+        gift_id = str(gift.id)
+        if gift.charm_value:
+            charm_value = gift.charm_value
+        if gift.wealth_value:
+            wealth_value = gift.wealth_value
+        data = {}
+        data["charm"] = charm_value
+        data["wealth"] = wealth_value
+        gift_dict[gift_id] = data
+
+    records = GiftRecord.objects.filter(create_time__gte=start_time, create_time__lt=end_time)
 
     charm_rank_list = {}
     wealth_rank_list = {}
 
-    #循环计算榜单
-    for charm_record in charm_record_list:
-        if charm_record.user.id in charm_rank_list:
-            charm_rank_list[charm_record.user.id].charm = charm_rank_list[charm_record.user.id].charm +charm_record.ticket/10
-        else:
-            charm_rank = CharmRankNew(user=charm_record.user, charm=charm_record.ticket/10, type=1)
-            charm_rank_list[charm_record.user.id] = charm_rank
+    # 循环计算榜单
+    for record in records:
+        gift_id = record.gift_id
+        user_id = int(record.to_id)
+        if gift_id not in gift_dict:
+            continue
+        if not user_id:
+            continue
+        user = User.objects.filter(id=user_id).first()
+        if not user:
+            continue
 
-    for wealth_record in wealth_record_list:
-        if wealth_record.user.id in wealth_rank_list:
-            wealth_rank_list[wealth_record.user.id].wealth = wealth_rank_list[wealth_record.user.id].wealth + wealth_record.diamon/10
+        if user.is_block == 1:
+            continue
+
+        charm = gift_dict[gift_id]["charm"] * record.gift_count
+        wealth = gift_dict[gift_id]["wealth"] * record.gift_count
+
+        if user.is_video_auth == 1:
+            if user_id in charm_rank_list:
+                charm_rank_list[user_id].charm = charm_rank_list[user_id].charm + charm
+            else:
+                charm_rank = CharmRankNew(user=user, charm=charm, type=1)
+                charm_rank_list[user_id] = charm_rank
+
+        if user_id in wealth_rank_list:
+            wealth_rank_list[user_id].wealth = wealth_rank_list[user_id].wealth + wealth
         else:
-            wealth_rank = WealthRankNew(user=wealth_record.user, wealth=wealth_record.diamon/10, type=1)
-            wealth_rank_list[wealth_record.user.id] = wealth_rank
+            wealth_rank = WealthRankNew(user=user, wealth=wealth, type=1)
+            wealth_rank_list[user_id] = wealth_rank
 
     charmlist = charm_rank_list.values()
     wealthlist = wealth_rank_list.values()
@@ -64,11 +93,9 @@ def compute_7_rank_list_first():
     for i in range(0, len(charmlist)):
         if i > 29:
             break
-        print charmlist[i].rank
 
         charmlist[i].rank = i + 1
         charmlist[i].change_status = 0
-        print type(charmlist[i].rank)
 
         charmlist[i].save()
 
@@ -85,31 +112,59 @@ def compute_7_rank_list_delta():
     now_time = datetime.datetime.now()
     now_date = datetime.datetime(now_time.year, now_time.month, now_time.day)
     start_date = now_date - datetime.timedelta(days=7)
+    end_date = now_date - datetime.timedelta(days=1)
     start_time = start_date.strftime("%Y-%m-%d 00:00:00")
-    end_time = start_date.strftime('%Y-%m-%d 23:59:59')
+    end_time = end_date.strftime('%Y-%m-%d 23:59:59')
 
-    # 现在只是送礼的时候增加魅力
-    charm_record_list = TradeTicketRecord.objects.filter(created_time__gte=start_time, created_time__lt=end_time,
-                                                         trade_type=TradeTicketRecord.TradeTypeGift)
-    wealth_record_list = TradeDiamondRecord.objects.filter(created_time__gte=start_time, created_time__lt=end_time,
-                                                           trade_type=TradeDiamondRecord.TradeTypeGift)
+    gifts = Gift.objects.filter(gift_type__in=[1, 2])
+    gift_dict = {}
+    charm_value = 0
+    wealth_value = 0
+    for gift in gifts:
+        gift_id = str(gift.id)
+        if gift.charm_value:
+            charm_value = gift.charm_value
+        if gift.wealth_value:
+            wealth_value = gift.wealth_value
+
+        data = {}
+        data["charm"] = charm_value
+        data["wealth"] = wealth_value
+        gift_dict[gift_id] = data
+
+    records = GiftRecord.objects.filter(create_time__gte=start_time, create_time__lt=end_time)
+
     charm_rank_list = {}
     wealth_rank_list = {}
 
-    #循环计算榜单
-    for charm_record in charm_record_list:
-        if charm_record.user.id in charm_rank_list:
-            charm_rank_list[charm_record.user.id].charm = charm_rank_list[charm_record.user.id].charm +charm_record.ticket/10
-        else:
-            charm_rank = CharmRankNew(user=charm_record.user, charm=charm_record.ticket/10, type=1)
-            charm_rank_list[charm_record.user.id] = charm_rank
+    # 循环计算榜单
+    for record in records:
+        gift_id = record.gift_id
+        user_id = int(record.to_id)
+        if gift_id not in gift_dict:
+            continue
+        if not user_id:
+            continue
+        user = User.objects.filter(id=user_id).first()
+        if not user:
+            continue
+        if user.is_block == 1:
+            continue
+        charm = gift_dict[gift_id]["charm"] * record.gift_count
+        wealth = gift_dict[gift_id]["wealth"] * record.gift_count
 
-    for wealth_record in wealth_record_list:
-        if wealth_record.user.id in wealth_rank_list:
-            wealth_rank_list[wealth_record.user.id].wealth = wealth_rank_list[wealth_record.user.id].wealth + wealth_record.diamon/10
+        if user.is_video_auth == 1:
+            if user_id in charm_rank_list:
+                charm_rank_list[user_id].charm = charm_rank_list[user_id].charm + charm
+            else:
+                charm_rank = CharmRankNew(user=user, charm=charm, type=1)
+                charm_rank_list[user_id] = charm_rank
+
+        if user_id in wealth_rank_list:
+            wealth_rank_list[user_id].wealth = wealth_rank_list[user_id].wealth + wealth
         else:
-            wealth_rank = WealthRankNew(user=wealth_record.user, wealth=wealth_record.diamon/10, type=1)
-            wealth_rank_list[wealth_record.user.id] = wealth_rank
+            wealth_rank = WealthRankNew(user=user, wealth=wealth, type=1)
+            wealth_rank_list[user_id] = wealth_rank
 
     charmlist = charm_rank_list.values()
     wealthlist = wealth_rank_list.values()
@@ -131,7 +186,6 @@ def compute_7_rank_list_delta():
 
     CharmRankNew.objects.filter(type=1).delete()
     WealthRankNew.objects.filter(type=1).delete()
-    print old_charm_user_ids
 
     for i in range(0, len(charmlist)):
         if i > 29:
@@ -175,36 +229,62 @@ def compute_1_rank_list_first():
     WealthRankNew.objects.filter(type=2).delete()
 
     now_time = datetime.datetime.now()
-
     now_date = datetime.datetime(now_time.year, now_time.month, now_time.day)
     start_date = now_date - datetime.timedelta(days=1)
 
     start_time = start_date.strftime("%Y-%m-%d 00:00:00")
     end_time = start_date.strftime('%Y-%m-%d 23:59:59')
 
-    # 现在只是送礼的时候增加魅力
-    charm_record_list = TradeTicketRecord.objects.filter(created_time__gte=start_time, created_time__lt=end_time,
-                                                         trade_type=TradeTicketRecord.TradeTypeGift)
-    wealth_record_list = TradeDiamondRecord.objects.filter(created_time__gte=start_time, created_time__lt=end_time,
-                                                           trade_type=TradeDiamondRecord.TradeTypeGift)
+    gifts = Gift.objects.filter(gift_type__in=[1, 2])
+    gift_dict = {}
+    charm_value = 0
+    wealth_value = 0
+    for gift in gifts:
+        gift_id = str(gift.id)
+        if gift.charm_value:
+            charm_value = gift.charm_value
+        if gift.wealth_value:
+            wealth_value = gift.wealth_value
+        data = {}
+        data["charm"] = charm_value
+        data["wealth"] = wealth_value
+        gift_dict[gift_id] = data
+
+    records = GiftRecord.objects.filter(create_time__gte=start_time, create_time__lt=end_time)
 
     charm_rank_list = {}
     wealth_rank_list = {}
 
-    #循环计算榜单
-    for charm_record in charm_record_list:
-        if charm_record.user.id in charm_rank_list:
-            charm_rank_list[charm_record.user.id].charm = charm_rank_list[charm_record.user.id].charm +charm_record.ticket/10
-        else:
-            charm_rank = CharmRankNew(user=charm_record.user, charm=charm_record.ticket/10, type=2)
-            charm_rank_list[charm_record.user.id] = charm_rank
+    # 循环计算榜单
+    for record in records:
+        gift_id = record.gift_id
+        user_id = int(record.to_id)
+        if gift_id not in gift_dict:
+            continue
+        if not user_id:
+            continue
+        user = User.objects.filter(id=user_id).first()
+        if not user:
+            continue
 
-    for wealth_record in wealth_record_list:
-        if wealth_record.user.id in wealth_rank_list:
-            wealth_rank_list[wealth_record.user.id].wealth = wealth_rank_list[wealth_record.user.id].wealth + wealth_record.diamon/10
+        if user.is_block == 1:
+            continue
+
+        charm = gift_dict[gift_id]["charm"] * record.gift_count
+        wealth = gift_dict[gift_id]["wealth"] * record.gift_count
+
+        if user.is_video_auth == 1:
+            if user_id in charm_rank_list:
+                charm_rank_list[user_id].charm = charm_rank_list[user_id].charm + charm
+            else:
+                charm_rank = CharmRankNew(user=user, charm=charm, type=2)
+                charm_rank_list[user_id] = charm_rank
+
+        if user_id in wealth_rank_list:
+            wealth_rank_list[user_id].wealth = wealth_rank_list[user_id].wealth + wealth
         else:
-            wealth_rank = WealthRankNew(user=wealth_record.user, wealth=wealth_record.diamon/10, type=2)
-            wealth_rank_list[wealth_record.user.id] = wealth_rank
+            wealth_rank = WealthRankNew(user=user, wealth=wealth, type=2)
+            wealth_rank_list[user_id] = wealth_rank
 
     charmlist = charm_rank_list.values()
     wealthlist = wealth_rank_list.values()
@@ -215,11 +295,9 @@ def compute_1_rank_list_first():
     for i in range(0, len(charmlist)):
         if i > 29:
             break
-        print charmlist[i].rank
 
         charmlist[i].rank = i + 1
         charmlist[i].change_status = 0
-        print type(charmlist[i].rank)
 
         charmlist[i].save()
 
@@ -236,31 +314,61 @@ def compute_1_rank_list_delta():
     now_time = datetime.datetime.now()
     now_date = datetime.datetime(now_time.year, now_time.month, now_time.day)
     start_date = now_date - datetime.timedelta(days=1)
+
     start_time = start_date.strftime("%Y-%m-%d 00:00:00")
     end_time = start_date.strftime('%Y-%m-%d 23:59:59')
 
-    # 现在只是送礼的时候增加魅力
-    charm_record_list = TradeTicketRecord.objects.filter(created_time__gte=start_time, created_time__lt=end_time,
-                                                         trade_type=TradeTicketRecord.TradeTypeGift)
-    wealth_record_list = TradeDiamondRecord.objects.filter(created_time__gte=start_time, created_time__lt=end_time,
-                                                           trade_type=TradeDiamondRecord.TradeTypeGift)
+    gifts = Gift.objects.filter(gift_type__in=[1, 2])
+    gift_dict = {}
+    charm_value = 0
+    wealth_value = 0
+    for gift in gifts:
+        gift_id = str(gift.id)
+        if gift.charm_value:
+            charm_value = gift.charm_value
+        if gift.wealth_value:
+            wealth_value = gift.wealth_value
+
+        data = {}
+        data["charm"] = charm_value
+        data["wealth"] = wealth_value
+        gift_dict[gift_id] = data
+
+    records = GiftRecord.objects.filter(create_time__gte=start_time, create_time__lt=end_time)
+
     charm_rank_list = {}
     wealth_rank_list = {}
 
-    #循环计算榜单
-    for charm_record in charm_record_list:
-        if charm_record.user.id in charm_rank_list:
-            charm_rank_list[charm_record.user.id].charm = charm_rank_list[charm_record.user.id].charm +charm_record.ticket/10
-        else:
-            charm_rank = CharmRankNew(user=charm_record.user, charm=charm_record.ticket/10, type=2)
-            charm_rank_list[charm_record.user.id] = charm_rank
+    # 循环计算榜单
+    for record in records:
+        gift_id = record.gift_id
+        user_id = int(record.to_id)
+        if gift_id not in gift_dict:
+            continue
+        if not user_id:
+            continue
+        user = User.objects.filter(id=user_id).first()
+        if not user:
+            continue
 
-    for wealth_record in wealth_record_list:
-        if wealth_record.user.id in wealth_rank_list:
-            wealth_rank_list[wealth_record.user.id].wealth = wealth_rank_list[wealth_record.user.id].wealth + wealth_record.diamon/10
+        if user.is_block == 1:
+            continue
+
+        charm = gift_dict[gift_id]["charm"] * record.gift_count
+        wealth = gift_dict[gift_id]["wealth"] * record.gift_count
+
+        if user.is_video_auth == 1:
+            if user_id in charm_rank_list:
+                charm_rank_list[user_id].charm = charm_rank_list[user_id].charm + charm
+            else:
+                charm_rank = CharmRankNew(user=user, charm=charm, type=2)
+                charm_rank_list[user_id] = charm_rank
+
+        if user_id in wealth_rank_list:
+            wealth_rank_list[user_id].wealth = wealth_rank_list[user_id].wealth + wealth
         else:
-            wealth_rank = WealthRankNew(user=wealth_record.user, wealth=wealth_record.diamon/10, type=2)
-            wealth_rank_list[wealth_record.user.id] = wealth_rank
+            wealth_rank = WealthRankNew(user=user, wealth=wealth, type=2)
+            wealth_rank_list[user_id] = wealth_rank
 
     charmlist = charm_rank_list.values()
     wealthlist = wealth_rank_list.values()
@@ -282,7 +390,6 @@ def compute_1_rank_list_delta():
 
     CharmRankNew.objects.filter(type=2).delete()
     WealthRankNew.objects.filter(type=2).delete()
-    print old_charm_user_ids
 
     for i in range(0, len(charmlist)):
         if i > 29:
@@ -323,9 +430,10 @@ def compute_1_rank_list_delta():
 if __name__ == '__main__':
     compute_7_rank_list_first()
     compute_1_rank_list_first()
-    
+
     now = datetime.datetime.now()
     week_num = now.weekday()
     if int(week_num) == 0:
         compute_7_rank_list_delta()
+
     compute_1_rank_list_delta()
