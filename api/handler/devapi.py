@@ -26,11 +26,8 @@ class DevVisitHandler(BaseHandler):
         ip=self.user_ip
         user_token=self.arg("user_token", "")
 
-        dev_info_match = DevInfoMatch(model=model, osver=osver, platform=platform,
-                                      visit_time=datetime.datetime.now(), user_id=user_id,ip=ip)
-        dev_info_match.save()
+        DevInfoMatch.add_dev_info_match(model=model, osver=osver, platform=platform, user_id=user_id, ip=ip)
 
-        pass
 
 @handler_define
 class DevMatchHandler(BaseHandler):

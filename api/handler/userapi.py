@@ -532,8 +532,7 @@ class CompletePersonalInfo(BaseHandler):
             model = uas[2]
 
         print ip, platform, osver, model
-        dev_info_match = DevInfoMatch.objects.filter(model=model, ip=ip, platform=platform, osver=osver).first()
-
+        dev_info_match = DevInfoMatch.match_dev_info(model,platform,osver, ip)
         if dev_info_match:
             result_code = UserInviteCode.invite_code_check2(user_id=user.id, invite_id=dev_info_match.user_id,
                                                                       user_guid=user_guid)
@@ -543,6 +542,7 @@ class CompletePersonalInfo(BaseHandler):
                 message = u"<html><p>已成功邀请%s</p></html>" % nickname
                 MessageSender.send_system_message(dev_info_match.user_id, message)
 
+            dev_info_match.update(set__invite_ret_code=result_code)
 
 
         status = User.complete_personal_info(user, nickname, gender, img, birth_date)
