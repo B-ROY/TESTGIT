@@ -459,9 +459,8 @@ class PayAudioBill(BaseHandler):
 
         cost = price * pay_times
 
-
         user_account.diamond_trade_out(price=cost, desc=u"语音聊天id=%s" % room_id,
-                                       trade_type=TradeDiamondRecord.TradeTypeAudio, room_id=room_id)
+                                       trade_type=TradeDiamondRecord.TradeTypeAudio)
 
         user.update(inc__cost=cost)
 
