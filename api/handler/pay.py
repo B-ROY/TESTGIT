@@ -355,7 +355,7 @@ class ApplePayVerifyHandler(BaseHandler):
         reciept = self.arg('reciept' , "")
         user_id = self.current_user_id
 
-        if int(user_id) == 100339 or int(user_id) == 504 or int(user_id) == 3411 or int(user_id) == 54637 or int(user_id) == 30749 or int(user_id) == 68522:
+        if int(user_id) == 100370 or int(user_id) == 100339 or int(user_id) == 504 or int(user_id) == 3411 or int(user_id) == 54637 or int(user_id) == 30749 or int(user_id) == 68522:
             Account.fill_in(order_id=order_id)
             return self.write({"status": "success"})
 
