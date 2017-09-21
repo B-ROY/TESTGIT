@@ -40,6 +40,7 @@ from api.handler.thridpard.twitter_ import TwitterAPI
 from api.handler.thridpard.facebook_ import FacebookAPI
 from app.customer.models.video import PrivateVideo, VideoPurchaseRecord
 from app.customer.models.chat import ChatMessage, UserConversation
+from app.customer.models.dev_info import DevInfoMatch
 
 
 class ThridPardLogin(BaseHandler):
@@ -497,24 +498,52 @@ class CompletePersonalInfo(BaseHandler):
         gender = self.arg_int("gender", 2)
         invite_code = self.arg("invite_code", "0")
         user_guid = self.arg("guid")
+        #
+        # if invite_code.isdigit():
+        #     invite_code = int(invite_code)
+        # else:
+        #     invite_code = 0
+        #
+        # if invite_code != 0:
+        #     invite_id, result_code = UserInviteCode.invite_code_check(user_id=user.id, invite_code=invite_code, user_guid=user_guid)
+        #     if not result_code:
+        #         UserInviteCode.create_invite_code(user_id=user.id, invite_id=invite_id, user_guid=user_guid)
+        #     elif result_code == 10001:
+        #         return self.write({"status": "failed", "error_code": 10001, "error_message": _(u"邀请码填写错误,请重新填写")})
+        #     elif result_code == 10002:
+        #         return self.write({"status": "failed", "error_code": 10002, "error_message": _(u"不能邀请自己")})
+        #     elif result_code == 10003:
+        #         return self.write({"status": "failed", "error_code": 10003, "error_message": _(u"同一个设备不能邀请自己")})
+        #     elif result_code == 10004:
+        #         return self.write({"status": "failed", "error_code": 10004, "error_message": _(u"同一个设备仅能邀请1次")})
 
-        if invite_code.isdigit():
-            invite_code = int(invite_code)
+        # 设备匹配 自动添加邀请人
+
+
+        ip = self.user_ip
+        ua = self.request.headers.get('User-Agent')
+        uas = ua.split(";")
+
+        platform = 0 if uas[2] == "Android" else 1
+        osver = uas[3]
+        if platform == 0:
+            model = uas[4]
         else:
-            invite_code = 0
+            model = uas[2]
 
-        if invite_code != 0:
-            invite_id, result_code = UserInviteCode.invite_code_check(user_id=user.id, invite_code=invite_code, user_guid=user_guid)
+        print ip, platform, osver, model
+        dev_info_match = DevInfoMatch.match_dev_info(model,platform,osver, ip)
+        if dev_info_match:
+            result_code = UserInviteCode.invite_code_check2(user_id=user.id, invite_id=dev_info_match.user_id,
+                                                                      user_guid=user_guid)
             if not result_code:
-                UserInviteCode.create_invite_code(user_id=user.id, invite_id=invite_id, user_guid=user_guid)
-            elif result_code == 10001:
-                return self.write({"status": "failed", "error_code": 10001, "error_message": _(u"邀请码填写错误,请重新填写")})
-            elif result_code == 10002:
-                return self.write({"status": "failed", "error_code": 10002, "error_message": _(u"不能邀请自己")})
-            elif result_code == 10003:
-                return self.write({"status": "failed", "error_code": 10003, "error_message": _(u"同一个设备不能邀请自己")})
-            elif result_code == 10004:
-                return self.write({"status": "failed", "error_code": 10004, "error_message": _(u"同一个设备仅能邀请1次")})
+                UserInviteCode.create_invite_code(user_id=user.id, invite_id=dev_info_match.user_id, user_guid=user_guid)
+
+                message = u"<html><p>已成功邀请%s</p></html>" % nickname
+                MessageSender.send_system_message(dev_info_match.user_id, message)
+
+            dev_info_match.update(set__invite_ret_code=result_code)
+
 
         status = User.complete_personal_info(user, nickname, gender, img, birth_date)
         if status:

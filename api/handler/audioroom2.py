@@ -331,7 +331,7 @@ class RoomPaybill(BaseHandler):
         cost = price * pay_times
 
         user_account.diamond_trade_out(price=cost, desc=u"语音聊天id=%s" % room_id,
-                                            trade_type=TradeDiamondRecord.TradeTypeAudio)
+                                            trade_type=TradeDiamondRecord.TradeTypeAudio,room_id=room_id)
 
         user.update(inc__cost=cost)
 
@@ -357,7 +357,7 @@ class RoomPaybill(BaseHandler):
 class RoomReportClose(BaseHandler):
     @api_define("room paybill", r'/room/reportclose', [
         Param("room_id", True, str, "", "", description=u"房间心跳接口")
-    ], description=u"付费接口")
+    ], description=u"上报关闭")
     @login_required
     def get(self):
         room_id = self.arg("room_id")
