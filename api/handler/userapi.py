@@ -27,6 +27,7 @@ import international
 from app.customer.models.tools import UserTools, Tools, SendToolsRecord
 # from background.audit_handler.audit_handler import *
 from app.customer.models.tools import UserToolsRecord, UserTools, Tools, SendToolsRecord
+from app.util.messageque.http_request import RequestApi
 from app.util.shumeitools.shumeitools import *
 from app.customer.models.shumeidetect import *
 from app.customer.models.follow_user import FollowUser, FollowUserRecord
@@ -1699,7 +1700,12 @@ class UpdateUserInfo(BaseHandler):
             is_change = True
         if is_change:
             user.save()
-
+            body = {}
+            body["userid"] = user.id
+            path = "/sync/userinfo"
+            data = RequestApi.post_body_request_http(path=path, body=json.dumps(body), headers={}, host=settings.Message_Tornado_host)
+            result = json.loads(data)
+            print result.get("status_code")
         # if is_nickname_change:
         #     MessageSender.send_text_check(user.nickname, user.id, 1, self.user_ip)
         if is_desc_change:
