@@ -145,6 +145,7 @@ def push_index_anchor(self):
     randomvalist3 =[]
     randomvalist4 =[]
     randomvalist5 =[]
+    randomvalist6 = []
     index_id_all = []
     anchors = User.objects.filter(is_video_auth = 1,is_block__ne =1).order_by("is_vip")
     for anchor in anchors:
@@ -156,7 +157,7 @@ def push_index_anchor(self):
             if xinggan in anchor.label:
                 randomvalist3.append(anchor)
             elif qingcun in  anchor.label:
-                randomvalist3.append(anchor)
+                randomvalist6.append(anchor)
             elif yujie in anchor.label:
                 randomvalist4.append(anchor)
             elif not anchor.label:
@@ -167,12 +168,15 @@ def push_index_anchor(self):
     random.shuffle(randomvalist3)
     random.shuffle(randomvalist4)
     random.shuffle(randomvalist5)
+    random.shuffle(randomvalist6)
 
     valist1 = randomvalist1
     valist2 = randomvalist2
     valist3 = randomvalist3
     valist4 = randomvalist4
     valist5 = randomvalist5
+    valist6 = randomvalist6
+
     index_id = []
     for gaoxing in valist1:
         if gaoxing not in users and gaoxing.disturb_mode ==0 and gaoxing.audio_room_id !="":
@@ -183,6 +187,9 @@ def push_index_anchor(self):
     for xing in valist3:
         if xing not in users and xing.disturb_mode ==0 and xing.audio_room_id !="":
             users.append(xing)
+    for qing in valist6:
+        if qing not in users and qing.disturb_mode ==0 and xing.audio_room_id !="":
+            users.append(qing)
     for yu in valist4:
         if yu not in users and yu.disturb_mode ==0 and yu.audio_room_id !="":
             users.append(yu)
