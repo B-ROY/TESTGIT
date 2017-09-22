@@ -20,6 +20,13 @@ class UserRedis():
     __KEY_ANCHOR_ID_ALL = "index_anchor_id_all"
     __KEY_ANCHOR_V3 = "index_anchor_v3"
 
+    __KEY_RECOMMEND_ID_pure = "user_recommed_id_pure"
+    __KEY_RECOMMEND_ID_ALL_pure = "user_recommed_id_all_pure"
+    __KEY_RECOMMEND_pure = "user_recommed_pure"
+    __KEY_ANCHOR_ID_pure = "index_anchor_id_pure"
+    __KEY_ANCHOR_ID_ALL_pure = "index_anchor_id_all_pure"
+    __KEY_ANCHOR_pure = "index_anchor_pure"
+
     @classmethod
     def pop_user_id(cls):
         return RQueueClient.getInstance().redis.lpop(cls.__KEY_USER_ID)
@@ -107,34 +114,64 @@ class UserRedis():
         RQueueClient.getInstance().redis.rpush(cls.__KEY_RECOMMEND_ID_V3,*userids)
 
     @classmethod
+    def add_user_recommed_id_pure(cls,userids):
+        RQueueClient.getInstance().redis.rpush(cls.__KEY_RECOMMEND_ID_pure,*userids)
+
+    @classmethod
     def add_user_recommed_id_all(cls,userids):
         RQueueClient.getInstance().redis.rpush(cls.__KEY_RECOMMEND_ID_ALL,*userids)
 
+    @classmethod
+    def add_user_recommed_id_all_pure(cls,userids):
+        RQueueClient.getInstance().redis.rpush(cls.__KEY_RECOMMEND_ID_ALL_pure,*userids)
     @classmethod
     def add_user_recommed_v3(cls,usermap):
         RQueueClient.getInstance().redis.set(cls.__KEY_RECOMMEND_V3,usermap)
 
     @classmethod
+    def add_user_recommed_pure(cls,usermap):
+        RQueueClient.getInstance().redis.set(cls.__KEY_RECOMMEND_pure,usermap)
+
+    @classmethod
     def get_recommed_list_v3(cls):
         return  RQueueClient.getInstance().redis.lrange(cls.__KEY_RECOMMEND_ID_V3,0,-1)
+    @classmethod
+    def get_recommed_list_pure(cls):
+        return  RQueueClient.getInstance().redis.lrange(cls.__KEY_RECOMMEND_ID_pure,0,-1)
 
     @classmethod
     def get_recommed_list_all(cls):
         return RQueueClient.getInstance().redis.lrange(cls.__KEY_RECOMMEND_ID_ALL, 0, -1)
+    @classmethod
+    def get_recommed_list_all_pure(cls):
+        return RQueueClient.getInstance().redis.lrange(cls.__KEY_RECOMMEND_ID_ALL_pure, 0, -1)
 
     @classmethod
     def get_recommed_v3(cls):
         return RQueueClient.getInstance().redis.get(cls.__KEY_RECOMMEND_V3)
+    @classmethod
+    def get_recommed_pure(cls):
+        return RQueueClient.getInstance().redis.get(cls.__KEY_RECOMMEND_pure)
 
     @classmethod
     def delete_user_recommed_id_v3(cls):
         RQueueClient.getInstance().redis.delete(cls.__KEY_RECOMMEND_ID_V3)
+
+    @classmethod
+    def delete_user_recommed_id_pure(cls):
+        RQueueClient.getInstance().redis.delete(cls.__KEY_RECOMMEND_ID_pure)
     @classmethod
     def delete_user_recommed_id_all(cls):
         RQueueClient.getInstance().redis.delete(cls.__KEY_RECOMMEND_ID_ALL)
     @classmethod
+    def delete_user_recommed_id_all_pure(cls):
+        RQueueClient.getInstance().redis.delete(cls.__KEY_RECOMMEND_ID_ALL_pure)
+    @classmethod
     def delete_user_recommed_v3(cls):
         RQueueClient.getInstance().redis.delete(cls.__KEY_RECOMMEND_V3)
+    @classmethod
+    def delete_user_recommed_pure(cls):
+        RQueueClient.getInstance().redis.delete(cls.__KEY_RECOMMEND_pure)
 
 
     # // added by biwei
@@ -179,34 +216,62 @@ class UserRedis():
         RQueueClient.getInstance().redis.rpush(cls.__KEY_ANCHOR_ID_V3,*userids)
 
     @classmethod
+    def add_index_id_pure(cls,userids):
+        RQueueClient.getInstance().redis.rpush(cls.__KEY_ANCHOR_ID_pure,*userids)
+
+    @classmethod
     def add_index_id_all(cls,userids):
         RQueueClient.getInstance().redis.rpush(cls.__KEY_ANCHOR_ID_ALL,*userids)
 
     @classmethod
+    def add_index_id_all_pure(cls,userids):
+        RQueueClient.getInstance().redis.rpush(cls.__KEY_ANCHOR_ID_ALL_pure,*userids)
+    @classmethod
     def add_index_anchor_v3(cls,usermap):
         RQueueClient.getInstance().redis.set(cls.__KEY_ANCHOR_V3,usermap)
+    @classmethod
+    def add_index_anchor_pure(cls,usermap):
+        RQueueClient.getInstance().redis.set(cls.__KEY_ANCHOR_pure,usermap)
 
     @classmethod
     def delete_index_anchor_id_v3(cls):
         RQueueClient.getInstance().redis.delete(cls.__KEY_ANCHOR_ID_V3)
     @classmethod
+    def delete_index_anchor_id_pure(cls):
+        RQueueClient.getInstance().redis.delete(cls.__KEY_ANCHOR_ID_pure)
+    @classmethod
     def delete_index_anchor_id_all(cls):
         RQueueClient.getInstance().redis.delete(cls.__KEY_ANCHOR_ID_ALL)
     @classmethod
+    def delete_index_anchor_id_all_pure(cls):
+        RQueueClient.getInstance().redis.delete(cls.__KEY_ANCHOR_ID_ALL_pure)
+    @classmethod
     def delete_index_anchor_v3(cls):
         RQueueClient.getInstance().redis.delete(cls.__KEY_ANCHOR_V3)
+    @classmethod
+    def delete_index_anchor_pure(cls):
+        RQueueClient.getInstance().redis.delete(cls.__KEY_ANCHOR_pure)
 
     @classmethod
     def get_index_anchor_list_v3(cls,pageindex,offset):
         return RQueueClient.getInstance().redis.lrange(cls.__KEY_ANCHOR_ID_V3, pageindex, offset)
+    @classmethod
+    def get_index_anchor_list_pure(cls,pageindex,offset):
+        return RQueueClient.getInstance().redis.lrange(cls.__KEY_ANCHOR_ID_pure, pageindex, offset)
 
     @classmethod
     def get_index_anchor_list_all(cls, pageindex, offset):
         return RQueueClient.getInstance().redis.lrange(cls.__KEY_ANCHOR_ID_ALL, pageindex, offset)
+    @classmethod
+    def get_index_anchor_list_all_pure(cls, pageindex, offset):
+        return RQueueClient.getInstance().redis.lrange(cls.__KEY_ANCHOR_ID_ALL_pure, pageindex, offset)
 
     @classmethod
     def get_index_anchor_v3(cls):
         return RQueueClient.getInstance().redis.get(cls.__KEY_ANCHOR_V3)
+    @classmethod
+    def get_index_anchor_pure(cls):
+        return RQueueClient.getInstance().redis.get(cls.__KEY_ANCHOR_pure)
 
     '''
         判断用户是否为目标用户 判断标准为充值是否大于200
