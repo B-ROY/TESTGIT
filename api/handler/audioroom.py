@@ -601,6 +601,14 @@ class GetVoiceRoomListV2(BaseHandler):
         Param('room_type', False, int, 0, 0, u"房间类型筛选，0:全部,1:语音,2:视频")
     ], description=u"获取挂单房间列表v2")
     def get(self):
+        user_id = self.current_user_id
+        is_old = True
+        if user_id:
+            is_target = UserRedis.is_target_user(user_id)
+            if not is_target:
+                is_old = False
+        else:
+            is_old = False
         page = self.arg_int('page')
         page_count = self.arg_int('page_count')
         room_type = self.arg_int('room_type', 0)
@@ -620,21 +628,23 @@ class GetVoiceRoomListV2(BaseHandler):
         gender = self.arg_int("gender",0)
 
         data = []
-        if room_type == 2 and gender == 2 :
-            try:
-                anchor_list = UserRedis.get_index_anchor_list((page - 1) * page_count,(page * page_count)-1)
-                if len(anchor_list) > 0:
-                    anchor_data = eval(UserRedis.get_index_anchor())
-                    for anchor in anchor_list:
-                        data.append(anchor_data[anchor])
-                else:
+        if is_old:
+            if room_type == 2 and gender == 2 :
+                try:
+                    anchor_list = UserRedis.get_index_anchor_list((page - 1) * page_count,(page * page_count)-1)
+                    if len(anchor_list) > 0:
+                        anchor_data = eval(UserRedis.get_index_anchor())
+                        for anchor in anchor_list:
+                            data.append(anchor_data[anchor])
+                    else:
+                        data = oldanchorlist(gender,is_video,page,page_count)
+                except Exception,e:
                     data = oldanchorlist(gender,is_video,page,page_count)
-            except Exception,e:
+            else:
                 data = oldanchorlist(gender,is_video,page,page_count)
+            self.write({"status": "success", "data":map(lambda x:json.loads(x), data)})
         else:
-            data = oldanchorlist(gender,is_video,page,page_count)
-        self.write({"status": "success", "data":[]})
-
+            self.write({"status": "success", "data":[]})
 def oldanchorlist(gender,is_video,page,page_count):
     data = []
     if gender!=0:
