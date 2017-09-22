@@ -142,61 +142,90 @@ class Get_Index_Column(BaseHandler):
         Param('column_type', True, str, "2", "2", u'column_type　2:新人驾到  ')
     ], description=u"获取首页某栏目信息")
     def get(self):
+        user_id = self.current_user_id
+        is_old = True
+        if user_id:
+            is_target = UserRedis.is_target_user(user_id)
+            if not is_target:
+                is_old = False
+        else:
+            is_old = False
         column_type = self.arg_int('column_type')
         page = self.arg_int('page')
         page_count = self.arg_int('page_count')
         nodisplay = "59956dfb18ce427fa83c9cec"
         data = []
 
-        if column_type == 2:
-            # 新人驾到
-            anchor_list = NewAnchorRank.objects.all().order_by()[(page - 1) * page_count:page * page_count]
+        if is_old:
+            if column_type == 2:
+                # 新人驾到
+                anchor_list = NewAnchorRank.objects.all()
+                if anchor_list:
+                    anchor_list[(page - 1) * page_count:page * page_count]
 
-            for anchor in anchor_list:
-                user = User.objects.filter(id=anchor.user_id,is_video_auth=1).first()
-                if not user:
-                    continue
-                if user.disturb_mode != 1 :
-                    if nodisplay not in user.label:
-                        if user.id == 1 or user.id == 2:
+                    for anchor in anchor_list:
+                        user = User.objects.filter(id=anchor.user_id,is_video_auth=1).first()
+                        if not user:
                             continue
-                        if not user.audio_room_id:
-                            continue
-                        # 是否在线 查看心跳
-                        import time
-                        time = int(time.time())
-                        pre_time = time - 3600
-                        user_beat = UserHeartBeat.objects.filter(user=user, last_report_time__gte=pre_time).first()
-                        if user_beat:
-                            is_online = 1
-                            audioroom = AudioRoomRecord.objects.get(id=user.audio_room_id)
-                            personal_tags = UserTags.get_usertags(user_id=user.id)
-                            user_vip = UserVip.objects.filter(user_id=user.id).first()
-                            if user_vip:
-                                vip = Vip.objects.filter(id=user_vip.vip_id).first()
-                                dic = {
-                                    "audioroom": convert_audioroom(audioroom),
-                                    "user": convert_user(user),
-                                    "personal_tags": personal_tags,
-                                    "vip": convert_vip(vip),
-                                    "is_online": is_online
-                                }
-                            else:
-                                dic = {
-                                    "audioroom": convert_audioroom(audioroom),
-                                    "user": convert_user(user),
-                                    "is_online": is_online,
-                                    "personal_tags": personal_tags
-                                }
-                            # 视频认证状态
-                            real_video = RealVideoVerify.objects(user_id=user.id, status__ne=2).order_by("-update_time").first()
-                            show_video = RealVideoVerify.objects(user_id=user.id, status=1).order_by("-update_time").first()
-                            if show_video:
-                                dic["check_real_video"] = show_video.status
-                            else:
-                                if real_video:
-                                    dic["check_real_video"] = real_video.status
-                                else:
-                                    dic["check_real_video"] = 3
-                            data.append(dic)
+                        if user.disturb_mode != 1 :
+                            if nodisplay not in user.label:
+                                if user.id == 1 or user.id == 2:
+                                    continue
+                                if not user.audio_room_id:
+                                    continue
+                                # 是否在线 查看心跳
+                                import time
+                                time = int(time.time())
+                                pre_time = time - 3600
+                                user_beat = UserHeartBeat.objects.filter(user=user, last_report_time__gte=pre_time).first()
+                                if user_beat:
+                                    is_online = 1
+                                    audioroom = AudioRoomRecord.objects.get(id=user.audio_room_id)
+                                    personal_tags = UserTags.get_usertags(user_id=user.id)
+                                    user_vip = UserVip.objects.filter(user_id=user.id).first()
+                                    if user_vip:
+                                        vip = Vip.objects.filter(id=user_vip.vip_id).first()
+                                        dic = {
+                                            "audioroom": convert_audioroom(audioroom),
+                                            "user": convert_user(user),
+                                            "personal_tags": personal_tags,
+                                            "vip": convert_vip(vip),
+                                            "is_online": is_online
+                                        }
+                                    else:
+                                        dic = {
+                                            "audioroom": convert_audioroom(audioroom),
+                                            "user": convert_user(user),
+                                            "is_online": is_online,
+                                            "personal_tags": personal_tags
+                                        }
+                                    # 视频认证状态
+                                    real_video = RealVideoVerify.objects(user_id=user.id, status__ne=2).order_by("-update_time").first()
+                                    show_video = RealVideoVerify.objects(user_id=user.id, status=1).order_by("-update_time").first()
+                                    if show_video:
+                                        dic["check_real_video"] = show_video.status
+                                    else:
+                                        if real_video:
+                                            dic["check_real_video"] = real_video.status
+                                        else:
+                                            dic["check_real_video"] = 3
+                                    data.append(dic)
+        else:
+            recommed_list = UserRedis.get_recommed_list_pure()[(page - 1) * page_count:page * page_count]
+            if recommed_list:
+                recommed_data = eval(UserRedis.get_recommed_pure())
+                try:
+                    for recommed in recommed_list:
+                        if recommed in recommed_data:
+                            data.append(json.loads(recommed_data[recommed]))
+
+                except Exception,e:
+                    logging.error("audio_room_list_v3 error " + str(e))
+            else:
+                print "空的推荐列表"
+            anchor_list = UserRedis.get_index_anchor_list_pure(0,-1)
+            if len(anchor_list) > 0:
+                anchor_data = eval(UserRedis.get_index_anchor_pure())
+                for anchor in anchor_list:
+                    data.append(json.loads(anchor_data[anchor]))
         return self.write({"status": "success", "data": data, })

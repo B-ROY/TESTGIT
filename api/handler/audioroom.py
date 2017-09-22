@@ -633,7 +633,7 @@ class GetVoiceRoomListV2(BaseHandler):
                 data = oldanchorlist(gender,is_video,page,page_count)
         else:
             data = oldanchorlist(gender,is_video,page,page_count)
-        self.write({"status": "success", "data": map(lambda x:json.loads(x), data)})
+        self.write({"status": "success", "data":[]})
 
 def oldanchorlist(gender,is_video,page,page_count):
     data = []

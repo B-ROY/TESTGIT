@@ -69,7 +69,6 @@ def pushredis(self):
             # else:
             #     is_online = 0
             user_recommed_id_all.append(user.id)
-            roomrecord = AudioRoomRecord.objects.filter(user_id=user.id).order_by("-open_time").first()
             if not user_vip:
                 dic = {
                     "user":{
@@ -110,9 +109,10 @@ def pushredis(self):
 
             self.append(user.id)
             usermap[str(user.id)] = json.dumps(dic)
-            if not roomrecord or roomrecord.status == 1:
-                user_recommed_id.append(user.id)
+            user_recommed_id.append(user.id)
+
     deletetui()
+    print "===================self",self
     if user_recommed_id:
         UserRedis.add_user_recommed_id_pure(user_recommed_id)
         UserRedis.add_user_recommed_id_all_pure(user_recommed_id_all)
@@ -160,6 +160,7 @@ def push_index_anchor(self):
     finalusers = zaixianbururao + zaixiancall + zaixianwurao
     for user in finalusers:
         if user.id not in self:
+            index_id_all.append(user.id)
             personal_tags = UserTags.get_usertags(user_id=user.id)
             if not personal_tags:
                 personal_tags = []
@@ -199,8 +200,10 @@ def push_index_anchor(self):
                 }
                 dic["check_real_video"] = 1
             usermap[str(user.id)] = json.dumps(dic)
+            index_id.append(user.id)
     for user in lixian:
         if user.id not in self:
+            index_id_all.append(user.id)
             personal_tags = UserTags.get_usertags(user_id=user.id)
             if not personal_tags:
                 personal_tags = []
@@ -240,7 +243,9 @@ def push_index_anchor(self):
                 }
                 dic["check_real_video"] = 1
             usermap[str(user.id)] = json.dumps(dic)
+            index_id.append(user.id)
     deleteanchor()
+    print "==================index_id",index_id
     UserRedis.add_index_id_pure(index_id)
     UserRedis.add_index_id_all_pure(index_id_all)
     UserRedis.add_index_anchor_pure(usermap)
