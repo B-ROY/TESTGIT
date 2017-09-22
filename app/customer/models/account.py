@@ -24,6 +24,7 @@ class Account(Document):
     charge = IntField(verbose_name=u"用户总充值")
     last_diamond = IntField(verbose_name=u'最后消费之前的余额', default=0)
     update_time = DateTimeField(verbose_name=u"最后更新时间", default=datetime.datetime.now())
+    gold = IntField(verbose_name=u"金币数")
 
 
     class Meta:
@@ -269,6 +270,52 @@ class Account(Document):
 
         return True
 
+
+    def gold_trade_in(self, gold, desc, trade_type):
+        """
+        +加金币
+        """
+        tar = TradeGoldRecord(user=self.user)
+        if not self.gold:
+            self.gold = 0
+
+        tar.before_gold = self.gold
+        tar.after_gold = self.gold + gold
+        tar.desc = desc
+        tar.gold = gold
+        tar.trade_type = trade_type
+        tar.created_time = datetime.datetime.now()
+        tar.save()
+
+        self.gold += gold
+        self.update_time = datetime.datetime.now()
+        self.save()
+
+    def gold_trade_out(self, gold, desc, trade_type):
+        """
+        消耗金币
+        """
+        if not self.gold:
+            self.gold = 0
+
+        if self.gold < gold:
+            raise AccountException(
+                LESS_GOLD
+            )
+
+        tar = TradeGoldRecord(
+            user=self.user,
+            before_gold=self.gold,
+            after_gold=self.gold - gold,
+            gold=gold,
+            desc=desc,
+            created_time=datetime.datetime.now(),
+            trade_type=trade_type,
+        )
+        tar.save()
+        self.update(dec__gold=gold, set__update_time=datetime.datetime.now())
+
+
     ####################################################
     #                    创建提现订单                    #
     ####################################################
@@ -362,6 +409,8 @@ class TradeDiamondRecord(Document):
     TradeTypeVIP = 10  # 购买会员
     TradeTypeClairvoyant = 11  # 千里眼消耗金额
     TradeTypePrivateVideo = 12  # 千里眼消耗金额
+    TradeTypeLuckDraw = 13  # 抽奖所得
+    TradeTypeBuyGold = 14  # 购买金币
 
     TradeType = [
         (0, u'兑换'),
@@ -377,6 +426,8 @@ class TradeDiamondRecord(Document):
         (10, u'购买会员'),
         (11, u'千里眼消耗金额'),
         (12, u'购买私房视频'),
+        (13, u'抽奖所得'),
+        (14, u'购买金币'),
     ]
 
     user = GenericReferenceField("User", verbose_name=u'用户')
@@ -909,7 +960,25 @@ class WithdrawRequest(Document):
         return moneys
 
 
+#  金币交易记录
+class TradeGoldRecord(Document):
 
+    TypeReward = 0  # 抽奖所得
+    TypeLuckDrawConsume = 1  # 抽奖消耗
+    TypeDiamondBuy = 2  # 钻石购买
+
+    user = GenericReferenceField("User", verbose_name=u'用户')
+    before_gold = IntField(verbose_name=u'交易前金币')
+    after_gold = IntField(verbose_name=u'交易后金币')
+    gold = IntField(verbose_name=u'交易金币')
+    desc = StringField(verbose_name=u"描述", max_length=256, default='')
+    created_time = DateTimeField(verbose_name=u"购买时间")
+    trade_type = IntField(verbose_name=u'交易类型')
+
+    class Meta:
+        app_label = "customer"
+        verbose_name = u"金币交易记录"
+        verbose_name_plural = verbose_name
 
 
 
