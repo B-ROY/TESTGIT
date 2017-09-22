@@ -188,7 +188,7 @@ def push_index_anchor(self):
         if xing not in users and xing.disturb_mode ==0 and xing.audio_room_id !="":
             users.append(xing)
     for qing in valist6:
-        if qing not in users and qing.disturb_mode ==0 and xing.audio_room_id !="":
+        if qing not in users and qing.disturb_mode ==0 and qing.audio_room_id !="":
             users.append(qing)
     for yu in valist4:
         if yu not in users and yu.disturb_mode ==0 and yu.audio_room_id !="":
