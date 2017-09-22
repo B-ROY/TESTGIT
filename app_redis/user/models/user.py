@@ -207,3 +207,46 @@ class UserRedis():
     @classmethod
     def get_index_anchor_v3(cls):
         return RQueueClient.getInstance().redis.get(cls.__KEY_ANCHOR_V3)
+
+    '''
+        判断用户是否为目标用户 判断标准为充值是否大于200
+        1. 首页接口 用户列表 根据是否是目标用户吐不同数据
+        2. 在充值接口判断 如果充值大于200 则判定为目标用户
+        
+        
+    '''
+    __KEY_TARGET_USER__ = "key_target_user"
+
+    @classmethod
+    def add_target_user(cls, user_id):
+        return RQueueClient.getInstance().redis.sadd(cls.__KEY_TARGET_USER__, user_id)
+
+    @classmethod
+    def is_target_user(cls, user_id):
+        return RQueueClient.getInstance().redis.sismember(cls.__KEY_TARGET_USER__, str(user_id))
+
+    '''
+        返回删除的数量 如果返回值为0:q
+         则user_id不再列表中
+    '''
+    @classmethod
+    def delete_target_user(cls, user_id):
+        # 暂时没有删除逻辑
+        return RQueueClient.getInstance().redis.srem(cls.__KEY_TARGET_USER__, str(user_id))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
