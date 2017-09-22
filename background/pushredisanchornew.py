@@ -51,22 +51,16 @@ def pushredis(self):
         user_heart = UserHeartBeat.objects.get(user=user)
         if user_heart.last_report_time > pre_time and user.disturb_mode != 1:
             hots.append(user)
-    stuilist = []
     randomstui = []
     for stui in stuianchors:
         user_heart = UserHeartBeat.objects.get(user=stui)
         if user_heart.last_report_time > pre_time and stui.disturb_mode!=1:
-            show_video = RealVideoVerify.objects(user_id=stui.id, status=1).order_by("-update_time").first()
-            if show_video:
-                stuilist.insert(0,stui)
-            else:
-                randomstui.append(stui)
+            randomstui.append(stui)
     # hot 和 stulist
     # random.shuffle(hots)
-    random.shuffle(stuilist)
     random.shuffle(randomstui)
 
-    hots = hots + stuilist + randomstui
+    hots = hots + randomstui
 
 
     for user in hots:
@@ -84,8 +78,8 @@ def pushredis(self):
         user_beat = UserHeartBeat.objects.filter(user=user, last_report_time__gte=pre_time).first()
         if user_beat:
             is_online = 1
-        # else:
-        #     is_online = 0
+            # else:
+            #     is_online = 0
             user_recommed_id_all.append(user.id)
             roomrecord = AudioRoomRecord.objects.filter(user_id=user.id).order_by("-open_time").first()
             if not user_vip:
@@ -146,58 +140,27 @@ def push_index_anchor(self):
     qingcun = "597ef85718ce420b7d46ce11"
     nodisllpay = "59956dfb18ce427fa83c9cec"
 
-    valist1 =[]
     randomvalist1 =[]
-    valist2 =[]
     randomvalist2 =[]
-    valist3 =[]
     randomvalist3 =[]
-    valist4 =[]
     randomvalist4 =[]
-    valist5 =[]
     randomvalist5 =[]
-    index_id = []
     index_id_all = []
     anchors = User.objects.filter(is_video_auth = 1,is_block__ne =1).order_by("is_vip")
     for anchor in anchors:
         if gaoyanzhi in anchor.label and xinggan in anchor.label:
-                show_video = RealVideoVerify.objects(user_id=anchor.id, status=1).order_by("-update_time").first()
-                if show_video:
-                    valist1.insert(0,anchor)
-                else:
-                    randomvalist1.append(anchor)
+            randomvalist1.append(anchor)
         elif gaoyanzhi in anchor.label and qingcun in anchor.label:
-                show_video = RealVideoVerify.objects(user_id=anchor.id, status=1).order_by("-update_time").first()
-                if show_video:
-                    valist2.insert(0,anchor)
-                else:
-                    randomvalist2.append(anchor)
+            randomvalist2.append(anchor)
         else:
             if xinggan in anchor.label:
-                    show_video = RealVideoVerify.objects(user_id=anchor.id, status=1).order_by("-update_time").first()
-                    if show_video:
-                        valist3.insert(0,anchor)
-                    else:
-                        randomvalist3.append(anchor)
+                randomvalist3.append(anchor)
+            elif qingcun in  anchor.label:
+                randomvalist3.append(anchor)
             elif yujie in anchor.label:
-                    show_video = RealVideoVerify.objects(user_id=anchor.id, status=1).order_by("-update_time").first()
-                    if show_video:
-                        valist4.insert(0,anchor)
-                    else:
-                        randomvalist4.append(anchor)
+                randomvalist4.append(anchor)
             elif not anchor.label:
-                show_video = RealVideoVerify.objects(user_id=anchor.id, status=1).order_by("-update_time").first()
-                if show_video:
-                    valist5.insert(0,anchor)
-                else:
-                    randomvalist5.append(anchor)
-
-    # 将主播在各项内随机
-    random.shuffle(valist1)
-    random.shuffle(valist2)
-    random.shuffle(valist3)
-    random.shuffle(valist4)
-    random.shuffle(valist5)
+                randomvalist5.append(anchor)
 
     random.shuffle(randomvalist1)
     random.shuffle(randomvalist2)
@@ -205,11 +168,12 @@ def push_index_anchor(self):
     random.shuffle(randomvalist4)
     random.shuffle(randomvalist5)
 
-    valist1 = valist1 + randomvalist1
-    valist2 = valist2 + randomvalist2
-    valist3 = valist3 + randomvalist3
-    valist4 = valist4 + randomvalist4
-    valist5 = valist5 + randomvalist5
+    valist1 = randomvalist1
+    valist2 = randomvalist2
+    valist3 = randomvalist3
+    valist4 = randomvalist4
+    valist5 = randomvalist5
+    index_id = []
     for gaoxing in valist1:
         if gaoxing not in users and gaoxing.disturb_mode ==0 and gaoxing.audio_room_id !="":
             users.append(gaoxing)
@@ -292,7 +256,7 @@ def push_index_anchor(self):
                         index_id.append(user.id)
         except Exception,e:
             print e
-                #UserRedis.add_index_anchor(str(user.id),json.dumps(dic))
+            #UserRedis.add_index_anchor(str(user.id),json.dumps(dic))
     deleteanchor()
     UserRedis.add_index_id_v3(index_id)
     UserRedis.add_index_id_all(index_id_all)
