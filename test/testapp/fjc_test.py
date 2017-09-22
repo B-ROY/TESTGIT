@@ -310,6 +310,18 @@ def fix_user():
                 user.update(set__is_video_auth=4)
 
 
+def fix_pure_moment():
+    from app.customer.models.community import UserMoment
+    moments = UserMoment.objects.all()
+    for moment in moments:
+        user_id = moment.user_id
+        user = User.objects.filter(id=user_id).first()
+        if not user:
+            continue
+        pure_id = "597ef85718ce420b7d46ce11"
+        if user.label:
+            if pure_id in user.label:
+                moment.update(set__is_pure=1)
 
 
 

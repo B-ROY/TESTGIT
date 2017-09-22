@@ -78,8 +78,8 @@ def pushredis(self):
         user_beat = UserHeartBeat.objects.filter(user=user, last_report_time__gte=pre_time).first()
         if user_beat:
             is_online = 1
-        # else:
-        #     is_online = 0
+            # else:
+            #     is_online = 0
             user_recommed_id_all.append(user.id)
             roomrecord = AudioRoomRecord.objects.filter(user_id=user.id).order_by("-open_time").first()
             if not user_vip:
@@ -263,7 +263,7 @@ def push_index_anchor(self):
                         index_id.append(user.id)
         except Exception,e:
             print e
-                #UserRedis.add_index_anchor(str(user.id),json.dumps(dic))
+            #UserRedis.add_index_anchor(str(user.id),json.dumps(dic))
     deleteanchor()
     UserRedis.add_index_id_v3(index_id)
     UserRedis.add_index_id_all(index_id_all)

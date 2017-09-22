@@ -486,13 +486,12 @@ class CompletePersonalInfo(BaseHandler):
                     text_detect = TextDetect()
                     text_detect.user = user
                     text_detect.text_channel = 1
-                    text_detect.text = user.nickname
+                    text_detect.text = nickname
                     text_detect.created_time = datetime.datetime.now()
                     text_detect.save()
                     return self.write({'status': "fail",
                                        "error_code": 10005,
                                        'error_message': u"经系统检测,您的昵称内容涉及违规因素,请重新编辑"})
-
 
         birth_date = self.arg("birth_date", "1995-01-01")
         gender = self.arg_int("gender", 2)

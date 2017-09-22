@@ -11,6 +11,7 @@ from app.customer.models.real_video_verify import RealVideoVerify
 from app.util.messageque.msgsender import MessageSender
 import logging
 import international
+from app_redis.user.models.user import UserRedis
 
 
 connect(CHATPAMONGO.db, host=CHATPAMONGO.host, port=CHATPAMONGO.port, username=CHATPAMONGO.username,
@@ -35,6 +36,7 @@ class UserMoment(Document):
     price = IntField(verbose_name=u"私房视频价格")
     is_public = IntField(verbose_name=u"是否公开")  # 1:公开 2:未公开
     rank_score = FloatField(verbose_name=u"排名得分")
+    is_pure = IntField(verbose_name=u"是否清纯")  # 1:清纯
 
     @classmethod
     def create(cls, user_id, picture_urls, content):
@@ -65,6 +67,12 @@ class UserMoment(Document):
             MessageSender.send_picture_detect(pic_url="", user_id=0, pic_channel=0, source=2, obj_id=str(user_moment.id))
         else:
             user_moment.update(set__show_status=1)
+
+        user = User.objects.filter(id=user_id).first()
+        pure_id = "597ef85718ce420b7d46ce11"
+        if user.label:
+            if pure_id in user.label:
+                user_moment.update(set__is_pure=1)
 
     @classmethod
     def update_like(cls, status, user_id, moment_id):
@@ -242,11 +250,18 @@ class UserMoment(Document):
         return interval
 
     @classmethod
-    def get_index_moments(cls, page, page_count):
+    def get_index_moments(cls, page, page_count, user_id):
+        is_target = UserRedis.is_target_user(user_id)
         if int(page == 1):
-            return cls.objects.filter(show_status__in=[1, 3, 4], delete_status=1, is_public=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
+            if is_target:
+                return cls.objects.filter(show_status__in=[1, 3, 4], delete_status=1, is_public=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
+            else:
+                return cls.objects.filter(show_status__in=[1, 3, 4], delete_status=1, is_public=1, is_pure=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
         else:
-            score_moments = cls.objects.filter(show_status__in=[1, 3, 4], delete_status=1, is_public=1).order_by("-rank_score")[((page - 2) * page_count):(page-1) * page_count]
+            if is_target:
+                score_moments = cls.objects.filter(show_status__in=[1, 3, 4], delete_status=1, is_public=1).order_by("-rank_score")[((page - 2) * page_count):(page-1) * page_count]
+            else:
+                score_moments = cls.objects.filter(show_status__in=[1, 3, 4], delete_status=1, is_public=1, is_pure=1).order_by("-rank_score")[((page - 2) * page_count):(page-1) * page_count]
             return score_moments
 
 class UserComment(Document):
