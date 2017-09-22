@@ -60,15 +60,6 @@ class Account(Document):
 
     def diamond_trade_out(self, price, desc, trade_type, room_id=None):
 
-        #如果总充值超过200 则将其标记为目标用户
-        if  self.charge >= 20000 and self.charge < 20000 + diamond:
-            result = UserRedis.add_target_user(self.user.id)
-            if result != 1 :
-                logging.error("target user error: user_id " + str(self.user.id) + " times " + str(result))
-
-
-    def diamond_trade_out(self, price, desc, trade_type):
-
         """
         -减钱
         """
@@ -422,23 +413,24 @@ class TradeDiamondRecord(Document):
     TradeTypeLuckDraw = 13  # 抽奖所得
     TradeTypeBuyGold = 14  # 购买金币
 
-    TradeType = [
-        (0, u'兑换'),
-        (1, u'购买礼物'),
-        (2, u'语音聊天'),
-        (3, u'图片解锁'),
-        (4, u'每日签到'),
-        (5, u'分享'),
-        (6, u'消息门槛送礼'),
-        (7, u'视频聊天'),
-        (8, u'购买道具'),
-        (9, u'漂流瓶消耗余额'),
-        (10, u'购买会员'),
-        (11, u'千里眼消耗金额'),
-        (12, u'购买私房视频'),
-        (13, u'抽奖所得'),
-        (14, u'购买金币'),
-    ]
+    TradeType_DICT = {
+        0: u'兑换',
+        1: u'购买礼物',
+        2: u'语音聊天',
+        3: u'图片解锁',
+        4: u'每日签到',
+        5: u'分享',
+        6: u'消息门槛送礼',
+        7: u'视频聊天',
+        8: u'购买道具',
+        9: u'漂流瓶消耗余额',
+        10: u'购买会员',
+        11: u'千里眼消耗金额',
+        12: u'购买私房视频',
+        13: u'抽奖所得',
+        14: u'购买金币',
+    }
+
 
     user = GenericReferenceField("User", verbose_name=u'用户')
     before_balance = IntField(verbose_name=u'交易前余额')
@@ -446,7 +438,7 @@ class TradeDiamondRecord(Document):
     diamon = IntField(verbose_name=u'交易引力币')
     desc = StringField(verbose_name=u"描述", max_length=256, default='')
     created_time = DateTimeField(verbose_name=u"购买时间", default=datetime.datetime.now())
-    trade_type = IntField(verbose_name=u'交易类型', choices=TradeType)
+    trade_type = IntField(verbose_name=u'交易类型')
     room_id = StringField(verbose_name=u"房间付费房间id")
 
     class Meta:
@@ -454,6 +446,61 @@ class TradeDiamondRecord(Document):
         verbose_name = u"充值交易记录"
         verbose_name_plural = verbose_name
 
+    @classmethod
+    def get_record_list(cls, user, page, page_count, page_token):
+        now = datetime.datetime.now()
+        enddate = now - datetime.timedelta(days=7)
+        end_time = enddate.strftime("%Y-%m-%d 23:59:59")
+        if page_token:
+            time_token = datetime.datetime.fromtimestamp(page_token)
+        else:
+            time_token = now
+
+        list = cls.objects.filter(user=user, created_time__lt=time_token, created_time__gte=end_time)[(page - 1) * page_count:page * page_count]
+
+        if list:
+            size = list.count()
+            num = 1
+            for record in list:
+                if size != num:
+                    num += 1
+                else:
+                    page_token = cls.get_page_token(record.created_time)
+
+        return page_token, list
+
+    @classmethod
+    def get_page_token(cls, date_time):
+        temp_time = date_time.strftime("%Y-%m-%d %H:%M:%S")
+        timeArray = time.strptime(temp_time, "%Y-%m-%d %H:%M:%S")
+        timestamp = time.mktime(timeArray)
+        return int(timestamp)
+
+    def normal_info(self):
+        temp_time = self.created_time.strftime("%Y-%m-%d %H:%M:%S")
+        timeArray = time.strptime(temp_time, "%Y-%m-%d %H:%M:%S")
+        # 转换成时间戳
+        timestamp = time.mktime(timeArray)
+
+        data = {
+            "diamond": self.diamon,
+            "create_time": int(timestamp),
+            "trade_type": self.trade_type,
+            # "before_balance": self.before_balance,
+            # "after_balance": self.after_balance,
+        }
+        if self.trade_type in TradeDiamondRecord.TradeType_DICT:
+            data["desc"] = TradeDiamondRecord.TradeType_DICT[self.trade_type]
+
+        if self.before_balance > self.after_balance:
+            is_consume = 1
+        elif self.before_balance < self.after_balance:
+            is_consume = 0
+        else:
+            is_consume = 3
+
+        data["is_consume"] = is_consume
+        return data
 
 class TradeTicketRecord(Document):
     TradeTypeGift = 0  # 购买礼物
