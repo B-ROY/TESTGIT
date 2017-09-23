@@ -58,10 +58,10 @@ class Account(Document):
             MessageSender.send_charge_info_message(self.user.id, self.user.nickname, diamond)
 
         #如果总充值超过200 则将其标记为目标用户
-        if  self.charge >= 20000 and self.charge < 20000 + diamond:
-            result = UserRedis.add_target_user(self.user.id)
-            if result != 1 :
-                logging.error("target user error: user_id " + str(self.user.id) + " times " + str(result))
+        # if  self.charge >= 20000 and self.charge < 20000 + diamond:
+        #     result = UserRedis.add_target_user(self.user.id)
+        #     if result != 1 :
+        #         logging.error("target user error: user_id " + str(self.user.id) + " times " + str(result))
 
 
     def diamond_trade_out(self, price, desc, trade_type):

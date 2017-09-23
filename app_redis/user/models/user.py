@@ -299,6 +299,27 @@ class UserRedis():
         # 暂时没有删除逻辑
         return RQueueClient.getInstance().redis.srem(cls.__KEY_TARGET_USER__, str(user_id))
 
+    __KEY__PURE_ANCHOR = "key_pure_anchor"
+
+    @classmethod
+    def add_pure_anchor(cls, user_id):
+        return RQueueClient.getInstance().redis.sadd(cls.__KEY__PURE_ANCHOR, user_id)
+
+    @classmethod
+    def is_pure_anchor(cls, user_id):
+        return RQueueClient.getInstance().redis.sismember(cls.__KEY__PURE_ANCHOR, str(user_id))
+
+    '''
+        返回删除的数量 如果返回值为0:q
+         则user_id不再列表中
+    '''
+
+    @classmethod
+    def delete_pure_anchor(cls, user_id):
+        # 暂时没有删除逻辑
+        return RQueueClient.getInstance().redis.srem(cls.__KEY__PURE_ANCHOR, str(user_id))
+
+
 
 
 
