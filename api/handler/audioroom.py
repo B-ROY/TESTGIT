@@ -34,6 +34,7 @@ from app.picture.models.picture import PictureInfo
 from app.customer.models.real_video_verify import RealVideoVerify
 from app_redis.user.models.user import *
 from app.audio.models.roomrecord import RoomRecord
+from app_redis.user.models.user import UserRedis
 
 
 appID = settings.Agora_AppId
@@ -601,6 +602,14 @@ class GetVoiceRoomListV2(BaseHandler):
         Param('room_type', False, int, 0, 0, u"房间类型筛选，0:全部,1:语音,2:视频")
     ], description=u"获取挂单房间列表v2")
     def get(self):
+        user_id = self.current_user_id
+        is_old = True
+        if user_id:
+            is_target = UserRedis.is_target_user(user_id)
+            if not is_target:
+                is_old = False
+        else:
+            is_old = False
         page = self.arg_int('page')
         page_count = self.arg_int('page_count')
         room_type = self.arg_int('room_type', 0)
@@ -620,21 +629,23 @@ class GetVoiceRoomListV2(BaseHandler):
         gender = self.arg_int("gender",0)
 
         data = []
-        if room_type == 2 and gender == 2 :
-            try:
-                anchor_list = UserRedis.get_index_anchor_list((page - 1) * page_count,(page * page_count)-1)
-                if len(anchor_list) > 0:
-                    anchor_data = eval(UserRedis.get_index_anchor())
-                    for anchor in anchor_list:
-                        data.append(anchor_data[anchor])
-                else:
+        if is_old:
+            if room_type == 2 and gender == 2 :
+                try:
+                    anchor_list = UserRedis.get_index_anchor_list((page - 1) * page_count,(page * page_count)-1)
+                    if len(anchor_list) > 0:
+                        anchor_data = eval(UserRedis.get_index_anchor())
+                        for anchor in anchor_list:
+                            data.append(anchor_data[anchor])
+                    else:
+                        data = oldanchorlist(gender,is_video,page,page_count)
+                except Exception,e:
                     data = oldanchorlist(gender,is_video,page,page_count)
-            except Exception,e:
+            else:
                 data = oldanchorlist(gender,is_video,page,page_count)
+            self.write({"status": "success", "data":map(lambda x:json.loads(x), data)})
         else:
-            data = oldanchorlist(gender,is_video,page,page_count)
-        self.write({"status": "success", "data": map(lambda x:json.loads(x), data)})
-
+            self.write({"status": "success", "data":[]})
 def oldanchorlist(gender,is_video,page,page_count):
     data = []
     if gender!=0:
@@ -720,6 +731,15 @@ def oldanchorlist(gender,is_video,page,page_count):
 class GetVoiceRoomListV3(BaseHandler):
     @api_define("home page list v3", r'/audio/room/list_v3', [ ], description=u"首页接口")
     def get(self):
+        user_id = self.current_user_id
+        is_old = True
+        if user_id:
+            is_target = UserRedis.is_target_user(user_id)
+            if not is_target:
+                is_old = False
+        else:
+            is_old = False
+
         result_advs = []
         hot_list = []
         video_list = []
@@ -727,24 +747,42 @@ class GetVoiceRoomListV3(BaseHandler):
         for adv in advs or []:
             result_advs.append(adv.normal_info())
 
-        recommed_list = UserRedis.get_recommed_list_v3()
-        if recommed_list:
-            recommed_data = eval(UserRedis.get_recommed_v3())
-            try:
-                for recommed in recommed_list:
-                    if recommed in recommed_data:
-                        hot_list.append(json.loads(recommed_data[recommed]))
+        if is_old:
+            recommed_list = UserRedis.get_recommed_list_v3()
+            if recommed_list:
+                recommed_data = eval(UserRedis.get_recommed_v3())
+                try:
+                    for recommed in recommed_list:
+                        if recommed in recommed_data:
+                            hot_list.append(json.loads(recommed_data[recommed]))
 
-            except Exception,e:
-                logging.error("audio_room_list_v3 error " + str(e))
+                except Exception,e:
+                    logging.error("audio_room_list_v3 error " + str(e))
+            else:
+                print "空的推荐列表"
+            anchor_list = UserRedis.get_index_anchor_list_v3(0,-1)
+            if len(anchor_list) > 0:
+                anchor_data = eval(UserRedis.get_index_anchor_v3())
+                for anchor in anchor_list:
+                    video_list.append(json.loads(anchor_data[anchor]))
         else:
-            print "空的推荐列表"
-        anchor_list = UserRedis.get_index_anchor_list_v3(0,-1)
-        if len(anchor_list) > 0:
-            anchor_data = eval(UserRedis.get_index_anchor_v3())
-            for anchor in anchor_list:
-                video_list.append(json.loads(anchor_data[anchor]))
+            recommed_list = UserRedis.get_recommed_list_pure()
+            if recommed_list:
+                recommed_data = eval(UserRedis.get_recommed_pure())
+                try:
+                    for recommed in recommed_list:
+                        if recommed in recommed_data:
+                            hot_list.append(json.loads(recommed_data[recommed]))
 
+                except Exception,e:
+                    logging.error("audio_room_list_v3 error " + str(e))
+            else:
+                print "空的推荐列表"
+            anchor_list = UserRedis.get_index_anchor_list_pure(0,-1)
+            if len(anchor_list) > 0:
+                anchor_data = eval(UserRedis.get_index_anchor_pure())
+                for anchor in anchor_list:
+                    video_list.append(json.loads(anchor_data[anchor]))
         self.write({
             "status": "success",
             "banners": result_advs,

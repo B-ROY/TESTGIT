@@ -183,7 +183,11 @@ class MomentListV3(BaseHandler):
                     if fr_uid not in user_ids:
                         user_ids.append(fr_uid)
 
-            moments = UserMoment.objects.filter(user_id__in=user_ids, show_status__in=[1, 3, 4], delete_status=1, is_public=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
+            is_target = UserRedis.is_target_user(user_id)
+            if is_target:
+                moments = UserMoment.objects.filter(user_id__in=user_ids, show_status__in=[1, 3, 4], delete_status=1, is_public=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
+            else:
+                moments = UserMoment.objects.filter(user_id__in=user_ids, show_status__in=[1, 3, 4], delete_status=1, is_public=1, is_pure=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
         elif list_type == 3:
             # 临时加一个 判断我的. 稍后客户端把lsit_type修复
             if show_user_id == int(user_id):
