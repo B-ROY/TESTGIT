@@ -184,7 +184,7 @@ class MomentListV3(BaseHandler):
                         user_ids.append(fr_uid)
 
             is_target = (self.current_user.is_video_auth!=1 and UserRedis.is_target_user(user_id)) or \
-                        (self.current_user_id.is_video_auth==1 and not UserRedis.is_pure_anchor(user_id))
+                        (self.current_user.is_video_auth==1 and not UserRedis.is_pure_anchor(user_id))
             
             if is_target:
                 moments = UserMoment.objects.filter(user_id__in=user_ids, show_status__in=[1, 3, 4], delete_status=1, is_public=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
