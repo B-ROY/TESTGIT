@@ -17,7 +17,7 @@ from base.settings import load_django_settings
 load_django_settings('live_video.base', 'live_video.app')
 
 from app.customer.models.account import *
-from app.customer.models.rank import CharmRankNew, WealthRankNew
+from app.customer.models.rank import CharmRankNew, WealthRankNew,PureCharmRank
 from operator import attrgetter
 from app.customer.models.gift import GiftRecord, Gift
 
@@ -427,10 +427,61 @@ def compute_1_rank_list_delta():
                 db_wealth.update(set__change_status=2)
 
 
-if __name__ == '__main__':
-    compute_7_rank_list_first()
-    compute_1_rank_list_first()
 
+
+# ####计算清纯主播######
+def compute_pure_charm_rank_first():
+    qingcun = "597ef85718ce420b7d46ce11"
+    PureCharmRank.objects.filter().delete()
+
+    now_time = datetime.datetime.now()
+
+    now_date = datetime.datetime(now_time.year, now_time.month, now_time.day)
+    start_date = now_date - datetime.timedelta(days=30)
+
+    start_time = start_date.strftime("%Y-%m-%d 00:00:00")
+    end_time = now_date.strftime('%Y-%m-%d 23:59:59')
+
+    # 现在只是送礼的时候增加魅力
+    charm_record_list = TradeTicketRecord.objects.filter(created_time__gte=start_time, created_time__lt=end_time,
+                                                         trade_type=TradeTicketRecord.TradeTypeGift)
+
+    charm_rank_list = {}
+
+    # 循环计算榜单
+    for charm_record in charm_record_list:
+        if charm_record.user.label and qingcun in charm_record.user.label:
+            if charm_record.user.id in charm_rank_list:
+                charm_rank_list[charm_record.user.id].charm = charm_rank_list[
+                                                                  charm_record.user.id].charm + charm_record.ticket / 10
+            else:
+                charm_rank = PureCharmRank(user=charm_record.user, charm=charm_record.ticket / 10)
+                charm_rank_list[charm_record.user.id] = charm_rank
+
+
+
+    charmlist = charm_rank_list.values()
+
+    charmlist.sort(key=attrgetter("charm"), reverse=True)
+
+    for i in range(0, len(charmlist)):
+        if i > 29:
+            break
+        print charmlist[i].rank
+
+        charmlist[i].rank = i + 1
+        charmlist[i].change_status = 0
+        print type(charmlist[i].rank)
+
+        charmlist[i].save()
+
+
+
+
+if __name__ == '__main__':
+    #compute_7_rank_list_first()
+    #compute_1_rank_list_first()
+    
     now = datetime.datetime.now()
     week_num = now.weekday()
     if int(week_num) == 0:

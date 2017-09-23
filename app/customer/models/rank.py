@@ -128,3 +128,30 @@ class WealthRankNew(Document):
         wealth_rank_list = WealthRankNew.objects.filter(rank__lte=count, type=int(type))
 
         return wealth_rank_list
+
+
+# 清纯主播美丽排行榜
+class PureCharmRank(Document):
+    user = GenericReferenceField("User", verbose_name=u'用户')
+    charm = IntField(verbose_name=u"主播近三天魅力值")
+    change_status = IntField(verbose_name=u"较上次位置变化情况")
+
+    rank = IntField(verbose_name=u"当前排名", default=0)
+
+    @classmethod
+    def get_rank_list(cls):
+        charm_rank_list = CharmRankNew.objects.all()
+
+        return charm_rank_list
+
+
+
+
+
+
+
+
+
+
+
+
