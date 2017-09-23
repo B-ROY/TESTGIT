@@ -32,16 +32,17 @@ def pushredis(self):
     #pre_time = now_time - 120
     pre_time = now_time - 3600
     # heartbeats = UserHeartBeat.objects.filter(last_report_time__gte=pre_time)
-    stuilabel ="598d7a2418ce423b1222d645" #首推标签id
+    #stuilabel ="598d7a2418ce423b1222d645" #首推标签id
+    nvshentuan = "59801c4b18ce4256ceabdd03"
     qingcun = "597ef85718ce420b7d46ce11"
     gaoqing = "59c61e3718ce4216c1c87ab9"
     usersss = User.objects.filter(is_video_auth = 1,is_block__ne =1).order_by("is_vip")
     firstsort = []
     stuiqingchunanchors =[]
     for u in usersss:
-        if stuilabel in u.label and qingcun in u.label and gaoqing in u.label:
+        if nvshentuan in u.label and qingcun in u.label and gaoqing in u.label:
             firstsort.append(u)
-        elif stuilabel in u.label and qingcun in u.label:
+        elif nvshentuan in u.label and qingcun in u.label:
             stuiqingchunanchors.append(u)
     users = []
     user_recommed_id = []
