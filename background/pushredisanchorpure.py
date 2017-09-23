@@ -167,10 +167,6 @@ def push_index_anchor(self):
             user_vip = UserVip.objects.filter(user_id=user.id).first()
 
             is_online = 1
-            # 视频认证状态
-            real_video = RealVideoVerify.objects(user_id=user.id, status__ne=2).order_by("-update_time").first()
-            show_video = RealVideoVerify.objects(user_id=user.id, status=1).order_by("-update_time").first()
-
             if user_vip:
                 vip = Vip.objects.filter(id=user_vip.vip_id).first()
                 dic = {
