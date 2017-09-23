@@ -5,7 +5,7 @@ from mongoengine import *
 from base.settings import CHATPAMONGO
 from app.customer.models.account import *
 from app.customer.models.user import User
-from app.customer.models.tools import *
+
 
 
 connect(CHATPAMONGO.db, host=CHATPAMONGO.host, port=CHATPAMONGO.port, username=CHATPAMONGO.username,
@@ -69,10 +69,10 @@ class UserVip(Document):
     create_time = DateTimeField(verbose_name=u"创建时间", default=datetime.datetime.now())
     end_time = DateTimeField(verbose_name=u"会员截止时间")
 
-
     # 用户购买会员
     @classmethod
     def buy_vip(cls, user_id, vip_id):
+        from app.customer.models.tools import UserTools, Tools, UserToolsRecord
         user = User.objects.filter(id=user_id).first()
         account = Account.objects.filter(user=user).first()
         vip = Vip.objects.filter(id=vip_id).first()

@@ -20,6 +20,7 @@ from app.customer.models.video import InviteMessage
 from app.customer.models.benifit import TicketAccount
 from app.customer.models.account import TradeDiamondRecord, TradeTicketRecord, Account
 import international
+from app.customer.models.tools import UserTools
 
 
 @handler_define
@@ -248,6 +249,9 @@ class PrivateVideoCanWatch(BaseHandler):
 
         buy_video_status = VideoPurchaseRecord.get_buy_status(user_id, video_id)
 
+        # 观影券个数  观影碎片个数  每个视频所需观影碎片数
+        watch_card_count, watch_card_part_count, need_part_count = UserTools.get_watch_count(user_id)
+
         # 今天是否看过词视频
         looked_today = VipWatchVideoRecord.objects.filter(user_id=user_id, create_time=create_time, video_id=video_id).first()
         is_looked_today = 2
@@ -275,9 +279,14 @@ class PrivateVideoCanWatch(BaseHandler):
                 VipWatchVideoRecord.create_record(video_id, user_id)
 
             return self.write({"status": "success", "can_watch": can_watch, "looked_count": looked_count,
-                               "vip_total_count": vip_total_count, "buy_video_status": buy_video_status, "is_looked_today": is_looked_today})
+                               "vip_total_count": vip_total_count, "buy_video_status": buy_video_status,
+                               "watch_card_count": watch_card_count, "watch_card_part_count": watch_card_part_count,
+                               "need_part_count": need_part_count,
+                               "is_looked_today": is_looked_today})
         else:
             return self.write({"status": "success", "can_watch": can_watch, "looked_count": 0,
+                               "watch_card_count": watch_card_count, "watch_card_part_count": watch_card_part_count,
+                               "need_part_count": need_part_count,
                                "vip_total_count": 0, "buy_video_status": buy_video_status, "is_looked_today": is_looked_today})
 
 

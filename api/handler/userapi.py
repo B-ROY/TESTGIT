@@ -1145,6 +1145,11 @@ class AUserInfo(BaseHandler):
             dic["cover_url"] = show_video.cover_url
             dic["video_url"] = show_video.video_url
 
+        account = Account.objects.filter(user=user).first()
+        gold = 0
+        if account.gold:
+            gold = account.gold
+        dic["gold"] = gold
         data.update(dic)
 
         self.write(data)
@@ -1719,7 +1724,6 @@ class UpdateUserInfo(BaseHandler):
         if is_cover_change:
             MessageSender.send_picture_detect(pic_url=user.cover, user_id=user.id, pic_channel=1, source=1)
 
-
         self.write({'status': "success"})
 
 
@@ -1753,7 +1757,7 @@ class ShowPersonalTags(BaseHandler):
             }
             data.append(dic)
 
-        self.write({"status": "success", "data": data, })
+        self.write({"status": "success", "data": data, "max_count": 3})
 
 
 # 修改个人标签
@@ -2120,6 +2124,10 @@ class MessageCheckV2(BaseHandler):
             chat_status = True
             # return self.write({"status": "success", "chat_status": True})
 
+        # 如果是客服,  发消息与接收消息都不需要门禁卡
+        if send_id == 3 or receive_id == 3:
+            chat_status = True
+
         # 好友也没有门槛
         friend_user = FriendUser.objects.filter(from_id=send_id, to_id=receive_id).first()
         if friend_user:
@@ -2453,13 +2461,13 @@ class UserHeartBeatReport(BaseHandler):
         user_id = self.current_user_id
         if not user_id:
             return self.write({"status": "success"})
-        if self.has_arg("user_id"):# androi多进程导致token可能是上一个登录的人的token
+        if self.has_arg("user_id"):  # android多进程导致token可能是上一个登录的人的token
             user_id = self.arg("user_id")
         ua = self.request.headers.get('User-Agent')
         uas = ua.split(";")
         if uas[2] == "iPhone" or uas[2] == "iPad":
             platform = 1
-        elif uas[2]=="Android":
+        elif uas[2] == "Android":
             platform = 0
         else:
             platform = 2
@@ -2691,6 +2699,62 @@ class UserChatCheck(BaseHandler):
 
         if result == 1:
             return self.write({"status": "success"})
+
+
+@handler_define
+class DiamondRecordList(BaseHandler):
+    @api_define("diamond record list ", "/live/user/diamond_record_list", [
+        Param('page', True, str, "1", "1", u'page'),
+        Param('page_count', True, str, "10", "10", u'page_count'),
+        Param('page_token', False, str, "0", "0", u"分页token"),
+    ], description=u"收支明细")
+    @login_required
+    def get(self):
+        from app.customer.models.account import TradeDiamondRecord
+        page = self.arg_int('page', 1)
+        page_count = self.arg_int('page_count',)
+        page_token = self.arg_int('page_token', 0)
+        user = self.current_user
+        new_token, record_list = TradeDiamondRecord.get_record_list(user, page, page_count, page_token)
+        records = []
+        if record_list:
+            for record in record_list:
+                data = convert_diamond_record(record)
+                records.append(data)
+        return self.write({"status": "success", "data": records, "page_token": new_token})
+
+
+@handler_define
+class GoldDiamondExchangeList(BaseHandler):
+    @api_define("gold diamond exchange list ", "/live/user/gold_exchange_list", [
+    ], description=u"金币兑换列表")
+    @login_required
+    def get(self):
+        from app.customer.models.account import GoldDiamond
+        list = GoldDiamond.objects.filter(delete_status=0)
+        data = []
+        if list:
+            for gold_diamond in list:
+                dict = {}
+                dict["gold_count"] = gold_diamond.gold_count
+                dict["diamond_count"] = gold_diamond.diamond_count
+                dict["id"] = str(gold_diamond.id)
+                data.append(dict)
+        return self.write({"status": "success", "data": data})
+
+
+@handler_define
+class GoldDiamondExchange(BaseHandler):
+    @api_define("gold diamond exchange", "/live/user/gold_exchange", [
+        Param('gold_diamond_id', True, str, "1", "1", u'gold_diamond_id'),
+    ], description=u"金币兑换")
+    @login_required
+    def get(self):
+        user = self.current_user
+        gold_diamond_id = self.arg("gold_diamond_id")
+        account = Account.objects.filter(user=user).first()
+        account.gold_diamond_exchange_out(gold_diamond_id)
+        return self.write({"status": "success"})
 
 
 

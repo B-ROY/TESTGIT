@@ -35,7 +35,7 @@ def clear_send_tools():
     now_end = now.strftime("%Y-%m-%d 23:59:59")
 
     # 清空昨天的 限时道具
-    old_tools = UserTools.objects.filter(time_type=0, invalid_time__gte=now_start, invalid_time__lte=now_end)
+    old_tools = UserTools.objects.filter(time_type=0, invalid_time__lte=now_end)
     if old_tools:
         for old in old_tools:
             # 创建 销毁记录, 删除用户道具

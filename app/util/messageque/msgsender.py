@@ -288,7 +288,6 @@ class MessageSender:
             logging.error("send about me message to mq error")
             return 400
 
-
     @classmethod
     def send_return_tool(cls, from_id, to_id, close_type):
         body = {}
@@ -297,6 +296,20 @@ class MessageSender:
         body["close_type"] = close_type
         path = "/tecent/return_tool"
         print close_type, "=======================cloase_type"
+        data = RequestApi.post_body_request_http(path=path, body=json.dumps(body), headers={}, host=cls.Host)
+        result = json.loads(data)
+        if result.get("status_code") == 200:
+            return 200
+        elif result.get("status_code") == 400:
+            logging.error("send_return_tool to mq error")
+            return 400
+
+    @classmethod
+    def send_do_task(cls, user_id, task_identity):
+        body = {}
+        body["user_id"] = user_id
+        body["task_identity"] = task_identity
+        path = "/task/do_task"
         data = RequestApi.post_body_request_http(path=path, body=json.dumps(body), headers={}, host=cls.Host)
         result = json.loads(data)
         if result.get("status_code") == 200:

@@ -47,7 +47,7 @@ class ChatMessageCreate(BaseHandler):
         if status == 1:
             temp_time = create_time.strftime("%Y-%m-%d %H:%M:%S")
             timeArray = time.strptime(temp_time, "%Y-%m-%d %H:%M:%S")
-            #转换成时间戳
+            # 转换成时间戳
             timestamp = time.mktime(timeArray)
             data["create_time"] = int(timestamp)
 

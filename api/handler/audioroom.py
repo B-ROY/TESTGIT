@@ -67,12 +67,14 @@ class GenerateChannelKey(BaseHandler):
         Param('channel_id', False, str, "","",u'语音聊天室的房间号'),
         Param('user_id', True, str, "","",u'当前用户id'),
         Param('room_user_id', False, str, "", "", u'房间创建者id'),
-        Param('is_video', False, int, 0,0, u'是否是视频房间（0：否， 1：是')
+        Param('is_video', False, int, 0,0, u'是否是视频房间（0：否， 1：是'),
+        Param('is_dial_back', False, int, 0,0, u'是否是回拨房间（0：否， 1：是'),
     ], description=u"生成声网进入房间所要使用的ChannelKey")
     @login_required
     def get(self):
         user_id = self.arg("user_id")
         room_user_id = self.arg("room_user_id")
+        is_dial_back = self.arg_int("is_dial_back", 0)
         if user_id != room_user_id: #拨打
 
             peer_id = room_user_id
@@ -106,7 +108,17 @@ class GenerateChannelKey(BaseHandler):
 
             join_ip = self.user_ip
             # 能否拨通判断完毕，若能拨打则先创建房间 然后修改拨打人状态
+
             room_id = str(RoomRecord.create_room_reocord(room_user.id, user.id, room_price, call_type, join_ip).id)
+
+            if is_dial_back == 1:
+                record = RoomRecord.objects.filter(user_id=user.id, join_id=room_user.id, dial_back_status=1).first()
+                if record:
+                    now = datetime.datetime.now()
+                    record.update(set__dial_back_status=2, set__dial_back_time=now)
+
+            room_id = str(RoomRecord.create_room_reocord(room_user.id, user.id, room_price, call_type, None, None, is_dial_back).id)
+
             unixts = int(time.time())
             randomint = -2147483647
             expiredts = 0
@@ -237,6 +249,12 @@ class GetAudiorecordInfo(BaseHandler):
         room_info['is_video'] = record.room_type
         room_info['join_id'] = record.join_id
         room_info['now_price'] = record.price
+
+        if not record.is_dial_back:
+            room_info['is_dial_back'] = 0
+        else:
+            room_info['is_dial_back'] = record.is_dial_back
+
         user_info = convert_user(room_user)
         user_info["audio_room_id"] = str(record.id)
         data = {

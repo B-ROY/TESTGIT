@@ -308,7 +308,109 @@ def fix_user():
                 desc = u"<html><p>" + _(u'由于您未进行视频认证，将取消您的播主资格，如想再次成为视频播主，请进行申请视频认证，并添加审核人员微信: "honeynnm" ') + u"</p></html>"
                 MessageSender.send_system_message(user.id, desc)
                 user.update(set__is_video_auth=4)
+                
+def init_topic():
+    from app.customer.models.community import MomentTopic
+    now = datetime.datetime.now()
 
+
+    topic = MomentTopic()
+    topic.topic_type = 1
+    topic.name = "第一美"
+    topic.hot = 1
+    topic.delete_status = 1
+    topic.img_url = "https://pornverify-10048692.image.myqcloud.com/662627de-27bc-4b9f-b1b8-c517331dc50c"
+    topic.content = "你不是第一美么"
+    topic.create_time = datetime.datetime.now()
+    topic.save()
+    time.sleep(5)
+
+    topic2 = MomentTopic()
+    topic2.topic_type = 2
+    topic2.name = "国足二进世界杯"
+    topic2.hot = 1
+    topic2.delete_status = 1
+    topic2.img_url = "https://pornverify-10048692.image.myqcloud.com/662627de-27bc-4b9f-b1b8-c517331dc50c"
+    topic2.content = "这句话有毛病么"
+    topic2.create_time = datetime.datetime.now()
+    topic2.save()
+    time.sleep(5)
+
+    topic3 = MomentTopic()
+    topic3.topic_type = 3
+    topic3.name = "蜘蛛小侠"
+    topic3.hot = 1
+    topic3.delete_status = 1
+    topic3.img_url = "https://pornverify-10048692.image.myqcloud.com/662627de-27bc-4b9f-b1b8-c517331dc50c"
+    topic3.content = "蜘蛛侠又回来了, 看了么"
+    topic3.create_time = datetime.datetime.now()
+    topic3.save()
+    time.sleep(5)
+
+    topic4 = MomentTopic()
+    topic4.topic_type = 4
+    topic4.name = "春风十里"
+    topic4.hot = 2
+    topic4.delete_status = 1
+    topic4.img_url = "https://pornverify-10048692.image.myqcloud.com/662627de-27bc-4b9f-b1b8-c517331dc50c"
+    topic4.content = "春风十里不如你...."
+    topic4.create_time = datetime.datetime.now()
+    topic4.save()
+    time.sleep(5)
+
+
+def init_game():
+    from app.customer.models.game import TurnTable
+    # type, count, is_share, delete_status=1
+    TurnTable.create(1, "1钻石", "https://pornverify-10048692.image.myqcloud.com/662627de-27bc-4b9f-b1b8-c517331dc50c", 50000, 1, 2, 200, 1, "", None)
+    TurnTable.create(2, "9钻石", "https://pornverify-10048692.image.myqcloud.com/662627de-27bc-4b9f-b1b8-c517331dc50c", 50000, 9, 1, 50, 1, "获得9钻石", None)
+    TurnTable.create(3, "99钻石", "https://pornverify-10048692.image.myqcloud.com/662627de-27bc-4b9f-b1b8-c517331dc50c", 50000, 99, 1, 2, 1, "获得99钻石", 2)
+
+    TurnTable.create(4, "很遗憾", "https://pornverify-10048692.image.myqcloud.com/662627de-27bc-4b9f-b1b8-c517331dc50c", 50003, 1, 2, 200, 1,"", None)
+    TurnTable.create(5, "很遗憾", "https://pornverify-10048692.image.myqcloud.com/662627de-27bc-4b9f-b1b8-c517331dc50c", 50003, 1, 2, 200, 1,"", None)
+
+    TurnTable.create(6, "937金币", "https://pornverify-10048692.image.myqcloud.com/662627de-27bc-4b9f-b1b8-c517331dc50c", 50001, 937, 2, 200, 1, "", None)
+    TurnTable.create(7, "1753金币", "https://pornverify-10048692.image.myqcloud.com/662627de-27bc-4b9f-b1b8-c517331dc50c", 50001, 1753, 2, 87, 1, "", None)
+    TurnTable.create(8, "37846金币", "https://pornverify-10048692.image.myqcloud.com/662627de-27bc-4b9f-b1b8-c517331dc50c", 50001, 37846, 1, 1, 1, "获得37864金币", None)
+
+    TurnTable.create(9, "门禁卡", "https://pornverify-10048692.image.myqcloud.com/662627de-27bc-4b9f-b1b8-c517331dc50c", 0, 1, 1, 20, 1, "获得门禁卡", None)
+    TurnTable.create(10, "漂流瓶", "https://pornverify-10048692.image.myqcloud.com/662627de-27bc-4b9f-b1b8-c517331dc50c", 1, 1, 1, 10, 1, "获得漂流瓶", None)
+    TurnTable.create(11, "千里眼", "https://pornverify-10048692.image.myqcloud.com/662627de-27bc-4b9f-b1b8-c517331dc50c", 2, 1, 1, 10, 1, "获得千里眼", None)
+    TurnTable.create(12, "一天VIP", "https://pornverify-10048692.image.myqcloud.com/662627de-27bc-4b9f-b1b8-c517331dc50c", 5, 1, 1, 1, 1, "获得一天VIP", 1)
+    TurnTable.create(13, "观影券", "https://pornverify-10048692.image.myqcloud.com/662627de-27bc-4b9f-b1b8-c517331dc50c", 3, 1, 1, 2, 1, "获得观影券", 2)
+    TurnTable.create(14, "1观影碎片", "https://pornverify-10048692.image.myqcloud.com/662627de-27bc-4b9f-b1b8-c517331dc50c", 4, 1, 1, 10, 1, "", None)
+    TurnTable.create(15, "2观影碎片", "https://pornverify-10048692.image.myqcloud.com/662627de-27bc-4b9f-b1b8-c517331dc50c", 4, 2, 1, 5, 1, "", None)
+    TurnTable.create(16, "4观影碎片", "https://pornverify-10048692.image.myqcloud.com/662627de-27bc-4b9f-b1b8-c517331dc50c", 4, 4, 1, 2, 1, "", None)
+
+
+
+def init_score_tag():
+    from app.customer.models.user import CallScoreTag
+
+    call = CallScoreTag()
+    call.name = "人傻钱多"
+    call.delete_status = 1
+    call.save()
+
+    call2 = CallScoreTag()
+    call2.name = "财大气粗"
+    call2.delete_status = 1
+    call2.save()
+
+    call3 = CallScoreTag()
+    call3.name = "挥金如土"
+    call3.delete_status = 1
+    call3.save()
+
+    call4 = CallScoreTag()
+    call4.name = "书生气质"
+    call4.delete_status = 1
+    call4.save()
+
+    call5 = CallScoreTag()
+    call5.name = "老司机啊"
+    call5.delete_status = 1
+    call5.save()
 
 def fix_pure_moment():
     from app.customer.models.community import UserMoment
@@ -318,10 +420,24 @@ def fix_pure_moment():
         user = User.objects.filter(id=user_id).first()
         if not user:
             continue
+
         pure_id = "597ef85718ce420b7d46ce11"
         if user.label:
             if pure_id in user.label:
                 moment.update(set__is_pure=1)
+
+def init_gold_diamond():
+    from app.customer.models.account import GoldDiamond
+    GoldDiamond.create(100, 1)
+    GoldDiamond.create(500, 5)
+    GoldDiamond.create(1000, 10)
+
+
+def test():
+    user_id = 1
+    task_identity = 1
+    MessageSender.send_do_task(user_id, task_identity)
+
 
 
 

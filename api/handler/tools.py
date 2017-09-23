@@ -8,7 +8,10 @@ from api.convert.convert_user import *
 from app.customer.models.activity import *
 from app.customer.models.user import VideoManagerVerify
 from app.customer.models.vip import Vip, UserVip, VipReceiveRecord
+from app.customer.models.shop import Shop
 import international
+from api.convert.convert_user import *
+from api.settings import ConstantKey
 
 
 @handler_define
@@ -16,9 +19,6 @@ class Buy_Tools(BaseHandler):
     @api_define("buy tools", r'/tools/buy_tools', [
         Param("tools_id", True, str, "", "", u"tools_id"),
     ], description="购买道具")
-
-    # 判断余额,  添加用户道具, 道具记录
-
     @login_required
     def get(self):
         user_id = int(self.current_user_id)
@@ -45,7 +45,7 @@ class My_Tools(BaseHandler):
         user_id = int(self.current_user_id)
         user = self.current_user
 
-        tools = Tools.objects.all().order_by("price")
+        tools = Tools.objects.filter(is_old=1).order_by("price")
         limit_tools = []
         forver_tools = []
         for tool in tools:
@@ -319,5 +319,121 @@ class UserClairvoyantCount(BaseHandler):
             user_id = int(self.current_user_id)
             count = UserTools.objects.filter(user_id=user_id, tools_id=str(tool.id)).sum("tools_count")
             return self.write({"status": "success", "tool": convert_tools(tool), "count": count})
+
+
+@handler_define
+class UseWatchTools(BaseHandler):
+    @api_define("use watch tools", r'/tools/use_watch_tool', [
+        Param("type", True, str, "", "", u"道具类型  1:观影券  2:观影碎片"),
+    ], description="使用观影道具")
+    @login_required
+    def get(self):
+        user_id = int(self.current_user_id)
+        type = self.arg_int("type", 1)
+
+        if type == 1:
+            tool = Tools.objects.filter(tools_type=ConstantKey.Tools_Watch_Card).first()
+            count = 1
+        elif type == 2:
+            tool = Tools.objects.filter(tools_type=ConstantKey.Tools_Watch_Card_Part).first()
+            count = ConstantKey.Tools_Need_Watch_Part_Count
+        else:
+            return self.write({"status": "failed", "error": _(u"类型错误")})
+
+        code, message = UserTools.check_watch_tools(user_id, type)
+        if code != 1:
+            return self.write({"status": "failed", "error": _(message)})
+
+        UserTools.reduce_tools(user_id, str(tool.id), count)
+        return self.write({"status": "success"})
+
+
+@handler_define
+class My_Tools_V2(BaseHandler):
+    @api_define("my tools_v2", r'/tools/my_tools_v2', [], description="我的道具V2</br>   time_type: 0:限时  1:永久")
+    @login_required
+    def get(self):
+        user_id = int(self.current_user_id)
+        tools_list = []
+        user_tools = UserTools.objects.filter(user_id=user_id)
+        for user_tool in user_tools:
+            tool_id = str(user_tool.tools_id)
+            tool = Tools.objects.filter(id=tool_id).first()
+            dic = {
+                "tool": convert_tools(tool),
+                "count": user_tool.tools_count,
+                "time_type": user_tool.time_type
+            }
+            tools_list.append(dic)
+
+        self.write({"status": "success", "tools_list": tools_list})
+
+
+@handler_define
+class ShopList(BaseHandler):
+    @api_define("shop list", r'/tools/shop_list', [], description="商城")
+    @login_required
+    def get(self):
+        shop_list = Shop.objects.filter(status=1)
+        diamond_list = []
+        red_package_list = []
+        
+        for shop in shop_list:
+            dict = convert_shop_good(shop)
+            if shop.goods_type == 1:
+                # 钻石
+                diamond_list.append(dict)
+            elif shop.goods_type == 2:
+                # 红包
+                red_package_list.append(dict)
+
+        self.write({"status": "success", "diamond_list": diamond_list, "red_package_list": red_package_list})
+
+
+@handler_define
+class BuyShopGoods(BaseHandler):
+    @api_define("buy shop goods", r'/tools/buy_shop_goods', [
+        Param("goods_id", True, str, "", "", u"商品ID"),
+        Param("goods_count", True, str, "", "", u"商品数量"),
+
+    ], description="商品购买")
+    @login_required
+    def get(self):
+        goods_id = self.arg("goods_id")
+        goods_count = self.arg_int("goods_count", 1)
+        user_id = self.current_user_id
+
+        goods = Shop.objects.filter(id=goods_id).first()
+        if not goods:
+            return self.write({"status": "failed", "error": _(u"商品不存在")})
+
+        code, error = Shop.buy_goods(user_id, goods, goods_count)
+        if code != 1:
+            return self.write({"status": "failed", "error": _(error)})
+
+        return self.write({"status": "success"})
+
+
+@handler_define
+class UseMyTools(BaseHandler):
+    @api_define("use my tools", r'/tools/use_my_tools', [
+        Param("tool_id", True, str, "", "", u"道具ID"),
+    ], description="使用道具(仅限于不跳转页面,直接使用的, 目前为:1天VIP)")
+    @login_required
+    def get(self):
+        tool_id = self.arg("tool_id")
+        user_id = self.current_user_id
+
+        code, error = UserTools.can_use(user_id, tool_id)
+        if code != 1:
+            return self.write({"status": "failed", "error": _(error)})
+
+        UserTools.reduce_tools(user_id, tool_id, 1)
+
+        return self.write({"status": "success"})
+
+
+
+
 
 

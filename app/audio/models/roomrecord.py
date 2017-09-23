@@ -33,8 +33,15 @@ class RoomRecord(Document):
     gift_value = IntField(verbose_name=u"房间赠送礼物价值")
     join_ip = StringField(verbose_name=u"加入者ip")
 
+    dial_back_status = IntField(verbose_name=u"回拨状态")  # 1:可回拨  2:已回拨  3:取消回拨
+    dial_back_time = DateTimeField(verbose_name=u"回拨时间")
+    is_dial_back = IntField(verbose_name=u"是否是回拨房间(回拨之后房间)")  # 0:否  1:是
+
+    is_show = IntField(verbose_name=u"通话记录是否展示")  # 0:否  1:是
+
     @classmethod
-    def create_room_reocord(cls, user_id, join_id, price, room_type, join_ip):
+    def create_room_reocord(cls, user_id, join_id, price, room_type, join_ip, dial_back_status=None, dial_back_time=None, is_dial_back=0):
+
         record = cls()
         record.user_id = user_id
         record.join_id = join_id
@@ -45,7 +52,13 @@ class RoomRecord(Document):
         record.room_status = 1
         record.gift_value = 0
         record.pay_times = 0
+
         record.join_ip = join_ip
+
+        record.dial_back_status = dial_back_status
+        record.dial_back_time = dial_back_time
+        record.is_dial_back = is_dial_back
+        record.is_show = 1
         record.save()
         return record
 
@@ -64,4 +77,53 @@ class RoomRecord(Document):
         if room_user.is_video_auth == 1:
             UserRedis.add_user_recommed_id_v3_one(self.user_id)
 
+        # 判断回呼
+        if end_type in [1, 3, 6]:
+            if self.is_answer == 2 and self.room_type == 1:
+                user_id = self.user_id
+                join_id = self.join_id
+                records = RoomRecord.objects.filter(user_id=user_id, join_id=join_id, dial_back_status=1)
+                if records:
+                    for record in records:
+                        record.update(set__dial_back_status=3)
 
+                self.update(set__dial_back_status=1)
+
+    @classmethod
+    def get_records(cls, user_id, page, page_count):
+        records = cls.objects.filter(user_id=user_id, is_show=1, room_type=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
+        return records
+
+    @classmethod
+    def get_timestamp(cls, date_time):
+        temp_time = date_time.strftime("%Y-%m-%d %H:%M:%S")
+        timeArray = time.strptime(temp_time, "%Y-%m-%d %H:%M:%S")
+        timestamp = time.mktime(timeArray)
+        return int(timestamp)
+
+    @classmethod
+    def get_type(cls, record):
+        dial_type = 1
+        if record.dial_back_status == 1:
+            dial_type = 3
+        if record.end_type == 5:
+            dial_type = 2
+        if record.end_type == 1:
+            dial_type = 3
+        return dial_type
+
+    @classmethod
+    def get_time_len_str(cls, start_time, end_time):
+        seconds = (end_time - start_time).total_seconds()/60
+        m, s = divmod(seconds, 60)
+        h, m = divmod(m, 60)
+        time_str = ("%02d:%02d:%02d" % (h, m, s))
+        return time_str
+
+    @classmethod
+    def clear_user_call_record(cls, user_id, record_id):
+        last_record = cls.objects.filter(id=record_id).first()
+        records = cls.objects.filter(user_id=user_id, create_time__lte=last_record.create_time)
+        if records:
+            for record in records:
+                record.update(set__is_show=0)

@@ -47,3 +47,12 @@ def convert_vip_privilege(privilege, with_detail=False):
 
 def convert_about_me_message(message, with_detail=False):
     return message.normal_info()
+
+def convert_moment_topic(topic, with_detail=False):
+    return topic.normal_info()
+
+def convert_shop_good(shop_good, with_detail=False):
+    return shop_good.normal_info()
+
+def convert_diamond_record(record, with_detail=False):
+    return record.normal_info()

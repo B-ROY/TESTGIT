@@ -6,7 +6,9 @@ from api.view.base import *
 from app.customer.models.rank import *
 from app.customer.models.activity import Activity
 from api.convert.convert_user import *
-from app.customer.models.vip import *
+from app.customer.models.vip import UserVip, Vip, VipReceiveRecord
+from app.customer.models.tools import ToolsActivityRecord, ToolsActivity, UserTools, Tools, UserToolsRecord
+import datetime
 
 @handler_define
 class InviteRankList(BaseHandler):

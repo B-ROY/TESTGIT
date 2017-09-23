@@ -7,7 +7,7 @@ from django.conf import settings
 from api.convert.convert_user import *
 import time
 from app.customer.models.user import *
-from app.customer.models.community import UserMoment, UserMomentLook, UserComment, AboutMeMessage
+from app.customer.models.community import UserMoment, UserMomentLook, UserComment, AboutMeMessage, MomentTopic
 from app.util.shumeitools.shumeitools import *
 from app.customer.models.shumeidetect import *
 from app.customer.models.follow_user import FollowUser, FriendUser
@@ -322,7 +322,16 @@ class GetMoment(BaseHandler):
                         vip_comment_status = 1
                     dic["vip_comment_status"] = vip_comment_status
 
+                    #  购买人数, 观看人数列表(带头像)
+                    buy_count = VideoPurchaseRecord.get_buy_count(moment.video_id)
+                    watch_count, watch_users = VideoPurchaseRecord.get_watch_users(moment.video_id)
+                    dic["buy_count"] = buy_count
+                    dic["watch_count"] = watch_count
+                    dic["watch_users"] = watch_users
+
             dic["check_real_video"] = RealVideoVerify.get_status(moment.user_id)
+
+
 
             data.append(dic)
         else:
@@ -680,6 +689,110 @@ class AboutMeMessageList(BaseHandler):
                 data.append(dict)
 
         return self.write({"status": "success", "data": data})
+
+
+# =============== 新版 ===============
+@handler_define
+class MomentTopicList(BaseHandler):
+    @api_define("moment topic list", r'/community/moment_topic_list', [], description=u'动态话题列表')
+    def get(self):
+        moment_topic_list = MomentTopic.objects.filter(delete_status=1).order_by("sort")
+        topic_list = []
+        for topic in moment_topic_list:
+            dic = convert_moment_topic(topic)
+            topic_list.append(dic)
+
+        return self.write({"status": "success", "topic_list": topic_list})
+
+@handler_define
+class CreateMomentV2(BaseHandler):
+    @api_define("Create community", r'/community/create_v2', [
+        Param('picture_urls', False, str, "", "", u'图片url, 多个逗号相隔'),
+        Param('content', False, str, "", "", u'社区动态文字内容'),
+        Param('topic_type', False, str, "", "", u'动态 话题类型'),
+    ], description=u'发布社区动态v2')
+    @login_required
+    def post(self):
+        user = self.current_user
+        picture_urls = self.arg('picture_urls', "")
+        content = self.arg('content', "")
+        topic_type = self.arg_int('topic_type', 0)
+        if not picture_urls and not content:
+            return self.write({'status': "fail", 'error': _(u"内容图片均为空")})
+
+        code, message = UserMoment.check_moment_count(user)
+        if code == 2:
+            return self.write({'status': "fail", 'error': _(message)})
+
+        if content:
+            if settings.INTERNATIONAL_TYPE == 86:
+                # 文本内容鉴黄
+                ret, duration = shumei_text_spam(text=content, timeout=1, user_id=user.id, channel="DYNAMIC_COMMENT", nickname=user.nickname,
+                                                 phone=user.phone, ip=self.user_ip)
+                print ret
+                is_pass = 0
+                if ret["code"] == 1100:
+                    if ret["riskLevel"] == "PASS":
+                        is_pass = 1
+                    if ret["riskLevel"] == "REJECT":
+                        is_pass = 0
+                    if ret["riskLevel"] == "REVIEW":
+                        # todo +人工审核逻辑
+                        is_pass = 1
+            else:
+                is_pass = 1
+            if not is_pass:
+                return self.write({'status': "fail",
+                                   'error': _(u"经系统检测,您的内容涉及违规因素,请重新编辑")})
+        UserMoment.create_v2(user.id, picture_urls, content, topic_type)
+        self.write({"status": "success"})
+
+
+@handler_define
+class MomentListV4(BaseHandler):
+    @api_define("index community list_v4", r'/community/index_list_v4', [
+        Param('page', True, str, "1", "1", u'page'),
+        Param('page_count', True, str, "10", "10", u'page_count'),
+        Param('moment_type', False, str, "1", "1", u"1: 最新  2: 最热"),
+        Param('topic_type', False, str, "0", "0", u"话题类型"),
+        Param('page_token', False, str, "0", "0", u"分页token"),
+    ], description=u'首页社区动态列表_v4')
+    def get(self):
+        data = []
+        page = self.arg_int('page')
+        user_id = self.current_user_id
+        moment_type = self.arg_int("moment_type", 1)
+        topic_type = self.arg_int("topic_type", 0)
+        page_count = self.arg_int('page_count')
+        page_token = self.arg_int('page_token', 0)
+
+        moments, page_token = UserMoment.get_index_moments_v2(page, page_count, moment_type, topic_type, page_token)
+        if moments:
+            for moment in moments:
+                if moment:
+                    dic = convert_user_moment(moment)
+                    if user_id:
+                        like_user_list = moment.like_user_list
+                        if int(user_id) in like_user_list:
+                            is_liked = 1
+                        else:
+                            is_liked = 0
+                        dic["is_liked"] = is_liked
+
+                        if moment.type == 3:
+                            buy_video_status = VideoPurchaseRecord.get_buy_status(user_id, moment.video_id)
+                            dic["buy_video_status"] = buy_video_status
+
+                        dic["check_real_video"] = RealVideoVerify.get_status(moment.user_id)
+
+                        data.append(dic)
+                    else:
+                        dic["is_liked"] = 0
+                        data.append(dic)
+
+        return self.write({"status": "success", "data": data, "page_token": page_token})
+
+
 
 
 

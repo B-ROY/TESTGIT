@@ -110,6 +110,7 @@ class RankListCharmV1(BaseHandler):
 
 
 
+
             wealth_rank_list = WealthRankNew.get_rank_list(count=30, type=1)
             wealth_data = []
             for wealth_rank in wealth_rank_list:
@@ -124,6 +125,9 @@ class RankListCharmV1(BaseHandler):
                     dic["user"] = wealth_rank.user.get_normal_dic_info()
                     dic["wealth"] = wealth_rank.wealth
                     dic["change_status"] = wealth_rank.change_status
+                    # 是否在线 查看心跳
+                    online_type = User.check_online_type(user)
+                    dic["online_type"] = online_type
                     wealth_data.append(dic)
 
             wealth_rank_list_yesterday = WealthRankNew.get_rank_list(count=30, type=2)
@@ -140,6 +144,9 @@ class RankListCharmV1(BaseHandler):
                     dic["user"] = wealth_rank.user.get_normal_dic_info()
                     dic["wealth"] = wealth_rank.wealth
                     dic["change_status"] = wealth_rank.change_status
+                    # 是否在线 查看心跳
+                    online_type = User.check_online_type(user)
+                    dic["online_type"] = online_type
                     wealth_data_yesterday.append(dic)
             self.write({
                 "status": "success",

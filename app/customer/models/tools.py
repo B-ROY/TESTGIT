@@ -9,6 +9,8 @@ from django.db.models import F
 from app.customer.models.user import VideoManagerVerify
 from app.util.messageque.msgsender import MessageSender
 import international
+from api.settings import ConstantKey
+from app.customer.models.vip import UserVip, Vip
 
 
 connect(CHATPAMONGO.db, host=CHATPAMONGO.host, port=CHATPAMONGO.port, username=CHATPAMONGO.username,
@@ -21,14 +23,39 @@ class Tools(Document):
         (0, u'门禁卡'),
         (1, u'漂流瓶'),
         (2, u'千里眼'),
+        (3, u'观影券'),
+        (4, u'观影碎片'),
+        (5, u'一天VIP'),
     )
+
+    GO_TYPE = {
+        0: u"直接使用",
+        1: u"上传头像",
+        2: u"上传普通照片",
+        3: u"添加签名",
+        4: u"添加标签",
+        5: u"使用漂流瓶",
+        6: u"使用千里眼",
+        7: u"使用门禁卡",
+        8: u"发布私房视频",
+        9: u"转发QQ",
+        10: u"转发微信",
+        11: u"转发朋友圈",
+        12: u"观看精华照片",
+        13: u"观看2个私房视频",
+        14: u"首次充值",
+        15: u"认证视频播主",
+        16: u"上传精华照片",
+    }
 
     name = StringField(max_length=32, verbose_name=u'名称')
     icon_url = StringField(max_length=256, verbose_name=u'icon图片')
     gray_icon_url = StringField(max_length=256, verbose_name=u'icon灰色图片')
     price = IntField(verbose_name=u'道具价格', default=0)
     tools_type = IntField(verbose_name=u"道具类型")
-    is_valid = IntField(verbose_name=u'是否有效', default = 1) #1有效，0 无效
+    is_valid = IntField(verbose_name=u'是否有效')  # 1有效，0 无效
+    is_old = IntField(verbose_name=u"是否为老版本道具")  # 1: 是
+    go_type = IntField(verbose_name=u"跳转页面")
     desc = StringField(verbose_name=u'描述', max_length=256, default="")
 
     class Meta:
@@ -37,7 +64,7 @@ class Tools(Document):
         verbose_name_plural = verbose_name
 
     def normal_info(self):
-        return {
+        data = {
             "id": str(self.id),
             "name": self.name,
             "icon_url": self.convert_http_to_https(self.icon_url),
@@ -45,8 +72,12 @@ class Tools(Document):
             "price": self.price,
             "tools_type": self.tools_type,
             "is_valid": self.is_valid,
-            "desc": self.desc
+            "desc": self.desc,
         }
+        if self.go_type:
+            data["go_type"] = self.go_type
+
+        return data
 
     def convert_http_to_https(self, url):
         if "https" in url:
@@ -187,7 +218,7 @@ class UserTools(Document):
 
     # 用户购买道具, 购买道具为永久道具 (判断余额, 添加用户道具, 添加记录)
     @classmethod
-    def buy_tools(cls, user_id, tools_id):
+    def buy_tools(cls, user_id, tools_id, count=1):
         user = User.objects.filter(id=user_id).first()
         account = Account.objects.filter(user=user).first()
         tools = Tools.objects.filter(id=tools_id).first()
@@ -202,25 +233,24 @@ class UserTools(Document):
             return status, message
 
 
-        if account.diamond < tools.price:
+        if account.diamond < tools.price * count:
             status = -1
             message = u"余额不足"
             return status, message
         try:
-
             # 用户账号余额
-            account.diamond_trade_out(price=tools.price, desc=u"购买道具, 道具id=%s" %
+            account.diamond_trade_out(price=tools.price * count, desc=u"购买道具"+ str(count) + u"个, 道具id=%s" %
                                                                    (str(tools.id)), trade_type=TradeDiamondRecord.TradeTypeTools)
 
             user_tools = UserTools.objects.filter(user_id=user_id, tools_id=str(tools_id), time_type=1).first()
             if user_tools:
-                user_tools.tools_count += 1
+                user_tools.tools_count += count
                 user_tools.save()
             else:
                 user_tools = UserTools()
                 user_tools.user_id = user_id
                 user_tools.tools_id = tools_id
-                user_tools.tools_count = 1
+                user_tools.tools_count = count
                 user_tools.time_type = 1
                 user_tools.get_type = 2
                 user_tools.invalid_time = None
@@ -230,7 +260,7 @@ class UserTools(Document):
             tools_record = UserToolsRecord()
             tools_record.user_id = user_id
             tools_record.tools_id = str(tools.id)
-            tools_record.tools_count = 1
+            tools_record.tools_count = count
             tools_record.time_type = 1
             tools_record.oper_type = 2
             tools_record.create_time = now
@@ -252,9 +282,11 @@ class UserTools(Document):
 
     # 消耗一个道具
     @classmethod
-    def reduce_tools(cls, user_id, tools_id):
+    def reduce_tools(cls, user_id, tools_id, count=1):
         limit_tools = UserTools.objects.filter(time_type=0, tools_id=tools_id, user_id=user_id).first()
+        save_recode = 0
         if limit_tools:
+            save_recode = 1
             time_type = 0
             if limit_tools.tools_count > 1:
                 limit_tools.tools_count -= 1
@@ -265,23 +297,147 @@ class UserTools(Document):
             # 如果没有 限时道具
             time_type = 1
             tools = UserTools.objects.filter(tools_id=tools_id, user_id=user_id).first()
-            if tools.tools_count > 1:
-                tools.tools_count -= 1
-                tools.save()
-            else:
-                tools.delete()
+            if tools:
+                save_recode = 1
+                if tools.tools_count > count:
+                    tools.tools_count -= count
+                    tools.save()
+                else:
+                    if count == 1:
+                        tools.delete()
+
+        tool = Tools.objects.filter(go_type=0, id=tools_id).first()
+        if tool:
+            if tool.tools_type == ConstantKey.Tools_Day_VIP:
+                # 一天vip
+                user_vip = UserVip.objects.filter(user_id=user_id).first()
+                vip = Vip.objects.filter(vip_type=1).first()
+                if not user_vip:
+                    now = datetime.datetime.now()
+                    user_vip = UserVip()
+                    user_vip.user_id = user_id
+                    user_vip.vip_id = str(vip.id)
+                    user_vip.create_time = now
+                    user_vip.end_time = now
+                    user_vip.save()
 
         # 创建记录
-        record = UserToolsRecord()
-        record.user_id = user_id
-        record.tools_id = tools_id
-        record.tools_count = 1
-        record.time_type = time_type
-        record.oper_type = 0
-        record.create_time = datetime.datetime.now()
-        record.save()
+        if save_recode:
+            record = UserToolsRecord()
+            record.user_id = user_id
+            record.tools_id = tools_id
+            record.tools_count = 1
+            record.time_type = time_type
+            record.oper_type = 0
+            record.create_time = datetime.datetime.now()
+            record.save()
         return time_type
 
+    @classmethod
+    def can_use(cls, user_id, tools_id):
+        code = 1
+        error = ""
+        tool = Tools.objects.filter(go_type=0, id=tools_id).first()
+        if tool:
+            if tool.tools_type == 5:
+                # 一天vip:  非vip用户可以使用
+                user_vip = UserVip.objects.filter(user_id=user_id).first()
+                if user_vip:
+                    code = -1
+                    error = u"一天VIP道具, 当前为vip用户不可使用"
+
+        return code, error
+
+
+    #  免费赠送道具(例如:大转盘抽奖)
+    @classmethod
+    def give_tools(cls, user_id, tools_id, count):
+        tools = Tools.objects.filter(id=tools_id).first()
+        status = 200
+        message = "success"
+        now = datetime.datetime.now()
+
+        # 判断道具是否为下架道具
+        if tools.is_valid == 0:
+            status = -1
+            message = u"此道具已下架,不可再购买"
+            return status, message
+
+        try:
+            user_tools = UserTools.objects.filter(user_id=user_id, tools_id=str(tools_id), time_type=1).first()
+            if user_tools:
+                user_tools.update(inc__tools_count=count)
+            else:
+                user_tools = UserTools()
+                user_tools.user_id = user_id
+                user_tools.tools_id = tools_id
+                user_tools.tools_count = count
+                user_tools.time_type = 1
+                user_tools.get_type = 2
+                user_tools.invalid_time = None
+                user_tools.save()
+
+            # 道具记录
+            tools_record = UserToolsRecord()
+            tools_record.user_id = user_id
+            tools_record.tools_id = str(tools.id)
+            tools_record.tools_count = count
+            tools_record.time_type = 1
+            tools_record.oper_type = 2
+            tools_record.create_time = now
+            tools_record.save()
+            return status, message
+
+        except Exception, e:
+            status = -1
+            message = "error"
+            return status, message
+
+    @classmethod
+    def check_watch_tools(cls, user_id, type):
+        # type  1:观影券  2:观影碎片
+        code = 1
+        message = ""
+        if type == 1:
+            tool = Tools.objects.filter(tools_type=ConstantKey.Tools_Watch_Card).first()
+            user_tools = UserTools.objects.filter(user_id=user_id, tools_id=str(tool.id)).first()
+            if not user_tools:
+                code = 2  # 无观影券
+                message = u"无观影券"
+        elif type == 2:
+            tool = Tools.objects.filter(tools_type=ConstantKey.Tools_Watch_Card_Part).first()
+            user_tools = UserTools.objects.filter(user_id=user_id, tools_id=str(tool.id)).first()
+            if not user_tools:
+                code = 3  # 观影碎片不足
+                message = u"观影碎片不足"
+            else:
+                count = user_tools.tools_count
+                if count < 6:
+                    code = 3  # 观影碎片不足
+                    message = u"观影碎片不足"
+        else:
+            code = 4
+            message = u"类型错误"
+
+        return code, message
+
+    @classmethod
+    def get_watch_count(cls, user_id):
+        card_count = 0
+        part_card_count = 0
+        need_count = ConstantKey.Tools_Need_Watch_Part_Count
+
+        card_tool = Tools.objects.filter(tools_type=ConstantKey.Tools_Watch_Card).first()
+        card_tools = UserTools.objects.filter(user_id=user_id, tools_id=str(card_tool.id)).first()
+        if card_tools:
+            card_count = card_tools.tools_count
+
+        part_tool = Tools.objects.filter(tools_type=ConstantKey.Tools_Watch_Card_Part).first()
+        part_tools = UserTools.objects.filter(user_id=user_id, tools_id=str(part_tool.id)).first()
+        if part_tools:
+            part_card_count = part_tools.tools_count
+
+        return card_count, part_card_count, need_count
 
 # 用户道具 记录表
 class UserToolsRecord(Document):
@@ -356,7 +512,7 @@ class ToolsActivity(Document):
     end_time = DateTimeField(verbose_name=u"结束时间(包含在内)")
     start_hms = StringField(verbose_name=u"起始的时分秒时间段 如: 08:25:00", max_length=32)
     end_hms = StringField(verbose_name=u"结束的时分秒时间段 如: 08:25:00", max_length=32)
-    role = StringField(verbose_name=u"人群",  max_length=256)  #1: 新主播 2：老主播 3：用户(多个逗号分隔)
+    role = StringField(verbose_name=u"人群",  max_length=256)  # 1: 新主播 2：老主播 3：用户(多个逗号分隔)
 
 
 class ToolsActivityRecord(Document):

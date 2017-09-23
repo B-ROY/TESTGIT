@@ -39,7 +39,8 @@ class RoomCall(BaseHandler):
     @api_define("room call", r'/room/call',
         [
             Param("peer_id", True, str, "", "", u'对方id'),
-            Param("call_type", True, int, 1, 1, u'呼叫类型(0:语音,1:视频)')
+            Param("call_type", True, int, 1, 1, u'呼叫类型(0:语音,1:视频)'),
+            Param('is_dial_back', False, int, 0,0, u'是否是回拨房间（0：否， 1：是'),
         ],
         description=u"呼叫接口"
     )
@@ -47,6 +48,7 @@ class RoomCall(BaseHandler):
     def get(self):
         peer_id = self.arg("peer_id")
         call_type = self.arg_int("call_type")
+        is_dial_back = self.arg_int("is_dial_back", 0)
 
         room_user = User.objects.get(id=peer_id)
         user = self.current_user
@@ -63,10 +65,11 @@ class RoomCall(BaseHandler):
         # 3. 判断用户是否正在通话
         if room_user.audio_status==1:
             return self.write({'status': "failed", 'room_status': 10003})
-        # 4 如果是视频电话 判断主播是否认证过
-        if call_type == 1 and room_user.is_video_auth!=1:
-            return self.write({'status': "failed", "error": "对方暂未进行视频认证～"})
-        #5. 判断拨打人是否余额足够
+        if not is_dial_back:
+            # 4 如果是视频电话 判断主播是否认证过
+            if call_type == 1 and room_user.is_video_auth!=1:
+                return self.write({'status': "failed", "error": "对方暂未进行视频认证～"})
+        # 5. 判断拨打人是否余额足够
         user_account = Account.objects.get(user=user)
         room_price = room_user.video_price if call_type == 1 else room_user.now_price
         # 主播下首页
@@ -76,9 +79,17 @@ class RoomCall(BaseHandler):
         if user_account.diamond < room_price:
             return self.write({"status": "failed", "error": u"余额不足一分钟" })
 
-        #能否拨通判断完毕，若能拨打则先创建房间 然后修改拨打人状态
+        # 能否拨通判断完毕，若能拨打则先创建房间 然后修改拨打人状态
+
         join_ip = self.user_ip
-        room_id = str(RoomRecord.create_room_reocord(room_user.id, user.id, room_price, call_type, join_ip).id)
+        if is_dial_back == 1:
+            record = RoomRecord.objects.filter(user_id=user.id, join_id=room_user.id, dial_back_status=1).first()
+            if record:
+                now = datetime.datetime.now()
+                record.update(set__dial_back_status=2, set__dial_back_time=now)
+
+        room_id = str(RoomRecord.create_room_reocord(room_user.id, user.id,room_price, call_type, join_ip, None, None, is_dial_back).id)
+
         unixts = int(time.time())
         randomint = -2147483647
         expiredts = 0
@@ -150,7 +161,7 @@ class RoomInfo(BaseHandler):
     @api_define("room refuse", r'/room/info',
                 [
                     Param("room_id", True, str, "", "", description=u"房间id")
-                ], description=u"拒绝通话接口")
+                ], description=u"获取房间信息")
     @login_required
     def get(self):
         room_id = self.arg("room_id")
@@ -164,13 +175,18 @@ class RoomInfo(BaseHandler):
         room_info['is_video'] = record.room_type
         room_info['join_id'] = record.join_id
         room_info['now_price'] = record.price
+
+        if not record.is_dial_back:
+            room_info['is_dial_back'] = 0
+        else:
+            room_info['is_dial_back'] = record.is_dial_back
+
         data = {
             "audioroom": room_info,
             "user": convert_user(room_user),
             "join": convert_user(join_user),
         }
         self.write({"status": "success", "data": data})
-
 
 
 @handler_define
@@ -331,7 +347,7 @@ class RoomPaybill(BaseHandler):
         cost = price * pay_times
 
         user_account.diamond_trade_out(price=cost, desc=u"语音聊天id=%s" % room_id,
-                                            trade_type=TradeDiamondRecord.TradeTypeAudio,room_id=room_id)
+                                            trade_type=TradeDiamondRecord.TradeTypeAudio, room_id=room_id)
 
         user.update(inc__cost=cost)
 
@@ -370,6 +386,101 @@ class RoomReportClose(BaseHandler):
             record.finish_room(end_type=3)
 
         return self.write({"status": "success"})
+
+
+@handler_define
+class CallRecords(BaseHandler):
+    @api_define("call records", r'/room/call_records', [
+        Param('page', True, str, "1", "1", u'page'),
+        Param('page_count', True, str, "10", "10", u'page_count'),
+    ], description=u"通话记录  type : 1: 完成通话  2:已拒绝  3: 未接听  </br> "
+                   u"dial_back_status: 1 可回呼")
+    @login_required
+    def get(self):
+        from app.customer.models.vip import UserVip, Vip
+        page = self.arg_int('page')
+        page_count = self.arg_int('page_count')
+        user_id = self.current_user_id
+        data = []
+        records = RoomRecord.get_records(user_id, page, page_count)
+        if records:
+            for record in records:
+                join_id = record.join_id
+                join_user = User.objects.filter(id=join_id).first()
+                room_info = {}
+                room_info['id'] = str(record.id)
+                room_info['user_id'] = record.user_id
+                room_info['is_video'] = record.room_type
+                room_info['join_id'] = join_id
+                room_info['join_nick_name'] = join_user.nickname
+                room_info['join_head_img'] = join_user.image
+                room_info['now_price'] = record.price
+                room_info['type'] = RoomRecord.get_type(record)
+                if record.create_time:
+                    room_info['create_time'] = RoomRecord.get_timestamp(record.create_time)
+
+                if record.start_time and record.end_time:
+                    room_info['dial_time'] = RoomRecord.get_time_len_str(record.start_time, record.end_time)
+
+                room_info['dial_back_status'] = record.dial_back_status
+
+                user_vip = UserVip.objects.filter(user_id=join_user.id).first()
+                if user_vip:
+                    vip = Vip.objects.filter(id=user_vip.vip_id).first()
+                    room_info["vip_icon"] = vip.icon_url
+
+                data.append(room_info)
+
+        return self.write({"status": "success", "data": data})
+
+
+@handler_define
+class CallScoreList(BaseHandler):
+    @api_define("callscore tag list", r'/room/call_tag_list', [], description=u"通话评分标签")
+    @login_required
+    def get(self):
+        from app.customer.models.user import CallScoreTag
+        data = CallScoreTag.get_list()
+        return self.write({"status": "success", "data": data})
+
+
+@handler_define
+class CallScoreCreate(BaseHandler):
+    @api_define("callscore create", r'/room/call_tag_create', [
+        Param("user_id", True, str, "", "", description=u"被评分用户id"),
+        Param("score_type", True, str, "", "", description=u"评分类型:  1:标签   2:自定义  3:主播星星"),
+        Param("tag_name", False, str, "", "", description=u"score_type=1时 传入标签名称"),
+        Param("count", False, str, "", "", description=u"score_type=3时 传入星星个数"),
+        Param("content", False, str, "", "", description=u"score_type=2时 传入自定义印象"),
+        Param("duration", False, str, "", "", description=u"通话时长(秒)"),
+    ], description=u"保存通话评分")
+    @login_required
+    def get(self):
+        from app.customer.models.user import UserCallScore
+        user_id = self.arg("user_id")
+        score_type = self.arg_int("score_type")
+        tag_name = self.arg("tag_name", "")
+        count = self.arg_int("count", 0)
+        content = self.arg("content", "")
+        duration = self.arg_int("duration", 0)
+        UserCallScore.create_user_score(user_id, score_type, tag_name, count, duration, content=content)
+        return self.write({"status": "success"})
+
+
+@handler_define
+class ClearUserCallRecord(BaseHandler):
+    @api_define("clear call record", r'/room/clear_user_call_record', [
+        Param("record_id", False, str, "", "", description=u"通话记录id")
+    ], description=u"清空聊天记录")
+    @login_required
+    def get(self):
+        user_id = self.arg("user_id")
+        record_id = self.arg("score_type", "record_id")
+        if record_id:
+            RoomRecord.clear_user_call_record(user_id, record_id)
+        return self.write({"status": "success"})
+
+
 
 
 

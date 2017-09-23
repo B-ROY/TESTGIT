@@ -17,6 +17,7 @@ from app_redis.user.models.user import UserRedis
 connect(CHATPAMONGO.db, host=CHATPAMONGO.host, port=CHATPAMONGO.port, username=CHATPAMONGO.username,
         password=CHATPAMONGO.password)
 
+
 # 用户动态 (朋友圈)
 class UserMoment(Document):
     user_id = IntField(verbose_name=u'用户id', required=True)
@@ -29,7 +30,7 @@ class UserMoment(Document):
     show_status = IntField(verbose_name=u"是否展示", default=1)  # 1:展示  2:数美屏蔽  3:举报  4:数美部分屏蔽  5:数美鉴定中
     delete_status = IntField(verbose_name=u"删除状态", default=1)  # 1:未删除  2:删除
     ispass = IntField(verbose_name=u"是否忽略")  # 1:忽略  2:未忽略
-    type = IntField(verbose_name=u"动态的类型")  # 1:普通动态  2:精华照片动态  3:私房视频  4:普通相册动态
+    type = IntField(verbose_name=u"动态的类型")  # 1:普通动态  2:精华照片动态  3:私房视频  4:普通相册动态  5:抽奖分享
     video_id = StringField(verbose_name=u"私房视频id", max_length=64)
     cover_url = StringField(verbose_name=u"封面照片地址", max_length=256)
     video_url = StringField(verbose_name=u"视频地址", max_length=256)
@@ -39,6 +40,7 @@ class UserMoment(Document):
     is_pure = IntField(verbose_name=u"是否清纯")  # 1:清纯
     is_top = IntField(verbose_name=u"是否置顶")  # 1:置顶
     top_time = DateTimeField(verbose_name=u"置顶时间")
+    topic_type = IntField(verbose_name=u"话题类型")
 
     @classmethod
     def create(cls, user_id, picture_urls, content):
@@ -75,6 +77,37 @@ class UserMoment(Document):
         if user.label:
             if pure_id in user.label:
                 user_moment.update(set__is_pure=1)
+
+    @classmethod
+    def create_v2(cls, user_id, picture_urls, content, topic_type):
+        user_moment = UserMoment()
+        user_moment.user_id = user_id
+        user_moment.like_count = 0
+        user_moment.like_user_list = []
+        user_moment.comment_count = 0
+        picture_url_list = picture_urls.split(',')
+        if picture_url_list:
+            for picture_url in picture_url_list:
+                if picture_url:
+                    pic_url = User.convert_http_to_https(picture_url)
+                    dict = {
+                        "url": pic_url,
+                        "status": 1
+                    }
+                    user_moment.img_list.append(dict)
+        user_moment.content = content
+        user_moment.show_status = 5
+        user_moment.delete_status = 1
+        user_moment.ispass = 2
+        user_moment.type = 1
+        user_moment.is_public = 1
+        user_moment.create_time = datetime.datetime.now()
+        user_moment.topic_type = int(topic_type)
+        user_moment.save()
+        if user_moment.img_list:
+            MessageSender.send_picture_detect(pic_url="", user_id=0, pic_channel=0, source=2, obj_id=str(user_moment.id))
+        else:
+            user_moment.update(set__show_status=1)
 
     @classmethod
     def update_like(cls, status, user_id, moment_id):
@@ -129,6 +162,14 @@ class UserMoment(Document):
         else:
             real_video_auth = 3
 
+        topic_type = self.topic_type
+        topic_name = ""
+        if not topic_type:
+            topic_type = 0
+        else:
+            topic = MomentTopic.objects.filter(topic_type=topic_type).first()
+            if topic:
+                topic_name = topic.name
 
         if user:
             data = {
@@ -156,6 +197,9 @@ class UserMoment(Document):
             if user_vip:
                 vip = Vip.objects.filter(id=user_vip.vip_id).first()
                 data["vip_icon"] = vip.icon_url
+            if topic_name:
+                data["topic_name"] = topic_name
+                data["topic_type"] = topic_type
 
             return data
 
@@ -182,7 +226,7 @@ class UserMoment(Document):
         now = datetime.datetime.now()
         starttime = now.strftime("%Y-%m-%d 00:00:00")
         endtime = now.strftime('%Y-%m-%d 23:59:59')
-        today_moment_count = UserMoment.objects.filter(user_id=user.id, show_status__ne=2, is_public=1,
+        today_moment_count = UserMoment.objects.filter(user_id=user.id, show_status__ne=2, is_public=1, type__ne=5,
                                                        create_time__gte=starttime, create_time__lte=endtime).count()
         code = 1
         message = ""
@@ -275,6 +319,52 @@ class UserMoment(Document):
                     moment_list.append(moment)
 
             return moment_list
+
+    @classmethod
+    def get_index_moments_v2(cls, page, page_count, moment_type, topic_type, page_token):
+
+        if page_token:
+            time_token = datetime.datetime.fromtimestamp(page_token)
+        else:
+            time_token = datetime.datetime.now()
+
+        if moment_type == 1:
+            # 最新
+            if topic_type == 0:
+                moments = UserMoment.objects.filter(show_status__in=[1, 3, 4], delete_status=1, is_public=1,
+                                            create_time__lt=time_token).order_by("-create_time")[(page - 1) * page_count:page * page_count]
+            else:
+                moments = UserMoment.objects.filter(show_status__in=[1, 3, 4], delete_status=1, is_public=1,
+                                            topic_type=topic_type, create_time__lt=time_token).order_by("-create_time")[(page - 1) * page_count:page * page_count]
+        elif moment_type == 2:
+            # 最热:
+            if topic_type == 0:
+                moments = UserMoment.objects.filter(show_status__in=[1, 3, 4], delete_status=1,
+                                            is_public=1).order_by("-rank_score")[(page - 1) * page_count:page * page_count]
+            else:
+                moments = UserMoment.objects.filter(show_status__in=[1, 3, 4], delete_status=1,
+                                                    topic_type=topic_type, is_public=1).order_by("-rank_score")[(page - 1) * page_count:page * page_count]
+
+        if moments:
+            size = moments.count()
+            num = 1
+            for moment in moments:
+                if size != num:
+                    num += 1
+                else:
+                    page_token = cls.get_page_token(moment.create_time)
+
+            return moments, page_token
+        else:
+            return None, page_token
+
+    @classmethod
+    def get_page_token(cls, date_time):
+        temp_time = date_time.strftime("%Y-%m-%d %H:%M:%S")
+        timeArray = time.strptime(temp_time, "%Y-%m-%d %H:%M:%S")
+        timestamp = time.mktime(timeArray)
+        return int(timestamp)
+
 
 class UserComment(Document):
     user_moment_id = StringField(verbose_name=u"用户发布动态的 id", max_length=64)
@@ -535,4 +625,26 @@ class AboutMeMessage(Document):
         if user_vip:
             vip = Vip.objects.filter(id=user_vip.vip_id).first()
             data["from_user_vip_icon"] = vip.icon_url
+        return data
+
+
+#  动态话题
+class MomentTopic(Document):
+    topic_type = IntField(verbose_name=u'话题类型')
+    name = StringField(verbose_name=u"话题名称")
+    hot = IntField(verbose_name=u"是否热门")  # 1:热门  2:非热门
+    delete_status = IntField(verbose_name=u"是否删除")  # 1:未删除  2:删除
+    create_time = DateTimeField(verbose_name=u"创建时间")
+    img_url = StringField(verbose_name=u"话题img", max_length=512)
+    content = StringField(verbose_name=u"内容")
+    sort = IntField(verbose_name=u"排序")
+
+    def normal_info(self):
+        data = {
+            "topic_type": self.topic_type,
+            "name": self.name,
+            "hot": self.hot,
+            "img_url": self.img_url,
+            "content": self.content,
+        }
         return data

@@ -13,10 +13,12 @@ class ApiException(BaseException):
 
 #账号错误码
 ACCOUNT_INSUFFICIENT_BALANCE = -101
+LESS_GOLD = -103
 RULE_MISS = -102
 ACCOUNT_EXCEPTION_MAP = {
     ACCOUNT_INSUFFICIENT_BALANCE: u'账号余额不足', #没有足够的票
-    RULE_MISS: u'找不到对应规则'
+    RULE_MISS: u'找不到对应规则',
+    LESS_GOLD: u'账号金币不足',
 }
 
 

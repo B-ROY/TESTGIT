@@ -316,8 +316,17 @@ class Account(Document):
         tar.save()
         self.update(dec__gold=gold, set__update_time=datetime.datetime.now())
 
+    # 钻石兑换金币
+    def gold_diamond_exchange_out(self, gold_diamond_id):
+        gold_diamond = GoldDiamond.objects.filter(id=gold_diamond_id).first()
+        gold_count = gold_diamond.gold_count
+        diamond_count = gold_diamond.diamond_count
 
-    ####################################################
+        self.diamond_trade_out(diamond_count, u"钻石兑换金币", TradeDiamondRecord.TradeTypeDiamondGoldExchange)
+        self.gold_trade_in(gold_count, u"钻石兑换金币", TradeGoldRecord.TypeDiamondExchange)
+
+
+####################################################
     #                    创建提现订单                    #
     ####################################################
     #def withdraw_out_create_order(self, alipay_acccount, name, phone, ticket, money, harvest, platform, fill_in_type=1,
@@ -412,6 +421,7 @@ class TradeDiamondRecord(Document):
     TradeTypePrivateVideo = 12  # 千里眼消耗金额
     TradeTypeLuckDraw = 13  # 抽奖所得
     TradeTypeBuyGold = 14  # 购买金币
+    TradeTypeDiamondGoldExchange = 15  # 钻石兑换金币
 
     TradeType_DICT = {
         0: u'兑换',
@@ -429,6 +439,7 @@ class TradeDiamondRecord(Document):
         12: u'购买私房视频',
         13: u'抽奖所得',
         14: u'购买金币',
+        15: u'钻石兑换金币',
     }
 
 
@@ -1023,6 +1034,7 @@ class TradeGoldRecord(Document):
     TypeReward = 0  # 抽奖所得
     TypeLuckDrawConsume = 1  # 抽奖消耗
     TypeDiamondBuy = 2  # 钻石购买
+    TypeDiamondExchange = 3  # 钻石兑换
 
     user = GenericReferenceField("User", verbose_name=u'用户')
     before_gold = IntField(verbose_name=u'交易前金币')
@@ -1036,6 +1048,20 @@ class TradeGoldRecord(Document):
         app_label = "customer"
         verbose_name = u"金币交易记录"
         verbose_name_plural = verbose_name
+
+
+class GoldDiamond(Document):
+    gold_count = IntField(verbose_name=u"金币个数")
+    diamond_count = IntField(verbose_name=u"钻石个数")
+    delete_status = IntField(verbose_name=u"是否删除")  # 0:未删除  1:删除
+
+    @classmethod
+    def create(cls, gold_count, diamond_count):
+        _obj = cls()
+        _obj.gold_count = gold_count
+        _obj.diamond_count = diamond_count
+        _obj.delete_status = 0
+        _obj.save()
 
 
 

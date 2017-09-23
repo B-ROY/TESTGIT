@@ -175,6 +175,8 @@ class User(Document):
 
     last_room_id = StringField(verbose_name=u"上次锁在房间")
 
+    star_count = IntField(verbose_name=u"星星个数")
+
     class Meta:
         app_label = "customer"
         verbose_name = u"用户"
@@ -272,6 +274,14 @@ class User(Document):
         if self.weight:
             data["weight"] = self.weight
 
+        star_count = 0
+        if self.star_count:
+            star_count = self.star_count
+        data["star_count"] = star_count
+
+        tags = UserCallScore.get_tags(self.id)
+        data["call_tags"] = tags
+
         return data
 
     @classmethod
@@ -339,6 +349,7 @@ class User(Document):
                 last_guid=guid,
                 is_vip=3,
                 audio_status=2,
+                star_count=0,
             )
             user.id = UserRedis.pop_user_id()
             user.identity = UserRedis.pop_user_identity()
@@ -450,7 +461,8 @@ class User(Document):
                 disturb_mode=0,
                 online_status=1,
                 current_score=-1,
-                last_guid=guid
+                last_guid=guid,
+                star_count=0
             )
 
             user.id = UserRedis.pop_user_id()
@@ -661,6 +673,22 @@ class User(Document):
                 return 1
         else:
             return 1  # 可以聊天
+
+    @classmethod
+    def check_online_type(cls, user):
+        if user.disturb_mode == 1:
+            online_type = 1  # 勿扰
+        else:
+            import time
+            time = int(time.time())
+            pre_time = time - 3600
+            user_beat = UserHeartBeat.objects.filter(user=user, last_report_time__gte=pre_time).first()
+            if user_beat:
+                online_type = 2  # 在线
+            else:
+                online_type = 3  # 离线
+
+        return online_type
 
 
 
@@ -1195,6 +1223,81 @@ class RecommendUser(Document):
     is_valid = IntField(verbose_name=u"是否删除", default=1)  # 1未删除 2，删除
 
 
+class CallScoreTag(Document):
+    name = StringField(verbose_name=u"标签名")
+    delete_status = IntField(verbose_name=u"是否删除")  # 1未删除 2，删除
+
+    @classmethod
+    def get_list(cls):
+        tags = cls.objects.filter(delete_status=1)
+        tag_list = []
+        for tag in tags:
+            dic = {}
+            dic["id"] = str(tag.id)
+            dic["name"] = tag.name
+            tag_list.append(dic)
+
+        return tag_list
+
+
+class UserCallScore(Document):
+    user_id = IntField(verbose_name=u"用户id")
+    score_type = IntField(verbose_name=u"评分类型")  # 1:标签   2:自定义  3:主播星星
+    tag_name = StringField(verbose_name=u"标签name")
+    count = IntField(verbose_name=u"个数")
+    content = StringField(verbose_name=u"自定义印象")
+    duration = IntField(verbose_name=u"通话时长")
+    create_time = DateTimeField(verbose_name=u"评价时间")
+
+    @classmethod
+    def create_user_score(cls, user_id, score_type, tag_name, count, duration, content=""):
+        if score_type == 1:
+            score = cls.objects.filter(user_id=user_id, tag_name=tag_name, score_type=1).first()
+            if not score:
+                new_score = UserCallScore()
+                new_score.user_id = user_id
+                new_score.score_type = 1
+                new_score.count = 1
+                new_score.tag_name = tag_name
+                new_score.duration = duration
+                new_score.create_time = datetime.datetime.now()
+                new_score.save()
+            else:
+                score.update(inc__count=1)
+
+        if score_type == 3:
+            score = cls.objects.filter(user_id=user_id, score_type=3).first()
+            if not score:
+                new_score = UserCallScore()
+                new_score.user_id = user_id
+                new_score.score_type = 3
+                new_score.count = count
+                new_score.duration = duration
+                new_score.create_time = datetime.datetime.now()
+                new_score.save()
+            else:
+                score.update(inc__count=count)
+
+            user = User.objects.filter(id=user_id).first()
+            if user:
+                if user.star_count:
+                    user.update(inc__star_count=count)
+                else:
+                    user.star_count = count
+                    user.save()
+
+    @classmethod
+    def get_tags(cls, user_id):
+        tags = cls.objects.filter(user_id=user_id, score_type=1)
+        data = []
+        if tags:
+            for tag in tags:
+                dict = {}
+                dict["tag_name"] = tag.tag_name
+                dict["count"] = tag.count
+                data.append(dict)
+
+        return data
 
 
 

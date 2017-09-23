@@ -646,21 +646,20 @@
 	<div id="content">
 
 
-		
-        <ul id='modules' class="nav  nav-stacked">
-        {% set last_module = None %}
-		{% for module in sorted(apis.keys(),reverse=True) %}
-            {% if not last_module %}
-                {% set last_module = module %}
-            {% else%}
-                {% if last_module.split(".")[:-1]!= module.split(".")[:-1]%}
-                  <li><hr style="margin: 0px 0px;" /></li>
-                 {% set last_module = module %}
+            <ul id='modules' class="nav  nav-pills nav-stacked" style="height:600px;overflow:scroll">
+            {% set last_module = None %}
+            {% for module in sorted(apis.keys(),reverse=True) %}
+                {% if not last_module %}
+                    {% set last_module = module %}
+                {% else%}
+                    {% if last_module.split(".")[:-1]!= module.split(".")[:-1]%}
+                      <li><hr style="margin: 0px 0px;" /></li>
+                     {% set last_module = module %}
+                    {% end %}
                 {% end %}
+                <li><h5><a href="#module_{{module.replace('.','_')}}"> <i class="icon-map-marker"></i> {{ module_names[module] }}</a></h5></li>
             {% end %}
-			<li><h5><a href="#module_{{module.replace('.','_')}}"> <i class="icon-map-marker"></i> {{ module_names[module] }}</a></h5></li>
-		{% end %}
-		</ul>
+            </ul>
 
 
 		<ul id='apis' class="nav">

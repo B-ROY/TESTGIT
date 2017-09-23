@@ -144,6 +144,61 @@ class VideoPurchaseRecord(Document):
             buy_video_status = 1
         return buy_video_status
 
+    @classmethod
+    def get_buy_count(cls, video_id):
+        return cls.objects.filter(video_id=video_id).count()
+
+    @classmethod
+    def get_watch_users(cls, video_id):
+        from app.customer.models.user import User
+        from app.customer.models.vip import UserVip, Vip
+        buy_user_records = cls.objects.filter(video_id=video_id)
+        vip_watch_records = VipWatchVideoRecord.objects.filter(video_id=video_id)
+        watch_count = 0
+        watch_user_list = []
+        ids = []
+
+        if buy_user_records:
+            for record in buy_user_records:
+                user_id = int(record.user_id)
+                if user_id in ids:
+                    continue
+                watch_count += 1
+                ids.append(user_id)
+                user = User.objects.filter(id=user_id).first()
+                if not user:
+                    continue
+                data = {}
+                user_vip = UserVip.objects.filter(user_id=user_id).first()
+                if user_vip:
+                    vip = Vip.objects.filter(id=user_vip.vip_id).first()
+                    data["vip_icon"] = vip.icon_url
+                data["head_img"] = user.image
+                data["user_id"] = user_id
+                watch_user_list.append(data)
+
+        if vip_watch_records:
+            for record in vip_watch_records:
+                user_id = int(record.user_id)
+                if user_id in ids:
+                    continue
+                watch_count += 1
+                ids.append(user_id)
+                user = User.objects.filter(id=user_id).first()
+                if not user:
+                    continue
+                data = {}
+                user_vip = UserVip.objects.filter(user_id=user_id).first()
+                if user_vip:
+                    vip = Vip.objects.filter(id=user_vip.vip_id).first()
+                    data["vip_icon"] = vip.icon_url
+                data["head_img"] = user.image
+                data["user_id"] = user_id
+                watch_user_list.append(data)
+
+        return watch_count, watch_user_list
+
+
 
 class InviteMessage(Document):
     from_user_id = IntField(verbose_name=u"用户id")

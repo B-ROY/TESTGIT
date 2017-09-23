@@ -130,6 +130,7 @@ class Friend_User_List(BaseHandler):
             data.append(dic)
         return self.write({"status": "success", "data": data})
 
+
 @handler_define
 class IS_Follow_User(BaseHandler):
     @api_define("is follow user", r'/follow/is_follow_user', [
