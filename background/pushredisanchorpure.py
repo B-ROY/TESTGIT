@@ -34,23 +34,26 @@ def pushredis(self):
     # heartbeats = UserHeartBeat.objects.filter(last_report_time__gte=pre_time)
     stuilabel ="598d7a2418ce423b1222d645" #首推标签id
     qingcun = "597ef85718ce420b7d46ce11"
+    gaoqing = "59c61e3718ce4216c1c87ab9"
     usersss = User.objects.filter(is_video_auth = 1,is_block__ne =1).order_by("is_vip")
+    firstsort = []
     stuiqingchunanchors =[]
     for u in usersss:
-        if stuilabel in u.label and qingcun in u.label:
+        if stuilabel in u.label and qingcun in u.label and gaoqing in u.label:
+            firstsort.append(u)
+        elif stuilabel in u.label and qingcun in u.label:
             stuiqingchunanchors.append(u)
     users = []
     user_recommed_id = []
     user_recommed_id_all = []
     usermap = {}
 
+    stuiqingchunanchors = firstsort + stuiqingchunanchors
     randomstui = []
     for stui in stuiqingchunanchors:
         user_heart = UserHeartBeat.objects.get(user=stui)
         if user_heart.last_report_time > pre_time and stui.disturb_mode!=1:
             randomstui.append(stui)
-    random.shuffle(randomstui)
-
     for user in randomstui:
         if user.id in users:
             continue
@@ -80,6 +83,7 @@ def pushredis(self):
                     "personal_tags": personal_tags,
                     "is_online": is_online
                 }
+                dic["check_real_video"] = 1
             else:
                 vip = Vip.objects.filter(id=user_vip.vip_id).first()
                 dic = {
@@ -96,16 +100,7 @@ def pushredis(self):
                     },
                     "is_online": is_online
                 }
-
-            show_video = RealVideoVerify.objects(user_id=user.id, status=1).order_by("-update_time").first()
-            if show_video:
-                dic["check_real_video"] = show_video.status
-            else:
-                real_video = RealVideoVerify.objects(user_id=user.id, status__ne=2).order_by("-update_time").first()
-                if real_video:
-                    dic["check_real_video"] = real_video.status
-                else:
-                    dic["check_real_video"] = 3
+                dic["check_real_video"] = 1
 
             self.append(user.id)
             usermap[str(user.id)] = json.dumps(dic)
@@ -183,6 +178,7 @@ def push_index_anchor(self):
                     },
                     "is_online": is_online
                 }
+                dic["check_real_video"] = 1
             else:
                 dic = {
                     "user": {
