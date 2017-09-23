@@ -145,8 +145,8 @@ class Get_Index_Column(BaseHandler):
         user_id = self.current_user_id
         is_old = True
         if user_id:
-            is_target = (self.current_user.is_video_auth!=1 and UserRedis.is_target_user(user_id)) or \
-                        (self.current_user_id.is_video_auth==1 and UserRedis.is_pure_anchor(user_id))
+            is_target = (self.current_user.is_video_auth != 1 and UserRedis.is_target_user(user_id)) or \
+                        (self.current_user_id.is_video_auth == 1 and not UserRedis.is_pure_anchor(user_id))
 
             if not is_target:
                 is_old = False
