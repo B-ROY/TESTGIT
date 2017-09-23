@@ -60,7 +60,7 @@ class RankListCharmV1(BaseHandler):
         if list_type == 3:
             if self.current_user and ((
                     self.current_user.is_video_auth != 1 and UserRedis.is_target_user(self.current_user_id)) \
-                    or (self.current_user.is_video_auth == 1 and not UserRedis.is_pure_anchor(self.current_user_id))):
+                    or (self.is_video_auth == 1 and not UserRedis.is_pure_anchor(self.current_user_id))):
                 charm_rank_list = CharmRankNew.get_rank_list(count=30, type=1)
                 charm_data = []
                 for charm_rank in charm_rank_list:
