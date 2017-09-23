@@ -5,6 +5,7 @@ import calendar
 from api.apiexceptions.apiexception import *
 from app.customer.models.benifit import TicketAccount
 from app.customer.models.promotion import *
+from app.customer.models.userok import OkUser
 from app.util.messageque.msgsender import MessageSender
 from app.util.paylib.wempayapi import WeMPay
 from base.settings import CHATPAMONGO
@@ -63,7 +64,8 @@ class Account(Document):
         #     if result != 1 :
         #         logging.error("target user error: user_id " + str(self.user.id) + " times " + str(result))
 
-
+        if self.charge >= 20000 and self.charge < 20000 + diamond:
+            OkUser.create(self.user.id,self.charge)
     def diamond_trade_out(self, price, desc, trade_type):
 
         """
