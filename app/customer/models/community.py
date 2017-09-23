@@ -37,6 +37,8 @@ class UserMoment(Document):
     is_public = IntField(verbose_name=u"是否公开")  # 1:公开 2:未公开
     rank_score = FloatField(verbose_name=u"排名得分")
     is_pure = IntField(verbose_name=u"是否清纯")  # 1:清纯
+    is_top = IntField(verbose_name=u"是否置顶")  # 1:置顶
+    top_time = DateTimeField(verbose_name=u"置顶时间")
 
     @classmethod
     def create(cls, user_id, picture_urls, content):
@@ -250,19 +252,29 @@ class UserMoment(Document):
         return interval
 
     @classmethod
-    def get_index_moments(cls, page, page_count, user_id):
-        is_target = UserRedis.is_target_user(user_id)
-        if int(page == 1):
-            if is_target:
-                return cls.objects.filter(show_status__in=[1, 3, 4], delete_status=1, is_public=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
-            else:
-                return cls.objects.filter(show_status__in=[1, 3, 4], delete_status=1, is_public=1, is_pure=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
+    def get_index_moments(cls, page, page_count, user):
+        is_target = (user.is_video_auth!=1 and UserRedis.is_target_user(user.id)) or \
+                        (user.is_video_auth==1 and not UserRedis.is_pure_anchor(user.id))
+        if is_target:
+            return cls.objects.filter(show_status__in=[1, 3, 4], delete_status=1, is_public=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
         else:
-            if is_target:
-                score_moments = cls.objects.filter(show_status__in=[1, 3, 4], delete_status=1, is_public=1).order_by("-rank_score")[((page - 2) * page_count):(page-1) * page_count]
-            else:
-                score_moments = cls.objects.filter(show_status__in=[1, 3, 4], delete_status=1, is_public=1, is_pure=1).order_by("-rank_score")[((page - 2) * page_count):(page-1) * page_count]
-            return score_moments
+            moment_list = []
+            top_ids = []
+
+            # 置顶动态
+            top_list = cls.objects.filter(is_top=1).order_by("-top_time")
+            if top_list:
+                for top in top_list:
+                    if int(page) == 1:
+                        moment_list.append(top)
+                    top_ids.append(str(top.id))
+            # 动态
+            moments = cls.objects.filter(show_status__in=[1, 3, 4], id__nin=top_ids, delete_status=1, is_public=1, is_pure=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
+            if moments:
+                for moment in moments:
+                    moment_list.append(moment)
+
+            return moment_list
 
 class UserComment(Document):
     user_moment_id = StringField(verbose_name=u"用户发布动态的 id", max_length=64)
