@@ -253,8 +253,8 @@ class UserMoment(Document):
 
     @classmethod
     def get_index_moments(cls, page, page_count, user):
-        is_target = (user.is_video_auth!=1 and UserRedis.is_target_user(user.id)) or \
-                        (user.is_video_auth==1 and not UserRedis.is_pure_anchor(user.id))
+        is_target = user is not None and ((user.is_video_auth!=1 and UserRedis.is_target_user(user.id)) or \
+                        (user.is_video_auth==1 and not UserRedis.is_pure_anchor(user.id)))
         if is_target:
             return cls.objects.filter(show_status__in=[1, 3, 4], delete_status=1, is_public=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
         else:

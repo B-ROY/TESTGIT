@@ -163,7 +163,7 @@ class Get_Index_Column(BaseHandler):
                 # 新人驾到
                 anchor_list = NewAnchorRank.objects.all()
                 if anchor_list:
-                    anchor_list[(page - 1) * page_count:page * page_count]
+                    anchor_list = anchor_list[(page - 1) * page_count:page * page_count]
 
                     for anchor in anchor_list:
                         user = User.objects.filter(id=anchor.user_id,is_video_auth=1).first()
@@ -216,7 +216,7 @@ class Get_Index_Column(BaseHandler):
             recommed_list = UserRedis.get_recommed_list_pure()
             anchor_list = UserRedis.get_index_anchor_list_pure(0,-1)
             finaluser = recommed_list + anchor_list
-            finaluser[(page - 1) * page_count:page * page_count]
+            finaluser = finaluser[(page - 1) * page_count:page * page_count]
             if len(finaluser) > 0:
                     for anchorid in finaluser:
                         user = User.objects.filter(id=int(anchorid)).first()
@@ -224,6 +224,7 @@ class Get_Index_Column(BaseHandler):
                         time = int(time.time())
                         pre_time = time - 3600
                         user_beat = UserHeartBeat.objects.filter(user=user, last_report_time__gte=pre_time).first()
+
                         if user_beat:
                             is_online = 1
                         else:
