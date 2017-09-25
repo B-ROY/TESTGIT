@@ -67,7 +67,11 @@ class Account(Document):
         if self.charge >= 5000:
             olduser = UserRedis.is_target_user(self.user.id)
             if not olduser:
-                OkUser.create(self.user.id)
+                okuser = OkUser.objects.filter(user_id = self.user.id).first()
+                if not okuser:
+                    OkUser.create(self.user.id)
+                else:
+                    okuser.update(set__created_time = datetime.datetime.now())
     def diamond_trade_out(self, price, desc, trade_type):
 
         """
