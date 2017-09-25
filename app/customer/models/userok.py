@@ -15,15 +15,13 @@ class OkUser(Document):
     user_id = IntField(verbose_name="用户id")
     is_target = IntField(verbose_name="是不是目标用户") #1目标用户
     created_time = DateTimeField(verbose_name=u"添加时间")
-    charge =  IntField(verbose_name="总充值")
 
 
     @classmethod
-    def create(cls,userid,charge):
+    def create(cls,userid):
         try:
             _obj = cls()
             _obj.user_id = userid
-            _obj.charge = charge
             _obj.is_target = 0
             _obj.created_time = datetime.datetime.now()
             _obj.save()

@@ -64,8 +64,10 @@ class Account(Document):
         #     if result != 1 :
         #         logging.error("target user error: user_id " + str(self.user.id) + " times " + str(result))
 
-        if self.charge >= 20000 and self.charge < 20000 + diamond:
-            OkUser.create(self.user.id,self.charge)
+        if self.charge >= 5000:
+            olduser = UserRedis.is_target_user(self.user.id)
+            if not olduser:
+                OkUser.create(self.user.id,self.charge)
     def diamond_trade_out(self, price, desc, trade_type):
 
         """
