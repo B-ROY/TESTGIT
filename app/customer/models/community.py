@@ -259,23 +259,29 @@ class UserMoment(Document):
 
     @classmethod
     def get_index_moments(cls, page, page_count, user):
+        is_pure = None
+        is_show_top = True
         if user.is_video_auth == 1 and not UserRedis.is_pure_anchor(user.id):
+            is_show_top = False
             is_pure = 2
         elif user.is_video_auth !=1 and not UserRedis.is_target_user(user.id):
             is_pure = 1
+        elif user.is_video_auth !=1 and UserRedis.is_target_user(user.id):
+            is_show_top = False
         else:
             return cls.objects.filter(show_status__in=[1, 3, 4], delete_status=1, is_public=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
 
         moment_list = []
         top_ids = []
 
-        # 置顶动态
-        top_list = cls.objects.filter(is_top=1).order_by("-top_time")
-        if top_list:
-            for top in top_list:
-                if int(page) == 1:
-                    moment_list.append(top)
-                top_ids.append(str(top.id))
+        if is_show_top:
+            # 置顶动态
+            top_list = cls.objects.filter(is_top=1).order_by("-top_time")
+            if top_list:
+                for top in top_list:
+                    if int(page) == 1:
+                        moment_list.append(top)
+                    top_ids.append(str(top.id))
         # 动态
         moments = cls.objects.filter(show_status__in=[1, 3, 4], id__nin=top_ids, delete_status=1, is_public=1, is_pure=is_pure).order_by("-create_time")[(page - 1) * page_count:page * page_count]
         if moments:
