@@ -439,6 +439,19 @@ def test():
     MessageSender.send_do_task(user_id, task_identity)
 
 
+def fix_target_user_moment():
+    from app.customer.models.community import UserMoment
+    target_user_id = UserRedis.get_target_user_ids()
+    moments = UserMoment.objects.all()
+    for moment in moments:
+        user_id = moment.user_id
+        user = User.objects.filter(id=user_id).first()
+        if not user:
+            continue
+        if str(user.id) in target_user_id:
+            moment.update(set__is_pure=2)
+
+
 
 
 

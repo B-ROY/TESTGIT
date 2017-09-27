@@ -299,6 +299,12 @@ class UserRedis():
         # 暂时没有删除逻辑
         return RQueueClient.getInstance().redis.srem(cls.__KEY_TARGET_USER__, str(user_id))
 
+    @classmethod
+    def get_target_user_ids(cls):
+        return RQueueClient.getInstance().redis.smembers(cls.__KEY_TARGET_USER__)
+
+
+
     __KEY__PURE_ANCHOR = "key_pure_anchor"
 
     @classmethod
@@ -319,7 +325,9 @@ class UserRedis():
         # 暂时没有删除逻辑
         return RQueueClient.getInstance().redis.srem(cls.__KEY__PURE_ANCHOR, str(user_id))
 
-
+    @classmethod
+    def get_pure_anchor_ids(cls):
+        return RQueueClient.getInstance().redis.smembers(cls.__KEY__PURE_ANCHOR)
 
 
 

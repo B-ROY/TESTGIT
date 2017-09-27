@@ -153,7 +153,7 @@ def push_index_anchor(self):
                 zaixiancall.append(user)
         else:
             lixian.append(user)
-    finalusers = zaixianbururao + zaixiancall + zaixianwurao
+    finalusers = zaixianbururao + zaixiancall
     for user in finalusers:
         if user.id not in self:
             index_id_all.append(user.id)
@@ -194,6 +194,7 @@ def push_index_anchor(self):
                 dic["check_real_video"] = 1
             usermap[str(user.id)] = json.dumps(dic)
             index_id.append(user.id)
+    lixian =  zaixianwurao + lixian
     for user in lixian:
         if user.id not in self:
             index_id_all.append(user.id)
@@ -223,6 +224,7 @@ def push_index_anchor(self):
                     },
                     "is_online": is_online
                 }
+                dic["check_real_video"] = 1
             else:
                 dic = {
                     "user": {

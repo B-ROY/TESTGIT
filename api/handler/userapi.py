@@ -547,12 +547,15 @@ class CompletePersonalInfo(BaseHandler):
         status = User.complete_personal_info(user, nickname, gender, img, birth_date)
         if status:
             AudioRoomRecord.create_roomrecord(user_id=user.id, open_time=datetime.datetime.now())
-            body = {}
-            body["userid"] = user.id
-            path = "/sync/userinfo"
-            data = RequestApi.post_body_request_http(path=path, body=json.dumps(body), headers={}, host=settings.Message_Tornado_host)
-            result = json.loads(data)
-            print result.get("status_code")
+            try:
+                body = {}
+                body["userid"] = user.id
+                path = "/sync/userinfo"
+                data = RequestApi.post_body_request_http(path=path, body=json.dumps(body), headers={}, host=settings.Message_Tornado_host)
+                result = json.loads(data)
+                print result.get("status_code")
+            except Exception,e:
+                logging.error("sync userinfo  error:{0}".format(e))
             return self.write({"status": "success"})
         else:
             return self.write({"status": "failed", "error_message": _(u"完善用户资料是失败")})
@@ -1709,12 +1712,15 @@ class UpdateUserInfo(BaseHandler):
             is_change = True
         if is_change:
             user.save()
-            body = {}
-            body["userid"] = user.id
-            path = "/sync/userinfo"
-            data = RequestApi.post_body_request_http(path=path, body=json.dumps(body), headers={}, host=settings.Message_Tornado_host)
-            result = json.loads(data)
-            print result.get("status_code")
+            try:
+                body = {}
+                body["userid"] = user.id
+                path = "/sync/userinfo"
+                data = RequestApi.post_body_request_http(path=path, body=json.dumps(body), headers={}, host=settings.Message_Tornado_host)
+                result = json.loads(data)
+                print result.get("status_code")
+            except Exception,e:
+                logging.error("sync userinfo  error:{0}".format(e))
         # if is_nickname_change:
         #     MessageSender.send_text_check(user.nickname, user.id, 1, self.user_ip)
         if is_desc_change:

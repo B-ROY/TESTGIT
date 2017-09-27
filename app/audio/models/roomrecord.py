@@ -63,14 +63,14 @@ class RoomRecord(Document):
         return record
 
     def finish_room(self, end_type):
+        if self.room_status == 2:
+            return
         end_time = datetime.datetime.now()
         self.update(set__room_status=2, set__end_type=end_type, set__end_time=end_time)
         room_user = User.objects.get(id=self.user_id)
         join_user = User.objects.get(id=self.join_id)
-        print room_user.last_room_id, self.id
         if room_user.last_room_id == str(self.id):
             room_user.update(set__audio_status=2)
-            print room_user.audio_status, "room_user"
         if join_user.last_room_id == str(self.id):
             join_user.update(set__audio_status=2)
 

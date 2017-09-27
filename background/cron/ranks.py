@@ -63,18 +63,21 @@ def clairvoyant_rank():
     time = int(time.time())
     pre_time = time - 60 * 5
 
+    target_user_ids = UserRedis.get_target_user_ids()
     for account in accounts:
         user = account.user
-        user_beat = UserHeartBeat.objects.filter(user=user, last_report_time__gte=pre_time)
-        if user_beat:
-            if user.is_video_auth == 1:
-                continue
+        #######判断是否是老用户###########
+        if str(user.id) in target_user_ids:
+            user_beat = UserHeartBeat.objects.filter(user=user, last_report_time__gte=pre_time)
+            if user_beat:
+                if user.is_video_auth == 1:
+                    continue
 
-            if len(user_list) == 6:
-                break
-            else:
-                if user.gender == 1:
-                    user_list.append(user.id)
+                if len(user_list) == 6:
+                    break
+                else:
+                    if user.gender == 1:
+                        user_list.append(user.id)
 
     if len(user_list) < 6:
         for account in accounts:
