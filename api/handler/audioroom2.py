@@ -364,10 +364,11 @@ class RoomReportClose(BaseHandler):
         record = RoomRecord.objects.get(id=room_id)
 
         user_id = self.current_user_id
-        if record.user_id == int(user_id):
-            record.finish_room(end_type=6)
-        elif record.join_id == int(user_id):
-            record.finish_room(end_type=3)
+        if record.room_status != 2:
+            if record.user_id == int(user_id):
+                record.finish_room(end_type=6)
+            elif record.join_id == int(user_id):
+                record.finish_room(end_type=3)
 
         return self.write({"status": "success"})
 
