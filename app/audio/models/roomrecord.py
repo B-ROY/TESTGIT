@@ -50,8 +50,8 @@ class RoomRecord(Document):
         return record
 
     def finish_room(self, end_type):
-        if self.end_type == 2:
-            return 
+        if self.room_status == 2:
+            return
         end_time = datetime.datetime.now()
         self.update(set__room_status=2, set__end_type=end_type, set__end_time=end_time)
         room_user = User.objects.get(id=self.user_id)
