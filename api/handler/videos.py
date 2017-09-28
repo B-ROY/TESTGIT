@@ -172,6 +172,15 @@ class PrivateVideoCreate(BaseHandler):
             if code == 2:
                 return self.write({'status': "fail", 'error': _(message)})
             user_moment.is_public = 1
+
+            # 发布私房视频 任务
+            from app.customer.models.task import Task
+            role = Task.get_role(user.id)
+            if role == 3:
+                task_identity = 15
+            if task_identity:
+                MessageSender.send_do_task(user_id=user.id, task_identity=task_identity)
+
         else:
             user_moment.is_public = 2
         user_moment.save()
@@ -392,6 +401,29 @@ class InviteMessageSend(BaseHandler):
             InviteMessage.create_invite_message(self.current_user.id, user_id, type)
             return self.write({"status": "success"})
 
+
+@handler_define
+class VideoTask(BaseHandler):
+    @api_define("private video delete", r'/video/video_task', [
+        Param('video_id', True, str, "", "", u'私房视频ID'),
+    ], description=u'观看私房视频 任务')
+    @login_required
+    def get(self):
+        video_id = self.arg('video_id')
+        user_id = self.current_user_id
+
+        from app.customer.models.task import Task
+        role = Task.get_role(user_id)
+
+        if role == 1:
+            task_identity = 43
+
+        if task_identity:
+            vip_count = VipWatchVideoRecord.objects.filter(video_id=video_id, user_id=user_id).count()
+            buy_count = VideoPurchaseRecord.objects.filter(video_id=video_id, user_id=user_id).count()
+            count = vip_count + buy_count
+            if count >= 2:
+                MessageSender.send_do_task(user_id=user_id, task_identity=task_identity)
 
 
 

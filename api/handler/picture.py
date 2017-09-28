@@ -16,6 +16,7 @@ from app.picture.models.picture import PictureInfo, PicturePriceList
 from app.picture.models.comment import CommentInfo
 from app.customer.models.vip import UserVip
 from app.customer.models.community import UserMoment, UserComment
+from app.customer.models.task import Task
 
 
 # 创建新的图片
@@ -414,6 +415,24 @@ class UserPictureCreate(BaseHandler):
 
         if code == 2:
             return self.write({"status": "failed", "error": _(message)})
+
+        # 上传普通照片,  上传精美照片任务
+        role = Task.get_role(user.id)
+        if type == 1:
+            # 普通照片
+            if role == 1:
+                task_identity = 31
+            elif role == 2:
+                task_identity = 47
+            elif role == 3:
+                task_identity = 4
+        elif type == 2:
+            # 精美照片
+            if role == 3:
+                task_identity = 7
+
+        if task_identity:
+            MessageSender.send_do_task(user_id=user.id, task_identity=task_identity)
 
         moment_pic_ids = []
         if picture_url_list:

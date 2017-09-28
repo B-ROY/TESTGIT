@@ -351,11 +351,19 @@ class BottleMessaegSend_V3(BaseHandler):
                     # 消耗余额
                     # 用户账号余额
                     account = Account.objects.filter(user=user).first()
-                    # account.last_diamond = account.diamond
-                    # account.diamond -= tools.price
-                    # account.update_time = datetime.datetime.now()
-                    # account.save()
                     account.diamond_trade_out(price=tools.price, desc=u"漂流瓶消耗金额", trade_type=TradeDiamondRecord.TradeTypeBottle)
+
+                # 漂流瓶任务
+                from app.customer.models.task import Task
+                role = Task.get_role(user.id)
+                if role == 1:
+                    task_identity = 32
+                elif role == 2:
+                    task_identity = 48
+                elif role == 3:
+                    task_identity = 5
+                if task_identity:
+                    MessageSender.send_do_task(user_id=user.id, task_identity=task_identity)
 
                 return self.write({"status": "success", "count": count})
             else:

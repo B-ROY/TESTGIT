@@ -101,6 +101,9 @@ class WeightRandom:
 #
 #     print wr()
 
-m, s = divmod(3700, 60)
-h, m = divmod(m, 60)
-print ("%02d:%02d:%02d" % (h, m, s))
+# m, s = divmod(3700, 60)
+# h, m = divmod(m, 60)
+# print ("%02d:%02d:%02d" % (h, m, s))
+
+num = 10.87
+print str(num)

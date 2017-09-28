@@ -305,8 +305,6 @@ def fix_user():
             user.update(set__is_video_auth=1)
         else:
             if user.is_video_auth == 1:
-                desc = u"<html><p>" + _(u'由于您未进行视频认证，将取消您的播主资格，如想再次成为视频播主，请进行申请视频认证，并添加审核人员微信: "honeynnm" ') + u"</p></html>"
-                MessageSender.send_system_message(user.id, desc)
                 user.update(set__is_video_auth=4)
                 
 def init_topic():
@@ -453,6 +451,33 @@ def fix_target_user_moment():
 
 
 
+def init_invite():
+    from app.customer.models.temp_invite_ticket import TempInviteTicket
+    TempInviteTicket.create("小红", 11403)
+    TempInviteTicket.create("小伙很疯狂", 10515)
+    TempInviteTicket.create("采莲花的小姑娘", 9846)
+    TempInviteTicket.create("勇敢的小童鞋", 17234)
+    TempInviteTicket.create("先祖荣耀", 7344)
+    TempInviteTicket.create("爽朗的枫叶", 12109)
+    TempInviteTicket.create("暴躁的黑莓", 11500)
+    TempInviteTicket.create("老洋的春天", 5525)
+    TempInviteTicket.create("倔强的茄子", 12328)
+    TempInviteTicket.create("安静的熊猫", 14719)
+    TempInviteTicket.create("小猫猫", 8644)
+    TempInviteTicket.create("心型圈", 10226)
+    TempInviteTicket.create("让你抱抱", 7859)
+    TempInviteTicket.create("虎美", 10793)
+    TempInviteTicket.create("玫瑰花", 12922)
+    TempInviteTicket.create("狡猾的甜菜", 12502)
+    TempInviteTicket.create("谨慎的橘子", 10676)
+    TempInviteTicket.create("色色发抖", 20827)
+    TempInviteTicket.create("可爱的我", 10228)
+    TempInviteTicket.create("让我形容你", 7739)
+    TempInviteTicket.create("软软棉花糖", 9431)
+    TempInviteTicket.create("给你惊喜％", 11699)
+    TempInviteTicket.create("错过我的你", 8203)
+    TempInviteTicket.create("带上脑子", 11305)
+    TempInviteTicket.create("谨慎的橘子", 11733)
 
 
 

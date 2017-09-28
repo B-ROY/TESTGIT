@@ -20,7 +20,7 @@ class RoomRecord(Document):
     price = IntField(verbose_name=u"房间价格")
     room_type = IntField(verbose_name=u"房间类型")#1.视频房间 0.语音房间
     create_time = DateTimeField(verbose_name=u"房间记录创建时间 以拨打时间计")
-    is_answer = IntField(verbose_name=u"是否接通")#1.接通 2.未接通
+    is_answer = IntField(verbose_name=u"是否接通") # 1.接通 2.未接通
     start_time = DateTimeField(verbose_name=u"房间正式通话时间， 以主播接通时间计")
     end_time = DateTimeField(verbose_name=u"房间结束通话时间， 挂断时间")
     end_type = IntField(verbose_name=u"房间挂断类型") #1. 用户取消请请求 2. 用户挂断 3.用户异常挂断 4.主播拒绝 5 主播挂断 6 主播异常挂断
@@ -55,8 +55,11 @@ class RoomRecord(Document):
 
         record.join_ip = join_ip
 
-        record.dial_back_status = dial_back_status
-        record.dial_back_time = dial_back_time
+        if dial_back_status:
+            record.dial_back_status = dial_back_status
+
+        if dial_back_time:
+            record.dial_back_time = dial_back_time
         record.is_dial_back = is_dial_back
         record.is_show = 1
         record.save()
@@ -77,6 +80,17 @@ class RoomRecord(Document):
         if room_user.is_video_auth == 1:
             UserRedis.add_user_recommed_id_v3_one(self.user_id)
 
+        from app.customer.models.task import Task
+        role = Task.get_role(self.user_id)
+        if role == 3:
+            if self.start_time and self.end_time:
+                seconds = (self.end_time - self.start_time).total_seconds()
+                user = User.objects.filter(id=self.user_id).first()
+                if user:
+                    user.update(inc__video_time=seconds)
+                task_identity = 20
+                MessageSender.send_do_task(user_id=self.user_id, task_identity=task_identity, task_type=2)
+
         # 判断回呼
         if end_type in [1, 3, 6]:
             if self.is_answer == 2 and self.room_type == 1:
@@ -89,9 +103,10 @@ class RoomRecord(Document):
 
                 self.update(set__dial_back_status=1)
 
+
     @classmethod
     def get_records(cls, user_id, page, page_count):
-        records = cls.objects.filter(user_id=user_id, is_show=1, room_type=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
+        records = cls.objects.filter((Q(user_id=user_id) | Q(join_id=user_id)), is_show=1, room_type=1, is_dial_back=0).order_by("-create_time")[(page - 1) * page_count:page * page_count]
         return records
 
     @classmethod
@@ -106,15 +121,15 @@ class RoomRecord(Document):
         dial_type = 1
         if record.dial_back_status == 1:
             dial_type = 3
-        if record.end_type == 5:
+        if record.end_type == 4:
             dial_type = 2
         if record.end_type == 1:
-            dial_type = 3
+            dial_type = 4
         return dial_type
 
     @classmethod
     def get_time_len_str(cls, start_time, end_time):
-        seconds = (end_time - start_time).total_seconds()/60
+        seconds = (end_time - start_time).total_seconds()
         m, s = divmod(seconds, 60)
         h, m = divmod(m, 60)
         time_str = ("%02d:%02d:%02d" % (h, m, s))

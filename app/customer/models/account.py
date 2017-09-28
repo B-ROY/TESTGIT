@@ -73,8 +73,9 @@ class Account(Document):
                 if not okuser:
                     OkUser.create(self.user.id)
                 else:
-                    okuser.update(set__created_time = datetime.datetime.now())
-    def diamond_trade_out(self, price, desc, trade_type):
+                    okuser.update(set__created_time=datetime.datetime.now())
+
+    def diamond_trade_out(self, price, desc, trade_type, room_id=None):
 
         """
         -减钱
@@ -121,7 +122,7 @@ class Account(Document):
 
 
 
-    def ticket_trade_in(self, price, desc, trade_type, ):
+    def ticket_trade_in(self, price, desc, trade_type):
         """
         +加粒子数
         """
@@ -230,35 +231,17 @@ class Account(Document):
             account = Account.objects.get(user=user)
             account.diamond_trade_in(order.diamon, diamond_bonus, u"充值", TradeDiamondRecord.TradeTypeExchange)
 
-            # try:
-            #     # 首充活动
-            #     act = FirstChargeActivity.objects.filter(temp_activity_type=1).first()
-            #     now = datetime.datetime.now()
-            #
-            #     #  判断是否活动有效
-            #     if act:
-            #         end_time = act.end_time
-            #         days = (end_time - now).days
-            #         if days < 0:
-            #             return True
-            #
-            #     #  判断是否是后台充值
-            #     if order.fill_in_type == 6:
-            #         return True
-            #
-            #     #判断首充
-            #     starttime = now.strftime("%Y-%m-%d 00:00:00")
-            #     endtime = now.strftime('%Y-%m-%d 23:59:59')
-            #     order_count = TradeBalanceOrder.objects.filter(status='1', user=user, buy_time__gte=starttime,
-            #                                                    buy_time__lte=endtime,).count()
-            #     if order_count > 1:
-            #         return True
-            #
-            #     money = order.money
-            #     FirstChargeActivity.create_reward(user, money)
-            #
-            # except Exception, e:
-            #     logging.error(" FirstChargeActivity  error:{0}".format(e))
+            # 判断首充
+            from app.customer.models.task import Task
+            role = Task.get_role(user.id)
+            if role == 1:
+                task_identity = 35
+                order_count = TradeBalanceOrder.objects.filter(status='1', user=user).count()
+                if order_count == 1:
+                    if task_identity:
+                        MessageSender.send_do_task(user_id=user.id, task_identity=task_identity)
+
+
 
             return True
         elif order.status == TradeBalanceOrder.STATUS_FIIL_IN_CANCEL:
@@ -438,9 +421,10 @@ class TradeDiamondRecord(Document):
     TradeTypeLuckDraw = 13  # 抽奖所得
     TradeTypeBuyGold = 14  # 购买金币
     TradeTypeDiamondGoldExchange = 15  # 钻石兑换金币
+    TradeTypeDiamondTaskReward = 16  # 任务奖励
 
     TradeType_DICT = {
-        0: u'兑换',
+        0: u'充值',
         1: u'购买礼物',
         2: u'语音聊天',
         3: u'图片解锁',
@@ -456,8 +440,8 @@ class TradeDiamondRecord(Document):
         13: u'抽奖所得',
         14: u'购买金币',
         15: u'钻石兑换金币',
+        16: u'任务奖励',
     }
-
 
     user = GenericReferenceField("User", verbose_name=u'用户')
     before_balance = IntField(verbose_name=u'交易前余额')
@@ -483,7 +467,7 @@ class TradeDiamondRecord(Document):
         else:
             time_token = now
 
-        list = cls.objects.filter(user=user, created_time__lt=time_token, created_time__gte=end_time)[(page - 1) * page_count:page * page_count]
+        list = cls.objects.filter(user=user, created_time__lt=time_token, created_time__gte=end_time).order_by("-created_time")[(page - 1) * page_count:page * page_count]
 
         if list:
             size = list.count()
@@ -1051,6 +1035,7 @@ class TradeGoldRecord(Document):
     TypeLuckDrawConsume = 1  # 抽奖消耗
     TypeDiamondBuy = 2  # 钻石购买
     TypeDiamondExchange = 3  # 钻石兑换
+    TypeTaskReward = 4  # 任务奖励
 
     user = GenericReferenceField("User", verbose_name=u'用户')
     before_gold = IntField(verbose_name=u'交易前金币')

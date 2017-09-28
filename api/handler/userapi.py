@@ -41,6 +41,7 @@ from api.handler.thridpard.facebook_ import FacebookAPI
 from app.customer.models.video import PrivateVideo, VideoPurchaseRecord
 from app.customer.models.chat import ChatMessage, UserConversation
 from app.customer.models.dev_info import DevInfoMatch
+from app.customer.models.task import Task
 
 
 class ThridPardLogin(BaseHandler):
@@ -1379,7 +1380,8 @@ class UserHomepageV2(BaseHandler):
             else:
                 dic["check_real_video"] = 3
 
-            # 我的动态相关
+
+        # 我的动态相关
         temp_moments = UserMoment.objects.filter(user_id=home_id, show_status__ne=2, delete_status=1, is_public=1).order_by("-create_time")
         count = 0
         moment_img_list = []
@@ -1596,6 +1598,8 @@ class UpdateUserInfo(BaseHandler):
         is_image_change = False
         is_cover_change = False
 
+        role = Task.get_role(user.id)
+
         if self.has_arg("desc") and user.desc != self.arg("desc"):
             if len(self.arg("desc")) > 32:
                 return self.write({'status': "fail",
@@ -1604,6 +1608,16 @@ class UpdateUserInfo(BaseHandler):
             if self.arg("desc") != user.desc:
                 is_desc_change = True
                 user.desc = self.arg("desc")
+
+                # 添加签名任务
+                if role == 1:
+                    task_identity = 42
+                elif role == 3:
+                    task_identity = 13
+                if task_identity:
+                    MessageSender.send_do_task(user_id=user.id, task_identity=task_identity)
+
+
 
             is_change = True
 
@@ -1628,6 +1642,15 @@ class UpdateUserInfo(BaseHandler):
                 is_image_change = True
                 user.image = User.convert_http_to_https(self.arg("logo"))
             is_change = True
+
+            # 上传头像任务
+            if role == 1:
+                task_identity = 30
+            elif role == 2:
+                task_identity = 46
+            elif role == 3:
+                task_identity = 3
+            MessageSender.send_do_task(user_id=user.id, task_identity=task_identity)
 
         if self.has_arg("nickname"):
             if len(self.arg("nickname")) > 16:
@@ -2251,6 +2274,14 @@ class MessageSendToolV1(BaseHandler):
             UserTools.reduce_tools(send_id, str(tool.id))
             # 添加记录
             SendToolsRecord.add(send_id, receive_id, str(tool.id), 1)
+
+            # 千里眼 任务
+            role = Task.get_role(send_id)
+            if role == 1:
+                task_identity = 41
+            if task_identity:
+                MessageSender.send_do_task(user_id=send_id, task_identity=task_identity)
+
             return self.write({"status": "success"})
         else:
             return self.write({"status": "fail", "error": _(u"无可用门槛道具"), })
@@ -2559,6 +2590,13 @@ class RichUserList(BaseHandler):
 
         data.reverse()
 
+        # 千里眼 任务
+        role = Task.get_role(user.id)
+        if role == 3:
+            task_identity = 14
+        if task_identity:
+            MessageSender.send_do_task(user_id=user.id, task_identity=task_identity)
+
         return self.write({"status": "success", "data": data, "has_tools": 1})
 
 
@@ -2763,7 +2801,54 @@ class GoldDiamondExchange(BaseHandler):
         return self.write({"status": "success"})
 
 
+@handler_define
+class LocationSwitch(BaseHandler):
+    @api_define("location_switch", "/live/user/location_switch", [
+        Param('switch_type', True, str, "1", "1", u'switch_type  1:开启不显示  0:关闭不显示'),
+    ], description=u"地理位置开关")
+    @login_required
+    def get(self):
+        user = self.current_user
+        switch_type = self.arg_int("switch_type", 0)
+        user.update(set__location_switch=switch_type)
+        return self.write({"status": "success"})
 
+
+@handler_define
+class ShareTask(BaseHandler):
+    @api_define("share task", "/task/share", [
+        Param('share_channel', True, str, "0", "0", u' 0:微信  1:朋友圈  2:QQ'),
+    ], description=u"分享任务接口")
+    @login_required
+    def get(self):
+        user_id = self.current_user_id
+        # 分享任务
+        role = Task.get_role(user_id)
+        share_channel = self.arg_int("share_channel", 0)
+        if role == 1:
+            if share_channel == 0:
+                task_identity = 38
+            elif share_channel == 1:
+                task_identity = 39
+            elif share_channel == 2:
+                task_identity = 37
+        elif role == 2:
+            if share_channel == 0:
+                task_identity = 53
+            elif share_channel == 1:
+                task_identity = 54
+            elif share_channel == 2:
+                task_identity = 52
+        elif role == 3:
+            if share_channel == 0:
+                task_identity = 10
+            elif share_channel == 1:
+                task_identity = 11
+            elif share_channel == 2:
+                task_identity = 9
+
+        if task_identity:
+            MessageSender.send_do_task(user_id=user_id, task_identity=task_identity)
 
 
 

@@ -71,7 +71,11 @@ class RoomCall(BaseHandler):
                 return self.write({'status': "failed", "error": "对方暂未进行视频认证～"})
         # 5. 判断拨打人是否余额足够
         user_account = Account.objects.get(user=user)
-        room_price = room_user.video_price if call_type == 1 else room_user.now_price
+        if is_dial_back:
+            # 回呼的房间
+            room_price = user.video_price if call_type == 1 else user.now_price
+        else:
+            room_price = room_user.video_price if call_type == 1 else room_user.now_price
         # 主播下首页
         if room_user.is_video_auth:
             UserRedis.delete_user_recommed_id_v3_one(peer_id)
@@ -378,7 +382,6 @@ class RoomReportClose(BaseHandler):
     def get(self):
         room_id = self.arg("room_id")
         record = RoomRecord.objects.get(id=room_id)
-
         user_id = self.current_user_id
         if record.user_id == int(user_id):
             record.finish_room(end_type=6)
@@ -393,7 +396,7 @@ class CallRecords(BaseHandler):
     @api_define("call records", r'/room/call_records', [
         Param('page', True, str, "1", "1", u'page'),
         Param('page_count', True, str, "10", "10", u'page_count'),
-    ], description=u"通话记录  type : 1: 完成通话  2:已拒绝  3: 未接听  </br> "
+    ], description=u"通话记录  type : 1: 完成通话  2:已拒绝  3: 未接听 4:已取消 </br> "
                    u"dial_back_status: 1 可回呼")
     @login_required
     def get(self):
@@ -407,13 +410,25 @@ class CallRecords(BaseHandler):
             for record in records:
                 join_id = record.join_id
                 join_user = User.objects.filter(id=join_id).first()
+                u_id = record.user_id
+                u_user = User.objects.filter(id=u_id).first()
                 room_info = {}
                 room_info['id'] = str(record.id)
                 room_info['user_id'] = record.user_id
                 room_info['is_video'] = record.room_type
+
                 room_info['join_id'] = join_id
                 room_info['join_nick_name'] = join_user.nickname
                 room_info['join_head_img'] = join_user.image
+
+                room_info['user_id'] = u_id
+                room_info['user_nick_name'] = u_user.nickname
+                room_info['user_head_img'] = u_user.image
+                u_vip = UserVip.objects.filter(user_id=u_user.id).first()
+                if u_vip:
+                    vip = Vip.objects.filter(id=u_vip.vip_id).first()
+                    room_info["user_vip_icon"] = vip.icon_url
+
                 room_info['now_price'] = record.price
                 room_info['type'] = RoomRecord.get_type(record)
                 if record.create_time:
@@ -427,7 +442,7 @@ class CallRecords(BaseHandler):
                 user_vip = UserVip.objects.filter(user_id=join_user.id).first()
                 if user_vip:
                     vip = Vip.objects.filter(id=user_vip.vip_id).first()
-                    room_info["vip_icon"] = vip.icon_url
+                    room_info["join_vip_icon"] = vip.icon_url
 
                 data.append(room_info)
 
@@ -474,8 +489,8 @@ class ClearUserCallRecord(BaseHandler):
     ], description=u"清空聊天记录")
     @login_required
     def get(self):
-        user_id = self.arg("user_id")
-        record_id = self.arg("score_type", "record_id")
+        user_id = self.current_user_id
+        record_id = self.arg("record_id")
         if record_id:
             RoomRecord.clear_user_call_record(user_id, record_id)
         return self.write({"status": "success"})

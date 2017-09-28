@@ -54,9 +54,9 @@ class TurnTableValue(BaseHandler):
         user_id = self.current_user_id
         type = self.arg_int("type", 1)
 
-        # is_can, error = TurnTable.check_is_can(type, user_id, price)
-        # if is_can != 1:
-        #     return self.write({"status": "failed", "error": _(error)})
+        is_can, error = TurnTable.check_is_can(type, user_id, price)
+        if is_can != 1:
+            return self.write({"status": "failed", "error": _(error)})
 
         user = self.current_user
         reward_id = TurnTable.get_reward_id()

@@ -192,6 +192,13 @@ class Gift(Document):
                               gift_count=gift_count, gift_logo=gift.logo, from_id=str(from_user.id),
                               to_id=str(to_user.id), room_id=room_id)
 
+            # 播主魅力值成长任务
+            from app.customer.models.task import Task
+            role = Task.get_role(to_user.id)
+            if role == 3:
+                task_identity = 24
+                MessageSender.send_do_task(user_id=to_user.id, task_identity=task_identity, task_type=3)
+
             if room_id:
                 if ua_version and ua_version < "2.3.5":
                     from app.customer.models.user import User

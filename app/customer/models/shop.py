@@ -51,9 +51,7 @@ class Shop(Document):
 
         if int(self.goods_identity) in type_dict:
             tools = type_dict[int(self.goods_identity)]
-            data["tool_desc"] = tools.desc
             data["tool_icon_url"] = tools.icon_url
-            data["tool_name"] = tools.name
 
         return data
 
@@ -80,7 +78,7 @@ class Shop(Document):
             if goods_type == 1:
                 # 钻石购买
                 status, message = UserTools.buy_tools(user_id, str(tools.id), goods_count)
-                if code != 200:
+                if status != 200:
                     code = status
                     error = message
 

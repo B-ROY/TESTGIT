@@ -334,6 +334,14 @@ class GetMoment(BaseHandler):
 
             dic["check_real_video"] = RealVideoVerify.get_status(moment.user_id)
 
+            # 观看精华照片 任务
+            from app.customer.models.task import Task
+            role = Task.get_role(user_id)
+            if moment.type == 2:  # 精华照片
+                if role == 1:
+                    task_identity = 34
+                if task_identity:
+                    MessageSender.send_do_task(user_id=user_id, task_identity=task_identity)
 
 
             data.append(dic)
@@ -796,7 +804,39 @@ class MomentListV4(BaseHandler):
         return self.write({"status": "success", "data": data, "page_token": page_token})
 
 
+@handler_define
+class VideoShowList(BaseHandler):
+    @api_define("video show list", r'/community/video_show_list', [
+        Param('page', True, str, "1", "1", u'page'),
+        Param('page_count', True, str, "10", "10", u'page_count')
+    ], description=u'视频秀列表')
+    def get(self):
+        data = []
+        page = self.arg_int('page')
+        user_id = self.current_user_id
+        page_count = self.arg_int('page_count')
 
+        from app.customer.models.videodb import VideoShow
+        show_list = VideoShow.objects.all().order_by("sort")[(page - 1) * page_count:page * page_count]
+
+        for show in show_list:
+            moment_id = show.moment_id
+            moment = UserMoment.objects.filter(id=moment_id).first()
+            if moment:
+                dic = convert_user_moment(moment)
+                if user_id:
+                    like_user_list = moment.like_user_list
+                    if int(user_id) in like_user_list:
+                        is_liked = 1
+                    else:
+                        is_liked = 0
+                    dic["is_liked"] = is_liked
+                    data.append(dic)
+                else:
+                    dic["is_liked"] = 0
+                    data.append(dic)
+
+        return self.write({"status": "success", "data": data})
 
 
 

@@ -305,10 +305,11 @@ class MessageSender:
             return 400
 
     @classmethod
-    def send_do_task(cls, user_id, task_identity):
+    def send_do_task(cls, user_id, task_identity, task_type=0):
         body = {}
         body["user_id"] = user_id
         body["task_identity"] = task_identity
+        body["task_type"] = task_type
         path = "/task/do_task"
         data = RequestApi.post_body_request_http(path=path, body=json.dumps(body), headers={}, host=cls.Host)
         result = json.loads(data)

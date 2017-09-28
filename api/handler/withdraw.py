@@ -293,3 +293,31 @@ class WithdrawRequestHandler(BaseHandler):
         except Exception,e:
             logging.error("h5_request error %s" % str(e))
             return self.write({"status": "fail", "error": str(e)})
+
+
+@handler_define
+class WithdrawInvite(BaseHandler):
+    @api_define("withdraw friends", r'/live/user/withdraw/invite_info', [], description=u"邀请收益")
+    @login_required
+    def get(self):
+        user = self.current_user
+        invite_list = UserInviteCode.get_invite_list(invite_id=user.id)
+        invite_count = 0
+        if invite_list:
+            invite_count = len(invite_list)
+        ticket_account = TicketAccount.objects.get(user=user)
+
+        invite_list = []
+        from app.customer.models.temp_invite_ticket import TempInviteTicket
+        list = TempInviteTicket.objects.filter(delete_status=0)
+        for invite in list:
+            ticket = round(invite.invite_ticket/100.0, 2)
+            info = "用户" + invite.user_name + ":赚取了" + str(ticket) + "元"
+            invite_list.append(info)
+
+        data = {
+            "invite_count": invite_count,
+            "friend_revenue": int(ticket_account.friend_benifit_ticket + ticket_account.friend_charge_ticket),
+            "invite_news": invite_list
+        }
+        return self.write({"status": "success", "data": data})

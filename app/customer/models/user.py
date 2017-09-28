@@ -176,6 +176,7 @@ class User(Document):
     last_room_id = StringField(verbose_name=u"上次锁在房间")
 
     star_count = IntField(verbose_name=u"星星个数")
+    location_switch = IntField(verbose_name=u"取消地理位置开关")  # 1: 不显示地理位置
 
     class Meta:
         app_label = "customer"
@@ -282,6 +283,11 @@ class User(Document):
         tags = UserCallScore.get_tags(self.id)
         data["call_tags"] = tags
 
+        location_switch = 0
+        if self.location_switch:
+            location_switch = self.location_switch
+        data["location_switch"] = location_switch
+
         return data
 
     @classmethod
@@ -350,6 +356,7 @@ class User(Document):
                 is_vip=3,
                 audio_status=2,
                 star_count=0,
+                location_switch=0,
             )
             user.id = UserRedis.pop_user_id()
             user.identity = UserRedis.pop_user_identity()
