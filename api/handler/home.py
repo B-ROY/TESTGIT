@@ -182,6 +182,8 @@ class Get_Index_Column(BaseHandler):
                                 user_beat = UserHeartBeat.objects.filter(user=user, last_report_time__gte=pre_time).first()
                                 if user_beat:
                                     is_online = 1
+                                    if not user.audio_room_id:
+                                        AudioRoomRecord.create_roomrecord(user.id, datetime.datetime.now())
                                     audioroom = AudioRoomRecord.objects.get(id=user.audio_room_id)
                                     personal_tags = UserTags.get_usertags(user_id=user.id)
                                     user_vip = UserVip.objects.filter(user_id=user.id).first()
@@ -229,6 +231,8 @@ class Get_Index_Column(BaseHandler):
                             is_online = 1
                         else:
                             is_online = 0
+                        if not user.audio_room_id:
+                            AudioRoomRecord.create_roomrecord(user.id, datetime.datetime.now())
                         audioroom = AudioRoomRecord.objects.get(id=user.audio_room_id)
                         personal_tags = UserTags.get_usertags(user_id=user.id)
                         user_vip = UserVip.objects.filter(user_id=user.id).first()

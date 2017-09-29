@@ -10,6 +10,7 @@ from app.customer.models.account import Account, TicketAccount,TradeTicketRecord
 from app.audio.models.roomrecord import RoomRecord
 from django.conf import settings
 from app_redis.user.models.user import *
+from app.customer.models.push import PushService
 
 
 appID = settings.Agora_AppId
@@ -102,6 +103,8 @@ class RoomCall(BaseHandler):
 
         user.update(set__audio_status=1, set__last_room_id=room_id)
         room_user.update(set__audio_status=1, set__last_room_id=room_id)
+
+        PushService.send_audio(user_id=uid, host_id=peer_id, audio_room_id=room_id)
 
         return self.write({'status': "success", 'channelKey': channelkey, 'channel_id': room_id})
 
