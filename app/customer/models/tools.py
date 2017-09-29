@@ -87,6 +87,7 @@ class Tools(Document):
 
     @classmethod
     def send_activity_tools(cls, user_id):
+        from app.customer.models.real_video_verify import RealVideoVerify
         now = datetime.datetime.now()
         now_str = now.strftime('%Y-%m-%d 23:59:59')
         hm = cls.get_hm(now)
@@ -96,10 +97,12 @@ class Tools(Document):
 
         if user.is_video_auth == 1:
             #  主播
-            verify = VideoManagerVerify.objects.filter(user_id=user_id).first()
+            verify = RealVideoVerify.objects(user_id=user.id, status=1).order_by("-update_time").first()
             if not verify:
                 return
-            verify_time = verify.verify_time
+            if not verify.update_time:
+                return
+            verify_time = verify.update_time
             temp_end_time = verify_time + datetime.timedelta(days=7)
             endtime = temp_end_time.strftime('%Y-%m-%d 23:59:59')
 
