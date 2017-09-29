@@ -119,6 +119,8 @@ class GenerateChannelKey(BaseHandler):
             if room_user.is_video_auth:
                 UserRedis.delete_user_recommed_id_v3_one(peer_id)
 
+            PushService.send_audio(user_id=uid, host_id=room_user_id, audio_room_id=room_id)
+
             return self.write({'status': "success", 'channelKey': channelkey, 'channel_id': room_id})
         else: # 接听
             room_id = self.arg("channel_id","")

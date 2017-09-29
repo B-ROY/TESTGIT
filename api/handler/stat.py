@@ -4,6 +4,8 @@ import json
 from api.document.doc_tools import *
 from api.view.base import *
 from app.stat.models.phone_stat import *
+from app.stat.models.push_stat import PushStat
+from app.stat.models.room_stat import AgoraErrorStat, RoomDataStat
 from app.customer.models.share import *
 
 
@@ -243,6 +245,122 @@ class InviteShareStart(BaseHandler):
         self.write({
             "status": "success"
         })
+
+
+@handler_define
+class StatPush(BaseHandler):
+    @api_define("stat push", r"/stat/push",[
+        Param("msg_id", True, int, 0, 1, u"推送的消息id"),
+        Param("upload_type", True, int, 0, 1, u"0:收到 1：点击"),
+        Param("is_video", True, int, 0, 1, u"0:非主播，1:主播")
+    ], description="上报统计")
+    def post(self):
+        msg_id = self.arg("msg_id")
+        upload_type = self.arg_int("upload_type")
+        is_video = self.arg_int("is_video")
+        ua = self.request.headers.get('User-Agent')
+        uas = ua.split(";")
+        platform = 0 if uas[2] == "Android" else 1
+        msg_stat = PushStat.objects.filter(msg_id=msg_id).first()
+        if not msg_stat:
+            msg_stat = PushStat()
+            msg_stat.msg_id = msg_id
+            msg_stat.android_rec_anchor = 0
+            msg_stat.android_rec_user = 0
+            msg_stat.android_click_anchor = 0
+            msg_stat.android_click_user = 0
+
+            msg_stat.ios_rec_anchor = 0
+            msg_stat.ios_rec_user = 0
+            msg_stat.ios_click_anchor = 0
+            msg_stat.ios_click_user = 0
+
+            msg_stat.save()
+
+        if platform == 0:
+            if is_video == 0:
+                if upload_type ==0:
+                    msg_stat.update(inc__android_rec_user=1)
+                    pass
+                else:
+                    msg_stat.update(inc__android_click_user=1)
+                    pass
+            else:
+                if upload_type == 0:
+                    msg_stat.update(inc__android_rec_anchor=1)
+                    pass
+                else:
+                    msg_stat.update(inc__android_click_anchor=1)
+                    pass
+        else:
+            if is_video == 0:
+                if upload_type == 0:
+                    msg_stat.update(inc__ios_rec_user=1)
+                    pass
+                else:
+                    msg_stat.update(inc__ios_click_user=1)
+                    pass
+            else:
+                if upload_type == 0:
+                    msg_stat.update(inc__ios_rec_anchor=1)
+                    pass
+                else:
+                    msg_stat.update(inc__ios_click_anchor=1)
+                    pass
+
+
+@handler_define
+class RoomStatError(BaseHandler):
+    @api_define("stat room error", r"/stat/room/error",[
+        Param("error_action", True, int, 0, 1, u"错误类型"),
+        Param("error_code", True, int, 0, 1, u"推送的消息id"),
+        Param("user_id", True, int, 0, 2, u"用户id"),
+        Param("error_desc", False, int, 0, 1, u"错误描述"),
+        Param("room_id", False, str, "", "", u"房间发生错误时传递")
+    ], description=u"房间错误统计上报")
+    def post(self):
+        error_action = self.arg("error_action")
+        error_code = self.arg("error_code")
+        error_desc = self.arg("error_desc", "")
+        room_id = self.arg("room_id","")
+        user_id = self.arg("user_id", "")
+
+        agora_error_stat = AgoraErrorStat()
+        agora_error_stat.error_action = error_action
+        agora_error_stat.error_code = error_code
+        if not error_desc:
+            agora_error_stat.error_desc = error_desc
+        if not room_id:
+            agora_error_stat.room_id = room_id
+        agora_error_stat.occur_time = datetime.datetime.now()
+        agora_error_stat.user_id = user_id
+        agora_error_stat.save()
+
+
+@handler_define
+class RoomStat(BaseHandler):
+    @api_define("room stat", r"/stat/room/data",[
+        Param("room_id", True, str, "", "", u"房间id"),
+        Param("data", True, str, "", "", u"统计数据上报"),
+    ], description=u"房间统计数据")
+    @login_required
+    def post(self):
+
+        user_id = self.current_user_id
+        room_id = self.arg("room_id")
+        data = self.arg("data")
+
+        stat_data = json.loads(data)
+        room_data_stat = RoomDataStat()
+        room_data_stat.user_id = user_id
+        room_data_stat.room_id = room_id
+        room_data_stat.stat_data = stat_data
+        room_data_stat.save()
+
+        return self.write({"status": "success"})
+
+
+
 
 
 
