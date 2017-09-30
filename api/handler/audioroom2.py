@@ -89,7 +89,7 @@ class RoomCall(BaseHandler):
         user.update(set__audio_status=1, set__last_room_id=room_id)
         room_user.update(set__audio_status=1, set__last_room_id=room_id)
 
-        PushService.send_audio(user_id=uid, host_id=peer_id, audio_room_id=room_id)
+        # PushService.send_audio(user_id=uid, host_id=peer_id, audio_room_id=room_id)
 
         return self.write({'status': "success", 'channelKey': channelkey, 'channel_id': room_id})
 
