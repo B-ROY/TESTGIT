@@ -100,6 +100,10 @@ class Get_Index_Column(BaseHandler):
         column_type = self.arg_int('column_type')
         page = self.arg_int('page')
         page_count = self.arg_int('page_count')
+
+        if page !=1:
+            return self.write({"status": "success", "data": [], })
+        
         data = []
 
         if column_type == 2:
@@ -138,13 +142,22 @@ class Get_Index_Column(BaseHandler):
             if app_name == "tianmireyue":
                 ids = []
 
+            if app_name == "liaoai_yelaixiang":
+                ids=[
+                    3080101,
+                    3080102,
+                    3301397,
+                    3301396,
+                    3301395,
+                ]
+                random.shuffle(ids)
 
             for id in ids:
                 user = User.objects.filter(identity=id).first()
                 if user.id == 1 or user.id == 2:
                     continue
                 if not user.audio_room_id:
-                    continue
+                    user.audio_room_id = AudioRoomRecord.create_roomrecord(user.id, datetime.datetime.now())
                 # 是否在线 查看心跳
                 import time
                 time = int(time.time())
@@ -155,8 +168,6 @@ class Get_Index_Column(BaseHandler):
                 else:
                     is_online = 0
 
-                if not user.audio_room_id:
-                    user.audio_room_id = AudioRoomRecord.create_roomrecord(user.id, datetime.datetime.now())
                 print user.id
                 audioroom = AudioRoomRecord.objects.get(id=user.audio_room_id)
                 personal_tags = UserTags.get_usertags(user_id=user.id)
