@@ -36,7 +36,7 @@ class UserMoment(Document):
     price = IntField(verbose_name=u"私房视频价格")
     is_public = IntField(verbose_name=u"是否公开")  # 1:公开 2:未公开
     rank_score = FloatField(verbose_name=u"排名得分")
-    is_pure = IntField(verbose_name=u"是否清纯")  # 1:清纯 # 2.老用户
+    is_pure = IntField(verbose_name=u"是否清纯")  # 1:清纯 2.老用户 3.老主播 4.新用户
     is_top = IntField(verbose_name=u"是否置顶")  # 1:置顶
     top_time = DateTimeField(verbose_name=u"置顶时间")
 
@@ -76,9 +76,15 @@ class UserMoment(Document):
             if user.label:
                 if pure_id in user.label:
                     user_moment.update(set__is_pure=1)
+                else:
+                    user_moment.update(set__is_pure=3)
+            else:
+                user_moment.update(set__is_pure=3)
         else:
             if UserRedis.is_target_user(user.id):
                 user_moment.update(set__is_pure=2)
+            else:
+                user_moment.update(set__is_pure=4)
 
 
 
@@ -259,17 +265,21 @@ class UserMoment(Document):
 
     @classmethod
     def get_index_moments(cls, page, page_count, user):
-        is_pure = None
         is_show_top = True
-        if user.is_video_auth == 1 and not UserRedis.is_pure_anchor(user.id):
-            is_show_top = False
-            is_pure = 2
-        elif user.is_video_auth !=1 and not UserRedis.is_target_user(user.id):
-            is_pure = 1
-        elif user.is_video_auth !=1 and UserRedis.is_target_user(user.id):
-            is_show_top = False
+        if not user:
+            is_pure = [1, 4]
         else:
-            return cls.objects.filter(show_status__in=[1, 3, 4], delete_status=1, is_public=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
+            is_target = UserRedis.is_target_user(user.id)
+            if user.is_video_auth == 1 and not UserRedis.is_pure_anchor(user.id):# 老主播
+                is_show_top = False
+                is_pure = [1, 2, 3]
+            elif user.is_video_auth != 1 and not is_target:  # 新用户
+                is_pure = [1, 4]
+            elif user.is_video_auth != 1 and is_target:  # 老用户
+                is_pure = [1, 2, 3, 4]
+                is_show_top = False
+            else:  # 新主播
+                return cls.objects.filter(show_status__in=[1, 3, 4], delete_status=1, is_public=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
 
         moment_list = []
         top_ids = []
@@ -283,7 +293,7 @@ class UserMoment(Document):
                         moment_list.append(top)
                     top_ids.append(str(top.id))
         # 动态
-        moments = cls.objects.filter(show_status__in=[1, 3, 4], id__nin=top_ids, delete_status=1, is_public=1, is_pure=is_pure).order_by("-create_time")[(page - 1) * page_count:page * page_count]
+        moments = cls.objects.filter(show_status__in=[1, 3, 4], id__nin=top_ids, delete_status=1, is_public=1, is_pure__in=is_pure).order_by("-create_time")[(page - 1) * page_count:page * page_count]
         if moments:
             for moment in moments:
                 moment_list.append(moment)

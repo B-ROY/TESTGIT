@@ -326,6 +326,7 @@ def fix_pure_moment():
 def fix_target_user_moment():
     from app.customer.models.community import UserMoment
     target_user_id = UserRedis.get_target_user_ids()
+    pure_anchor_id = UserRedis.get_pure_anchor_ids()
     moments = UserMoment.objects.all()
     for moment in moments:
         user_id = moment.user_id
@@ -334,6 +335,13 @@ def fix_target_user_moment():
             continue
         if str(user.id) in target_user_id:
             moment.update(set__is_pure=2)
+        elif user.is_video_auth != 1 and str(user.id) not in target_user_id:
+            moment.update(set__is_pure=4)
+        elif user.is_video_auth==1 and str(user.id) not in pure_anchor_id:
+            moment.update(set__is_pure=3)
+
+
+
 
 
 
