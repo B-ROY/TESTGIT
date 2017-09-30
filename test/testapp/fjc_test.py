@@ -345,7 +345,57 @@ def fix_target_user_moment():
 
 
 
+def create_user():
+    from app.customer.models.user import User
 
+    base_num = "100000000"
+    num = 1
+    count = 21
+    for i in xrange(1, 90):
+        if num >= count:
+            break
+
+        if i < 10:
+            phone = base_num + "0" + str(i)
+        else:
+            phone = base_num + str(i)
+
+        u = User.objects.filter(phone=phone).first()
+        if u:
+            continue
+        phone_pwd = PhonePassword.objects.filter(phone=phone).first()
+
+        if phone_pwd:
+            continue
+
+        nick_name = RegisterInfo.make_nickname()
+
+        is_new, user = User.create_user2(get_md5(phone), User.SOURCE_PHONE, nick_name, platform=0, phone=phone,
+                                         gender=2, ip='', image="", channel="", guid="")
+        password = init_pwd()
+        PhonePassword.update_password(phone, get_md5(password))
+
+        record = ChildUserRecord()
+        record.user_id = user.id
+        record.phone = phone
+        record.ori_pwd = password
+        record.save()
+
+        num += 1
+
+
+def get_md5(str):
+    import hashlib
+    m = hashlib.md5()
+    m.update(str)
+    return m.hexdigest()
+
+
+def init_pwd():
+    import random
+    import string
+    salt = ''.join(random.sample(string.ascii_letters + string.digits, 6))
+    return salt
 
 
 

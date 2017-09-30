@@ -1178,7 +1178,10 @@ class RecommendUser(Document):
     is_valid = IntField(verbose_name=u"是否删除", default=1)  # 1未删除 2，删除
 
 
-
+class ChildUserRecord(Document):
+    user_id = IntField(verbose_name=u"用户id")
+    phone = StringField(verbose_name=u"phone", max_length=11)
+    ori_pwd = StringField(verbose_name=u"pwd", max_length=32)
 
 
 
