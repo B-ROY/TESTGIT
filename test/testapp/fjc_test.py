@@ -440,6 +440,7 @@ def test():
 def fix_target_user_moment():
     from app.customer.models.community import UserMoment
     target_user_id = UserRedis.get_target_user_ids()
+    pure_anchor_id = UserRedis.get_pure_anchor_ids()
     moments = UserMoment.objects.all()
     for moment in moments:
         user_id = moment.user_id
@@ -448,6 +449,10 @@ def fix_target_user_moment():
             continue
         if str(user.id) in target_user_id:
             moment.update(set__is_pure=2)
+        elif user.is_video_auth != 1 and str(user.id) not in target_user_id:
+            moment.update(set__is_pure=4)
+        elif user.is_video_auth==1 and str(user.id) not in pure_anchor_id:
+            moment.update(set__is_pure=3)
 
 
 
@@ -480,6 +485,59 @@ def init_invite():
     TempInviteTicket.create("谨慎的橘子", 11733)
 
 
+
+
+def create_user():
+    from app.customer.models.user import User
+
+    base_num = "100000000"
+    num = 1
+    count = 21
+    for i in xrange(1, 90):
+        if num >= count:
+            break
+
+        if i < 10:
+            phone = base_num + "0" + str(i)
+        else:
+            phone = base_num + str(i)
+
+        u = User.objects.filter(phone=phone).first()
+        if u:
+            continue
+        phone_pwd = PhonePassword.objects.filter(phone=phone).first()
+
+        if phone_pwd:
+            continue
+
+        nick_name = RegisterInfo.make_nickname()
+
+        is_new, user = User.create_user2(get_md5(phone), User.SOURCE_PHONE, nick_name, platform=0, phone=phone,
+                                         gender=2, ip='', image="", channel="", guid="")
+        password = init_pwd()
+        PhonePassword.update_password(phone, get_md5(password))
+
+        record = ChildUserRecord()
+        record.user_id = user.id
+        record.phone = phone
+        record.ori_pwd = password
+        record.save()
+
+        num += 1
+
+
+def get_md5(str):
+    import hashlib
+    m = hashlib.md5()
+    m.update(str)
+    return m.hexdigest()
+
+
+def init_pwd():
+    import random
+    import string
+    salt = ''.join(random.sample(string.ascii_letters + string.digits, 6))
+    return salt
 
 
 
