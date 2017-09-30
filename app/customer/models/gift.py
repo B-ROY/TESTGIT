@@ -3,7 +3,6 @@
 import datetime
 import logging
 
-from app.audio.models.record import AudioRoomRecord
 from app.customer.models.account import TradeDiamondRecord, TradeTicketRecord, Account
 from app.customer.models.benifit import TicketAccount
 from base.settings import CHATPAMONGO
@@ -12,6 +11,9 @@ from mongoengine import *
 from app.util.messageque.msgsender import MessageSender
 from app_redis.room.room import RoomRedis
 import international
+
+from app.audio.models.roomrecord import RoomRecord
+
 
 connect(CHATPAMONGO.db, host=CHATPAMONGO.host, port=CHATPAMONGO.port, username=CHATPAMONGO.username,
         password=CHATPAMONGO.password)
@@ -55,6 +57,8 @@ class Gift(Document):
     gift_type = IntField(verbose_name=u'礼物类型（是否在快捷赠送的列表中显示）',choices=GIFT_TYPE)
     wealth_value = IntField(verbose_name=u'礼物增加送礼人的财富值')
     charm_value = IntField(verbose_name=u'礼物增加送礼人的魅力值')
+    show_status = IntField(verbose_name=u'是否展示')  # 1展示 2不展示
+    handy_order = IntField(verbose_name=u'快捷礼物排序')
 
     @property
     def logo_small(self):
@@ -81,7 +85,7 @@ class Gift(Document):
 
     @classmethod
     def list(cls, gift_type=1):
-        return cls.objects.filter(status=Gift.STATUS_USING, gift_type=gift_type).order_by("price")
+        return cls.objects.filter(status=Gift.STATUS_USING, gift_type=gift_type, show_status=1).order_by("handy_order")
 
     @classmethod
     def list_all(cls):
@@ -89,7 +93,7 @@ class Gift(Document):
 
     @classmethod
     def list_mall(cls):
-        return cls.objects.filter(status=Gift.STATUS_USING, gift_type__in=[1, 2]).order_by("price")
+        return cls.objects.filter(status=Gift.STATUS_USING, gift_type__in=[1, 2], show_status=1).order_by("price")
 
     @classmethod
     def create(cls, name, price, experience, ticket, continuity, animation_type, logo, is_flower=0, gift_type=0, wealth_value=0, charm_value=0):
@@ -136,7 +140,7 @@ class Gift(Document):
             logging.error("update Gift error:{0}".format(e))
         return ''
     @classmethod
-    def gift_giving(cls, from_user, to_user, gift_id, gift_count, gift_price, room_id):
+    def gift_giving(cls, from_user, to_user, gift_id, gift_count, gift_price, room_id, ua_version=""):
         try:
 
             gift = Gift.objects.get(id=gift_id)
@@ -161,14 +165,19 @@ class Gift(Document):
             account = Account.objects.get(user=from_user)
             account.diamond_trade_out(price=gift_total_price, desc=u"礼物赠送，收礼方id=%s, 礼物id=%s ,礼物数量=%s, 房间号=%s" %
                          (to_user.id, gift_id, str(gift_count), room_id), trade_type=TradeDiamondRecord.TradeTypeGift)
+            wealth_value = 0
+            if gift.wealth_value:
+                wealth_value = gift.wealth_value * gift_count
             from_user.update(
-                inc__wealth_value = gift_total_price/10,
-                inc__cost = gift_total_price,
+                inc__wealth_value=wealth_value,
+                inc__cost=gift_total_price,
             )
-
+            charm_value = 0
+            if gift.charm_value:
+                charm_value = gift.charm_value * gift_count
             to_user.update(
-                inc__charm_value = gift_total_price / 10,
-                inc__ticket = gift_total_price
+                inc__charm_value=charm_value,
+                inc__ticket=gift_total_price
             )
 
             # 2. 收礼人+经验, +粒子数
@@ -184,9 +193,14 @@ class Gift(Document):
                               to_id=str(to_user.id), room_id=room_id)
 
             if room_id:
-                room_record = AudioRoomRecord.objects.get(id=room_id)
+                if ua_version and ua_version < "2.3.5":
+                    from app.customer.models.user import User
+                    user = User.objects.get(id=to_user.id)
+                    room_id = user.last_room_id
+
+                room_record = RoomRecord.objects.get(id=room_id)
                 if from_user.id == room_record.join_id and to_user.id == room_record.user_id:
-                    room_record.add_gift_value(gift_total_price)
+                    room_record.update(inc__gift_value=gift_total_price)
 
 
             return True, None, None

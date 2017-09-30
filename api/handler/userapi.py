@@ -1,6 +1,5 @@
 # coding=utf-8
 import base64
-import json
 
 from api.convert.convert_user import *
 from api.document.doc_tools import *
@@ -27,6 +26,7 @@ import international
 from app.customer.models.tools import UserTools, Tools, SendToolsRecord
 # from background.audit_handler.audit_handler import *
 from app.customer.models.tools import UserToolsRecord, UserTools, Tools, SendToolsRecord
+from app.util.messageque.http_request import RequestApi
 from app.util.shumeitools.shumeitools import *
 from app.customer.models.shumeidetect import *
 from app.customer.models.follow_user import FollowUser, FollowUserRecord
@@ -49,7 +49,7 @@ class ThridPardLogin(BaseHandler):
         if source == User.SOURCE_PHONE:
             userinfo={}
             userinfo["nickname"] = RegisterInfo.make_nickname()
-            gender = userinfo.get("sex", 1)
+            gender = userinfo.get("sex", 2)
             if gender == 1:
                 img_url = "https://heydopic-10048692.image.myqcloud.com/icon_1501468004"
             else:
@@ -69,7 +69,7 @@ class ThridPardLogin(BaseHandler):
         elif source == User.SOURCE_WEIXIN or source == User.SOURCE_WEIXIN or source == User.SOURCE_QQ or source == User.SOURCE_WEIBO:
             #创建新用户
             # openid, source, nickname, platform=0, image="", channel=""
-            gender = userinfo.get("sex", 1)
+            gender = userinfo.get("sex", 2)
             if gender==1:
                 img_url ="https://heydopic-10048692.image.myqcloud.com/icon_1501468004"
             else:
@@ -86,7 +86,7 @@ class ThridPardLogin(BaseHandler):
                 guid = guid
             )
         else:
-            gender = userinfo.get("sex", 1)
+            gender = userinfo.get("sex", 2)
             if gender == 1:
                 img_url = userinfo.get("headimgurl", "https://heydopic-10048692.image.myqcloud.com/icon_1501468004")
             else:
@@ -109,7 +109,7 @@ class ThridPardLogin(BaseHandler):
     def create_user2(self, openid, access_token, phone, userinfo, source, channel, site_openid=''):
         #获取改用户的guid
         guid = self.arg("guid")
-        gender = userinfo.get("sex", 1)
+        gender = userinfo.get("sex", 2)
         if gender == 1:
             img_url = "https://heydopic-10048692.image.myqcloud.com/icon_1501468004"
         else:
@@ -135,8 +135,8 @@ class ThridPardLogin(BaseHandler):
         code = self.arg("user_key")
         ua = self.request.headers.get('User-Agent')
         uas = ua.split(";")
-        if uas[2] == "iPhone" or uas[2] == "iPad":
-            channel = "AppStore"
+        if len(uas) < 6:
+            channel = uas[0]
         else:
             channel = uas[5]
 
@@ -166,8 +166,8 @@ class ThridPardLogin(BaseHandler):
         openid = self.arg("openid", "")
         ua = self.request.headers.get('User-Agent')
         uas = ua.split(";")
-        if uas[2] == "iPhone" or uas[2] == "iPad":
-            channel = "AppStore"
+        if len(uas) < 6:
+            channel = uas[0]
         else:
             channel = uas[5]
 
@@ -196,8 +196,8 @@ class ThridPardLogin(BaseHandler):
         uid = self.arg("openid","")
         ua = self.request.headers.get('User-Agent')
         uas = ua.split(";")
-        if uas[2] == "iPhone" or uas[2] == "iPad":
-            channel = "AppStore"
+        if len(uas) < 6:
+            channel = uas[0]
         else:
             channel = uas[5]
 
@@ -224,8 +224,8 @@ class ThridPardLogin(BaseHandler):
         openid = self.arg("openid", "")
         ua = self.request.headers.get('User-Agent')
         uas = ua.split(";")
-        if uas[2] == "iPhone" or uas[2] == "iPad":
-            channel = "AppStore"
+        if len(uas) < 6:
+            channel = uas[0]
         else:
             channel = uas[5]
         #print access_token,openid
@@ -249,8 +249,8 @@ class ThridPardLogin(BaseHandler):
         sms_code = self.arg("sms_code")
         ua = self.request.headers.get('User-Agent')
         uas = ua.split(";")
-        if uas[2] == "iPhone" or uas[2] == "iPad":
-            channel = "AppStore"
+        if len(uas) < 6:
+            channel = uas[0]
         else:
             channel = uas[5]
 
@@ -281,10 +281,12 @@ class ThridPardLogin(BaseHandler):
         ua = self.request.headers.get('User-Agent')
         uas = ua.split(";")
         app_name = uas[0]
-        if app_name == "liaoai_teyue" or app_name == "liaoai_lizhen":
-            channel = "AppStore"
+
+        if len(uas) < 6:
+            channel = uas[0]
         else:
             channel = uas[5]
+
         print access_token,openid
         userinfo = FacebookAPI.get_user_info(access_token=access_token)
         if access_token == "" or openid == "":
@@ -299,7 +301,10 @@ class ThridPardLogin(BaseHandler):
         access_token_secret = self.arg("token_secret", "")
         ua = self.request.headers.get('User-Agent')
         uas = ua.split(";")
-        channel = uas[5]
+        if len(uas) < 6:
+            channel = uas[0]
+        else:
+            channel = uas[5]
         userinfo = TwitterAPI.get_user_info(openid, access_token, access_token_secret)
 
         print access_token
@@ -442,10 +447,6 @@ class Login(ThridPardLogin):
             ucpass = SMS()
             ucpass.delSmsCodeCache(self.arg_int('phone'))
 
-        #audio_status = AudioRoomRecord.get_room_status(user_id=user.id)
-        #if audio_status == 4:
-        #    AudioRoomRecord.set_room_status(user_id=user.id, status=1)
-
         self.write(data)
 
 
@@ -484,13 +485,12 @@ class CompletePersonalInfo(BaseHandler):
                     text_detect = TextDetect()
                     text_detect.user = user
                     text_detect.text_channel = 1
-                    text_detect.text = user.nickname
+                    text_detect.text = nickname
                     text_detect.created_time = datetime.datetime.now()
                     text_detect.save()
                     return self.write({'status': "fail",
                                        "error_code": 10005,
                                        'error_message': u"经系统检测,您的昵称内容涉及违规因素,请重新编辑"})
-
 
         birth_date = self.arg("birth_date", "1995-01-01")
         gender = self.arg_int("gender", 2)
@@ -518,6 +518,15 @@ class CompletePersonalInfo(BaseHandler):
         status = User.complete_personal_info(user, nickname, gender, img, birth_date)
         if status:
             AudioRoomRecord.create_roomrecord(user_id=user.id, open_time=datetime.datetime.now())
+            try:
+                body = {}
+                body["userid"] = user.id
+                path = "/sync/userinfo"
+                data = RequestApi.post_body_request_http(path=path, body=json.dumps(body), headers={}, host=settings.Message_Tornado_host)
+                result = json.loads(data)
+                print result.get("status_code")
+            except Exception,e:
+                logging.error("sync userinfo  error:{0}".format(e))
             return self.write({"status": "success"})
         else:
             return self.write({"status": "failed", "error_message": _(u"完善用户资料是失败")})
@@ -718,9 +727,6 @@ class PhoneLogIn(BaseHandler):
             data['sig'] = gen_signature(app_id, user.sid)
             data["status"] = "success"
 
-            #audio_status = AudioRoomRecord.get_room_status(user_id=user.id)
-            #if audio_status == 4:
-            #    AudioRoomRecord.set_room_status(user_id=user.id, status=1)
             AudioRoomRecord.create_roomrecord(user_id=user.id, open_time=datetime.datetime.now())
             user.update(set__last_guid=self.arg("guid"))
             return self.write(data)
@@ -1022,9 +1028,6 @@ class Logout(BaseHandler):
         user.cid = ""
         user.save()
         self.auth_logout()
-        # room_status = AudioRoomRecord.get_room_status(user_id=user.id)
-        # if room_status == 1:
-        #   AudioRoomRecord.set_room_status(user_id=user.id, status=1)
         #获取参数
         self.write({'status': "success"})
 
@@ -1062,22 +1065,34 @@ class AUserInfo(BaseHandler):
         else:
             user = User.objects.filter(id=self.arg('uid')).first()
 
+        temp_uid = self.arg_int('uid', 0)
+        current_id = int(self.current_user_id)
+
         if self.current_user.is_blocked:
             return self.write({"status": "fail", "error": _(u"您已被封号！请遵守用户协议！"),"errcode":"2001"})
 
         data = {"status": "success"}
 
-        # TODO: 性能问题
-        dic = {}
+
         dic = convert_user(user)
         dic["diamond"] = Account.objects.get(user=user).diamond
-        dic["ticket"] = TicketAccount.objects.get(user=user).total_ticket
         dic["picture_count"] = PictureInfo.objects.filter(user_id=user.id, status=0).count()
-        dic["audio_status"] = AudioRoomRecord.get_room_status(user_id=user.id)
+        if user.audio_status == 1:
+            dic["audio_status"] = 3
+        else:
+            dic["audio_status"] = 1
+
         dic["check_real_name"] = RealNameVerify.check_user_verify(user_id=user.id)
 
+        ua = self.request.headers.get('User-Agent')
+        ua_version = ua.split(";")[1]
+        if ua_version < "2.3.5":
+            if temp_uid == current_id:
+                if user.is_video_auth == 0:
+                    dic["is_video_auth"] = 1
+
         #  当前最新认证状态
-        now_verify = RealVideoVerify.objects(user_id=user.id).order_by("-update_time").first()
+        now_verify = RealVideoVerify.objects(user_id=user.id, status__ne=2).order_by("-update_time").first()
         if now_verify:
             dic["now_real_video_status"] = now_verify.status
         else:
@@ -1091,8 +1106,8 @@ class AUserInfo(BaseHandler):
             vip = Vip.objects.filter(id=user_vip.vip_id).first()
             dic["vip"] = convert_vip(vip)
 
-        temp_uid = self.arg_int('uid', 0)
-        current_id = int(self.current_user_id)
+
+
         if temp_uid == current_id:
             # 本人的话可以显示认证中的
             show_video = RealVideoVerify.objects(user_id=user.id, status__ne=2).order_by("-update_time").first()
@@ -1358,6 +1373,10 @@ class UserHomepageV2(BaseHandler):
             if count2 > 10:
                 break
             if moment2.type == 3:
+                if current_user_id and int(home_id) != int(current_user_id):
+                    if moment2.show_status != 1:
+                        continue
+
                 private_video = PrivateVideo.objects.filter(id=moment2.video_id).first()
                 dict = {
                     "type": moment2.type,
@@ -1556,6 +1575,8 @@ class UpdateUserInfo(BaseHandler):
 
         if self.has_arg("gender"):
             user.gender = self.arg_int("gender")
+            if user.gender == 1:
+                Tools.send_activity_tools(int(user.id))
             is_change = True
 
         if self.has_arg("height"):
@@ -1657,7 +1678,15 @@ class UpdateUserInfo(BaseHandler):
             is_change = True
         if is_change:
             user.save()
-
+            try:
+                body = {}
+                body["userid"] = user.id
+                path = "/sync/userinfo"
+                data = RequestApi.post_body_request_http(path=path, body=json.dumps(body), headers={}, host=settings.Message_Tornado_host)
+                result = json.loads(data)
+                print result.get("status_code")
+            except Exception,e:
+                logging.error("sync userinfo  error:{0}".format(e))
         # if is_nickname_change:
         #     MessageSender.send_text_check(user.nickname, user.id, 1, self.user_ip)
         if is_desc_change:
@@ -1879,6 +1908,8 @@ class UpdateLocation(BaseHandler):
         country = self.arg("country", "")
         province = self.arg("province", "")
         city = self.arg("city", "")
+        if not city:
+            self.write({"status": "success", })
         district = self.arg("district", "")
         longitude = float(self.arg("longitude", "0.00"))
         latitude = float(self.arg("latitude", "0.00"))
@@ -2107,8 +2138,10 @@ class MessageCheckV2(BaseHandler):
                     start_time = refer_conversation.start_time
                     chat_status = True
                 else:
-                    if refer_conversation.from_user_id == send_id:
-                        chat_status = True
+                    if refer_conversation.send_id:
+                        if refer_conversation.send_id == send_id:
+                            chat_status = True
+
 
                 if refer_conversation.type == 2:
                     if int(refer_conversation.from_user_id) == int(send_id):
@@ -2353,10 +2386,15 @@ class VideoAuthInfoSubmit(BaseHandler):
         else:
             status = VideoManagerVerify.create_video_manager_verify(user_id=user_id, avtar_auth=avatar_auth,
                                                                     active_auth=active_auth)
+
+            desc = u"<html><p>" + _(u'第一步认证已完成,第二步视频认证完成后就可以成为播主赚钱了,请务必添加审核人员微信:"honeynnm" 完成审核 ') + u"</p></br></br></html>"
+            MessageSender.send_system_message(user_id, desc)
+
             if status:
                 self.write({
                     "status": "success",
                 })
+
             else:
                 self.write({
                     "status": "failed",
@@ -2390,6 +2428,8 @@ class UserHeartBeatReport(BaseHandler):
     ], description=u"用户上报心跳")
     def get(self):
         user_id = self.current_user_id
+        if not user_id:
+            return self.write({"status": "success"})
         if self.has_arg("user_id"):# androi多进程导致token可能是上一个登录的人的token
             user_id = self.arg("user_id")
         ua = self.request.headers.get('User-Agent')
@@ -2411,7 +2451,7 @@ class UserHeartBeatReport(BaseHandler):
         heart_beat.user.current_score = random.random() + heart_beat.last_report_time / (5 * UserHeartBeat.REPORT_INTERVAL) * coefficient
         heart_beat.user.save()
         heart_beat.save()
-        self.write({"status": "success"})
+        return self.write({"status": "success"})
 
 @handler_define
 class UserReport(BaseHandler):

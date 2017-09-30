@@ -24,6 +24,7 @@ class PrivateVideo(Document):
     delete_status = IntField(verbose_name=u"是否删除")  # 1:不删除 2:删除
     show_status = IntField(verbose_name=u"鉴黄显示状态")  # 1:展示 2:数美屏蔽 3:鉴定中
     is_valid = IntField(verbose_name=u"是否忽略(cms使用)", default=1)  # 1.不忽略 2.忽略
+    file_id = StringField(verbose_name=u"file_id", max_length=128)
 
     class Meta:
         app_label = "customer"
@@ -84,7 +85,7 @@ class PrivateVideo(Document):
                     code = 2
                     message = u"普通用户不能发私房视频"
 
-        print message
+        print str(message)
         return code, message
 
 

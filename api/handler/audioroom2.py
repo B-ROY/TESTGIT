@@ -53,8 +53,8 @@ class RoomCall(BaseHandler):
         user = self.current_user
         # todo 进行判断 peer_user能否被呼叫 如果可以 继续生成key 如果不能 返回错误(包括但不限于 勿扰 正在通话
         # 1.判断user 是是否是小号
-        if room_user.user_type==2:
-            return self.write({'status': "success", 'channelKey': "", 'channel_id': "room_"+str(peer_id)+str(time.time())})
+        #if room_user.user_type==2:
+        #    return self.write({'status': "success", 'channelKey': "", 'channel_id': "room_"+str(peer_id)+str(time.time())})
         # 2.判断该用户是否是勿扰
         if room_user.disturb_mode != 0:
             return self.write({

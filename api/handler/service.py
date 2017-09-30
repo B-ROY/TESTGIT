@@ -52,41 +52,63 @@ class RankListCharmV1(BaseHandler):
     @api_define("day's ranklistv1", "/service/ranklist_v1",
         [
             Param("type", True, int, 0, 0, "排行榜类型（1，魅力 2， 财富 3， 魅力加财富"),
-            Param("interval", False, int, 0,0, "计算周期(0:天，1:周,2：月,3:三天")
+            Param("interval", False, int, 0, 0, "计算周期(0:天，1:周,2：月,3:三天")
         ], description=u"排行榜")
     def get(self):
         list_type = self.arg_int("type", 3)
         interval = self.arg_int("interval", 10)
         if list_type == 3:
-            charm_rank_list = CharmRankNew.get_rank_list(count=30, type=1)
-            charm_data = []
-            for charm_rank in charm_rank_list:
-                dic = {}
-                user = charm_rank.user
-                if user:
-                    user_vip = UserVip.objects.filter(user_id=user.id).first()
-                    if user_vip:
-                        vip = Vip.objects.filter(id=user_vip.vip_id).first()
-                        dic["vip"] = convert_vip(vip)
-                    dic["user"] = charm_rank.user.get_normal_dic_info()
-                    dic["charm"] = charm_rank.charm
-                    dic["change_status"] = charm_rank.change_status
-                    charm_data.append(dic)
+            if self.current_user and ((
+                    self.current_user.is_video_auth != 1 and UserRedis.is_target_user(self.current_user_id)) \
+                    or (self.current_user.is_video_auth == 1 and not UserRedis.is_pure_anchor(self.current_user_id))):
+                charm_rank_list = CharmRankNew.get_rank_list(count=30, type=1)
+                charm_data = []
+                for charm_rank in charm_rank_list:
+                    dic = {}
+                    user = charm_rank.user
+                    if user:
+                        user_vip = UserVip.objects.filter(user_id=user.id).first()
+                        if user_vip:
+                            vip = Vip.objects.filter(id=user_vip.vip_id).first()
+                            dic["vip"] = convert_vip(vip)
+                        dic["user"] = charm_rank.user.get_normal_dic_info()
+                        dic["charm"] = charm_rank.charm
+                        dic["change_status"] = charm_rank.change_status
+                        charm_data.append(dic)
 
-            charm_rank_list_yesterday = CharmRankNew.get_rank_list(count=30, type=2)
-            charm_data_yesterday = []
-            for charm_rank in charm_rank_list_yesterday:
-                dic = {}
-                user = charm_rank.user
-                if user:
-                    user_vip = UserVip.objects.filter(user_id=user.id).first()
-                    if user_vip:
-                        vip = Vip.objects.filter(id=user_vip.vip_id).first()
-                        dic["vip"] = convert_vip(vip)
-                    dic["user"] = charm_rank.user.get_normal_dic_info()
-                    dic["charm"] = charm_rank.charm
-                    dic["change_status"] = charm_rank.change_status
-                    charm_data_yesterday.append(dic)
+                charm_rank_list_yesterday = CharmRankNew.get_rank_list(count=30, type=2)
+                charm_data_yesterday = []
+                for charm_rank in charm_rank_list_yesterday:
+                    dic = {}
+                    user = charm_rank.user
+                    if user:
+                        user_vip = UserVip.objects.filter(user_id=user.id).first()
+                        if user_vip:
+                            vip = Vip.objects.filter(id=user_vip.vip_id).first()
+                            dic["vip"] = convert_vip(vip)
+                        dic["user"] = charm_rank.user.get_normal_dic_info()
+                        dic["charm"] = charm_rank.charm
+                        dic["change_status"] = charm_rank.change_status
+                        charm_data_yesterday.append(dic)
+            else:
+                charm_rank_list = PureCharmRank.get_rank_list()
+                charm_data = []
+                for charm_rank in charm_rank_list:
+                    dic = {}
+                    user = charm_rank.user
+                    if user:
+                        user_vip = UserVip.objects.filter(user_id=user.id).first()
+                        if user_vip:
+                            vip = Vip.objects.filter(id=user_vip.vip_id).first()
+                            dic["vip"] = convert_vip(vip)
+                        dic["user"] = charm_rank.user.get_normal_dic_info()
+                        dic["charm"] = charm_rank.charm
+                        dic["change_status"] = charm_rank.change_status
+                        charm_data.append(dic)
+
+                charm_data_yesterday = charm_data
+
+
 
             wealth_rank_list = WealthRankNew.get_rank_list(count=30, type=1)
             wealth_data = []
@@ -292,14 +314,14 @@ class BottleMessaegSend_V2(BaseHandler):
 class BottleMessaegSend_V3(BaseHandler):
     @api_define("bottle message send v3 ", "/service/bottle/v3_send",
                 [
-                    Param("label", True, int, 0, 0, description=u"漂流瓶消息标签v3"),
+                    Param("label", False, int, 0, 0, description=u"漂流瓶消息标签v3"),
                     Param("message", True, str, "", "一轮红日"),
                     Param("gender", True, str, "")
                 ],description=u"发送漂流瓶消息v3 新版")
     @login_required
     def get(self):
         user = self.current_user
-        label = self.arg_int("label")
+        label = self.arg_int("label", 0)
         #todo 鉴定label 是否和message匹配 将来加上redis的时候做
         message_content = self.arg("message")
         gender = self.arg_int("gender")

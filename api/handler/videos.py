@@ -27,11 +27,13 @@ class RealVideoVerifyUpload(BaseHandler):
     @api_define("real video upload", "/video/upload_verify", [
                     Param("cover_url", True, str, "", "", u"封面地址"),
                     Param("video_url", True, str, "", "", u"视频地址"),
+                    Param("file_id", False, str, "", "", u"file_id"),
                 ], description=u"视频认证上传")
     @login_required
     def get(self):
         cover_url = self.arg("cover_url")
         video_url = self.arg("video_url")
+        file_id = self.arg("file_id", "")
         user_id = self.current_user_id
         video_verify = RealVideoVerify()
         now = datetime.datetime.now()
@@ -43,6 +45,7 @@ class RealVideoVerifyUpload(BaseHandler):
         video_verify.update_time = now
         video_verify.status = 0
         video_verify.is_valid = 1
+        video_verify.file_id = file_id
         video_verify.save()
 
         self.write({"status": "success"})
@@ -93,6 +96,7 @@ class PrivateVideoCreate(BaseHandler):
         Param('publish_status', False, str, "1", "", u'是否发布到动态 1:不发布  2:发布'),
         Param('desc', False, str, "", "", u'描述'),
         Param('price', True, str, "0", "", u'视频价格'),
+        Param('file_id', False, str, "", "", u'file_id'),
     ], description=u'保存私房视频')
     @login_required
     def get(self):
@@ -102,6 +106,7 @@ class PrivateVideoCreate(BaseHandler):
         video_url = self.arg('video_url')
         publish_status = self.arg_int('publish_status', 1)
         desc = self.arg('desc', "")
+        file_id = self.arg('file_id', "")
         price = self.arg_int('price', 0)
 
         real_video_auth = RealVideoVerify.get_status(user_id)
@@ -140,11 +145,8 @@ class PrivateVideoCreate(BaseHandler):
         video.delete_status = 1
         video.show_status = 3
         video.is_valid = 1
+        video.file_id = file_id
         video.save()
-
-        code, message = UserMoment.check_moment_count(user)
-        if code == 2:
-            return self.write({'status': "fail", 'error': _(message)})
 
         user_moment = UserMoment()
         user_moment.user_id = user_id
@@ -155,7 +157,7 @@ class PrivateVideoCreate(BaseHandler):
         user_moment.img_list = []
         user_moment.content = desc
         user_moment.create_time = datetime.datetime.now()
-        user_moment.show_status = 1  # 1:展示  2:数美屏蔽  3:举报  4:数美部分屏蔽  5:数美鉴定中
+        user_moment.show_status = 5  # 1:展示  2:数美屏蔽  3:举报  4:数美部分屏蔽  5:数美鉴定中
         user_moment.delete_status = 1  # 1:未删除  2:删除
         user_moment.ispass = 2
         user_moment.type = 3
@@ -165,10 +167,32 @@ class PrivateVideoCreate(BaseHandler):
         user_moment.price = video.price
         # 同步到动态
         if publish_status == 2:
+            code, message = UserMoment.check_moment_count(user)
+            if code == 2:
+                return self.write({'status': "fail", 'error': _(message)})
             user_moment.is_public = 1
         else:
             user_moment.is_public = 2
+
         user_moment.save()
+
+        from app_redis.user.models.user import UserRedis
+        pure_id = "597ef85718ce420b7d46ce11"
+        if user.is_video_auth == 1:
+            if user.label:
+                if pure_id in user.label:
+                    user_moment.update(set__is_pure=1)
+                else:
+                    user_moment.update(set__is_pure=3)
+            else:
+                user_moment.update(set__is_pure=3)
+        else:
+            if UserRedis.is_target_user(user.id):
+                user_moment.update(set__is_pure=2)
+            else:
+                user_moment.update(set__is_pure=4)
+
+
 
         return self.write({"status": "success"})
 

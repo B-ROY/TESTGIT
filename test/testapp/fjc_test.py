@@ -287,7 +287,115 @@ def fix_friend():
                 u.save()
 
 
+def follow_unique():
+    from app.customer.models.follow_user import FollowUser
+    follower_users = FollowUser.objects.all()
+    for follow in follower_users:
+        unique_code = str(follow.from_id) + "_" + str(follow.to_id)
+        follow.update(set__unique_code=unique_code)
 
+
+def fix_user():
+    from app.customer.models.user import User
+    from app.customer.models.real_video_verify import RealVideoVerify
+    users = User.objects.all()
+    for user in users:
+        status = RealVideoVerify.get_status(user.id)
+        if status == 1:
+            user.update(set__is_video_auth=1)
+        else:
+            if user.is_video_auth == 1:
+                desc = u"<html><p>" + _(u'由于您未进行视频认证，将取消您的播主资格，如想再次成为视频播主，请进行申请视频认证，并添加审核人员微信: "honeynnm" ') + u"</p></html>"
+                MessageSender.send_system_message(user.id, desc)
+                user.update(set__is_video_auth=4)
+
+
+def fix_pure_moment():
+    from app.customer.models.community import UserMoment
+    moments = UserMoment.objects.all()
+    for moment in moments:
+        user_id = moment.user_id
+        user = User.objects.filter(id=user_id).first()
+        if not user:
+            continue
+        pure_id = "597ef85718ce420b7d46ce11"
+        if user.label:
+            if pure_id in user.label:
+                moment.update(set__is_pure=1)
+
+def fix_target_user_moment():
+    from app.customer.models.community import UserMoment
+    target_user_id = UserRedis.get_target_user_ids()
+    pure_anchor_id = UserRedis.get_pure_anchor_ids()
+    moments = UserMoment.objects.all()
+    for moment in moments:
+        user_id = moment.user_id
+        user = User.objects.filter(id=user_id).first()
+        if not user:
+            continue
+        if str(user.id) in target_user_id:
+            moment.update(set__is_pure=2)
+        elif user.is_video_auth != 1 and str(user.id) not in target_user_id:
+            moment.update(set__is_pure=4)
+        elif user.is_video_auth==1 and str(user.id) not in pure_anchor_id:
+            moment.update(set__is_pure=3)
+
+
+
+
+
+
+def create_user():
+    from app.customer.models.user import User
+
+    base_num = "100000000"
+    num = 1
+    count = 21
+    for i in xrange(1, 90):
+        if num >= count:
+            break
+
+        if i < 10:
+            phone = base_num + "0" + str(i)
+        else:
+            phone = base_num + str(i)
+
+        u = User.objects.filter(phone=phone).first()
+        if u:
+            continue
+        phone_pwd = PhonePassword.objects.filter(phone=phone).first()
+
+        if phone_pwd:
+            continue
+
+        nick_name = RegisterInfo.make_nickname()
+
+        is_new, user = User.create_user2(get_md5(phone), User.SOURCE_PHONE, nick_name, platform=0, phone=phone,
+                                         gender=2, ip='', image="", channel="", guid="")
+        password = init_pwd()
+        PhonePassword.update_password(phone, get_md5(password))
+
+        record = ChildUserRecord()
+        record.user_id = user.id
+        record.phone = phone
+        record.ori_pwd = password
+        record.save()
+
+        num += 1
+
+
+def get_md5(str):
+    import hashlib
+    m = hashlib.md5()
+    m.update(str)
+    return m.hexdigest()
+
+
+def init_pwd():
+    import random
+    import string
+    salt = ''.join(random.sample(string.ascii_letters + string.digits, 6))
+    return salt
 
 
 

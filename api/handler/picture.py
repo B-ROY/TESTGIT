@@ -50,7 +50,7 @@ class CreatePicture(BaseHandler):
         picture_id = PictureInfo.create_picture(user_id=user_id, created_at=created_at, picture_url=picture_url,
                                                 desc=desc, picture_type=picture_type, price=price, is_private=is_private,
                                                 lock_type=lock_type, lock_count=lock_count, location=location,
-                                                mention=mention)
+                                                mention=mention, type=1)
         if picture_id:
             self.write({"status": "success", "picture_id": picture_id, })
         else:
@@ -442,7 +442,7 @@ class UserPictureCreate(BaseHandler):
 
                 picture_ids.append(str(pic_info.id))
 
-        MessageSender.send_picture_detect(pic_url=picture_urls, user_id=user_id, pic_channel=0, source=3, obj_id=None)
+        MessageSender.send_picture_detect(pic_url=picture_urls, user_id=user_id, pic_channel=0, source=3, obj_id=None, pic_type=type)
 
         # 同步到动态
         if publish_status == 2:
@@ -488,7 +488,26 @@ class UserPictureCreate(BaseHandler):
             user_moment.ispass = 2
             user_moment.is_public = 1
             user_moment.create_time = datetime.datetime.now()
+
             user_moment.save()
+            
+            from app_redis.user.models.user import UserRedis
+            pure_id = "597ef85718ce420b7d46ce11"
+            if user.is_video_auth == 1:
+                if user.label:
+                    if pure_id in user.label:
+                        user_moment.update(set__is_pure=1)
+                    else:
+                        user_moment.update(set__is_pure=3)
+                else:
+                    user_moment.update(set__is_pure=3)
+            else:
+                if UserRedis.is_target_user(user.id):
+                    user_moment.update(set__is_pure=2)
+                else:
+                    user_moment.update(set__is_pure=4)
+
+
             MessageSender.send_picture_detect(pic_url="", user_id=0, pic_channel=0, source=2, obj_id=str(user_moment.id))
 
         if picture_ids:
@@ -560,7 +579,7 @@ class UserPictureCreate(BaseHandler):
         if ignore_moments:
             for ignore_moment in ignore_moments:
                 ignore_moment_ids.append(str(ignore_moment.id))
-        today_comment_used_count = UserComment.objects.filter(user_id=user.id, delete_status=1, comment_type=1, user_moment_id__nin=ignore_moment_ids,
+        today_comment_used_count = UserComment.objects.filter(user_id=user.id, delete_status=1, user_moment_id__nin=ignore_moment_ids,
                                             create_time__gte=starttime, create_time__lte=endtime).count()
 
         # 私房视频限制相关
@@ -568,7 +587,7 @@ class UserPictureCreate(BaseHandler):
         videos_anchor_vip_count = 20
         videos_anchor_count = 10
         videos_user_count = 0
-        videos_used_count = PrivateVideo.objects.filter(user_id=user.id, show_status__ne=2).count()
+        videos_used_count = PrivateVideo.objects.filter(user_id=user.id, show_status__ne=2, delete_status=1).count()
 
         data = {
             "moment_vip_count": moment_vip_count,

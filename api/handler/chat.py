@@ -34,28 +34,16 @@ class ChatMessageCreate(BaseHandler):
         content = self.arg("content", "")
         resource_url = self.arg("resource_url", "")
 
-        if type == 1:
-            if content:
-                # 文本内容鉴黄
-                ret, duration = shumei_text_spam(text=content, timeout=1, user_id=user.id, channel="DYNAMIC_COMMENT", nickname=user.nickname,
-                                                 phone=user.phone, ip=self.user_ip)
-                print ret
-                is_pass = 0
-                if ret["code"] == 1100:
-                    if ret["riskLevel"] == "PASS":
-                        is_pass = 1
-                    if ret["riskLevel"] == "REJECT":
-                        is_pass = 0
-                    if ret["riskLevel"] == "REVIEW":
-                        # todo +人工审核逻辑
-                        is_pass = 1
-                if not is_pass:
-                    return self.write({'status': "fail",
-                                       'error': _(u"经系统检测,您的内容涉及违规因素,请重新编辑")})
+        user_ip = self.user_ip
 
         # 本会话第一次发聊天信息, 开始 "十分钟" 倒计时
         conversation_id = self.arg("conversation_id", "")
-        status, create_time, con_id = ChatMessage.create_chat_message(from_user_id, to_user_id, type, content, conversation_id, resource_url)
+        status, create_time, con_id, message = ChatMessage.create_chat_message(from_user_id, to_user_id, type, content, conversation_id, resource_url, user_ip)
+
+        if status == 2:
+            # 文本鉴黄
+            return self.write({'status': "fail",
+                               'error': _(message)})
         if status == 1:
             temp_time = create_time.strftime("%Y-%m-%d %H:%M:%S")
             timeArray = time.strptime(temp_time, "%Y-%m-%d %H:%M:%S")
@@ -79,5 +67,7 @@ class ChatCancel(BaseHandler):
         from_user_id = self.current_user_id
         to_user_id = self.arg("to_user_id")
         conversation_id = self.arg("conversation_id")
+        if not to_user_id or not conversation_id:
+            return self.write({"status": "success"})
         UserConversation.cancel(conversation_id, from_user_id, to_user_id)
-        self.write({"status": "success"})
+        return self.write({"status": "success"})

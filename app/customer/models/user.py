@@ -78,7 +78,7 @@ class User(Document):
 
     ONLINE_STATUS = [
         (1, u'在线'),
-        (2, u'离线')
+        (2, u'离线'),
     ]
 
 
@@ -88,8 +88,8 @@ class User(Document):
     identity = IntField(verbose_name=u"用户id", unique=True)
     openid = StringField(verbose_name=u"openid", max_length=64, unique=True)
     is_block = IntField(verbose_name=u'是否屏蔽', default=0)
-    complete_info = IntField(verbose_name=u'是否完善过个人信息', choices=COMPLETE_INFO)
-    user_type = IntField(verbose_name=u'用户类型', choices=ROBOT)
+    complete_info = IntField(verbose_name=u'是否完善过个人信息')
+    user_type = IntField(verbose_name=u'用户类型')
     guid = StringField(verbose_name=u'用户设备号')
     is_valid = IntField(verbose_name=u'是否不入库',default=2)#不入库 2，入库
     is_vip = IntField(verbose_name=u'是否是vip',default=3)#  1高级 2 超级 3非会员
@@ -98,7 +98,7 @@ class User(Document):
     nickname = StringField(verbose_name=u"用户昵称", max_length=32)
     desc = StringField(verbose_name=u"自我描述", max_length=280)
     phone = StringField(verbose_name=u"手机号", max_length=32)
-    gender = IntField(verbose_name=u"性别", choices=((0, u"未选择"), (1, u"男"), (2, u"女")))
+    gender = IntField(verbose_name=u"性别")
     image = StringField(verbose_name=u"用户图片", max_length=255, default='')
     constellation = StringField(verbose_name=u"星座", max_length=256)
     occupation = StringField(verbose_name=u"职业", max_length=256)
@@ -141,8 +141,8 @@ class User(Document):
     app_version = StringField(verbose_name=u'app version', max_length=20, default='')
     ip = StringField(verbose_name=u"注册ip", max_length=255, default='')
     channel = StringField(verbose_name=u"渠道", max_length=32)
-    platform = IntField(verbose_name=u'平台', choices=PLATFORM)
-    source = IntField(verbose_name=u'用户来源', choices=SOURCE)
+    platform = IntField(verbose_name=u'平台')
+    source = IntField(verbose_name=u'用户来源')
 
     real_video_auth = IntField(verbose_name=u'是否视频认证')
     real_name_auth = IntField(verbose_name=u'是否实名认证')
@@ -158,11 +158,11 @@ class User(Document):
     charm_value = IntField(verbose_name=u"魅力值", default=0)
 
     #个人设置
-    disturb_mode = IntField(verbose_name=u'免打扰模式开关', choices=NO_DISTURBB_ON)
-    bottle_switch = IntField(verbose_name=u'漂流瓶开关', choices=BOTTLE_SWITCH)
+    disturb_mode = IntField(verbose_name=u'免打扰模式开关')
+    bottle_switch = IntField(verbose_name=u'漂流瓶开关')
 
     #在线状态字段
-    online_status = IntField(verbose_name=u'在线状态', choices=ONLINE_STATUS)
+    online_status = IntField(verbose_name=u'在线状态')
     current_score = FloatField(verbose_name=u'用户在线状态评分')
     #个人封面
     cover = StringField(verbose_name=u"个人封面")
@@ -171,7 +171,9 @@ class User(Document):
 
     #上次登录设备
     last_guid = StringField(verbose_name=u"上次登录guid")
+    audio_status = IntField(verbose_name=u"通话状态") # 1.正在通话中 2. 空闲中
 
+    last_room_id = StringField(verbose_name=u"上次锁在房间")
 
     class Meta:
         app_label = "customer"
@@ -335,8 +337,8 @@ class User(Document):
                 online_status=1,
                 current_score=-1,
                 last_guid=guid,
-                is_vip=3
-
+                is_vip=3,
+                audio_status=2,
             )
             user.id = UserRedis.pop_user_id()
             user.identity = UserRedis.pop_user_identity()
@@ -1081,8 +1083,6 @@ class VideoManagerVerify(Document):
             user = User.objects.get(id=int(user_id))
             user.is_video_auth = 0
             user.save()
-            desc = u"<html><p>" + _(u"亲爱的用户您好，认证申请已成功提交，请等待工作人员审核（1-2工作日）") + u"</p></br></html>"
-            MessageSender.send_system_message(user.sid, desc)
             return True
         except Exception, e:
             logging.error("create real videoManager verify error:{0}".format(e))
@@ -1178,7 +1178,10 @@ class RecommendUser(Document):
     is_valid = IntField(verbose_name=u"是否删除", default=1)  # 1未删除 2，删除
 
 
-
+class ChildUserRecord(Document):
+    user_id = IntField(verbose_name=u"用户id")
+    phone = StringField(verbose_name=u"phone", max_length=11)
+    ori_pwd = StringField(verbose_name=u"pwd", max_length=32)
 
 
 

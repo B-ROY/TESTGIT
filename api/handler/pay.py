@@ -602,7 +602,7 @@ class PayRulesV2(BaseHandler):
             "googlepay_rules":googlepay_rule_list,
             "wepay_qrcode_rules": wepay_qrcode_rule_list,
         },
-            "is_wechat_show": is_wechat_show, "default_pay": 1})# 1 微信 2 支付宝
+            "is_wechat_show": is_wechat_show, "default_pay": 2})# 1 微信 2 支付宝
 
 
 @handler_define
