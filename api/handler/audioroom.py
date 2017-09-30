@@ -993,7 +993,7 @@ class GetVoiceRoomListV2(BaseHandler):
                     "time_stamp":datetime_to_timestamp(audioroom.open_time)
                 }
                 data.append(dic)
-	random.shuffle(data)
+	    random.shuffle(data)
         self.write({"status": "success", "data": data, })
 
 
@@ -1277,13 +1277,55 @@ class GetVoiceRoomListV3(BaseHandler):
                     3301403,
                     3301402,
                     3301401,
-                    3301390,
-                    3301387,
-                    3301386,
-                    3301385,
-                    3301384
+                    3301405,
+                    3301434,
+                    3301433,
+                    3301432,
+                    3301431,
+                    3301404,
+                    3301403,
+                    3301402,
+                    3301401,
+                    3301400,
                 ]
             }
+
+        elif app_name == "liaoai_yelaixiang":
+            hot_ids = [
+                3301426,
+                3301425,
+                3301402,
+                3301405,
+                3301434,
+
+            ]
+
+            ids = {
+                1: [
+                    3301437,
+                    3301436,
+                    3301435,
+                    3301430,
+                    3301429,
+                    3301428,
+                    3301427,
+                    3301424,
+                    3301423,
+                    3301422,
+                    3301421,
+                    3301433,
+                    3301432,
+                    3301431,
+                    3301404,
+                    3301403,
+                    3301401,
+                    3301400,
+                ]
+            }
+
+            random.shuffle(hot_ids)
+            random.shuffle(ids[1])
+
 
         for hot_id in hot_ids:
             user = User.objects.get(identity=hot_id)

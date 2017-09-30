@@ -33,10 +33,19 @@ class RecommendList(BaseHandler):
                     3080091,
                     3080087,
             ]
-	    random.shuffle(hot_ids)
+
 
         if app_name == "tianmireyue":
             hot_ids = []
+
+        if app_name == "liaoai_yelaixiang":
+            hot_ids = [
+                3301434,
+                3301433,
+                3301432,
+                3301431,
+            ]
+        random.shuffle(hot_ids)
 
         hot_list = []
         for hot_id in hot_ids:

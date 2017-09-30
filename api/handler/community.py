@@ -288,7 +288,10 @@ class MomentListV3(BaseHandler):
                         '59a7bdce2040e46be74fd223',
                       ]
         elif app_name == "tongchengyueai":
-            momentsid =["59c09d3b6cf5217d0e147197",
+            momentsid =[
+                        "59ccbeb26cf5217d0e1471db"
+                        "59ccbfc16cf5217d0f1471cd"
+                        "59c09d3b6cf5217d0e147197",
                         "59c09beb6cf5217d0f14718f",
                         "59c09af26cf5217d0f14718e",
                         "59c0992a6cf5217d0e14718e",
@@ -296,7 +299,6 @@ class MomentListV3(BaseHandler):
                         "59c093816cf5217d0f147182",
                         "59c0926f6cf5217d0f147181",
                         "59c090046cf5217d0e14717d",
-                        "59c08fca6cf5217d0f14717d",
                         "59c08ed56cf5217d0f14717c",
                         "59c08e1e6cf5217d0f147177",
                         "59c08acf6cf5217d0f147170",
@@ -305,14 +307,39 @@ class MomentListV3(BaseHandler):
                         "59c0810f6cf5217d0e147167",
                         "59c07d076cf5217d0f147164",
                         "59c0782b6cf5217d0e14715c",
-                        "59c076e96cf5217d0e147157",
                         "59bf71a86cf5217d0f14715e",
                         "59bf6d386cf5217d0f14715d",
                         "59bf6b576cf5217d0e14714c",
-                        "59bf3ca86cf52156e054f248",
                         "59bf3c8f6cf52156e054f247",
                         "59bf2d8c6cf52156e054f20e"
                         ]
+        elif app_name == "liaoai_yelaixiang":
+            momentsid = [
+                "59cf50ea6cf5212111737095",
+                "59cf50db6cf5212112736dd7",
+                "59cf4fd86cf521211173708d",
+                "59ccb61a6cf5217d0f1471cb",
+                "59c4ac956cf5217d0f1471c2",
+                "59c481ce6cf5217d0e1471d3",
+                "59c47ea66cf5217d0f1471ba",
+                "59c47d2a6cf5217d0f1471b9",
+                "59c38c456cf5217d0e1471c6",
+                "59c387e96cf5217d0f1471b2",
+                "59c3779f6cf5217d0e1471ab",
+                "59c3862f6cf5217d0f1471ae",
+                "59c383bd6cf5217d0f1471aa",
+                "59c381446cf5217d0e1471b7",
+                "59c37d026cf5217d0e1471af",
+                "59c3761e6cf5217d0e1471a7",
+                "59c374176cf5217d0f14719e",
+                "59c373c66cf5217d0f14719c",
+                "59c368286cf5211be508c759",
+                "59c126486cf521638ad8bf17",
+                "59c126006cf521638ad8bf16",
+                "59c076e96cf5217d0e147157",
+                "59bf3ca86cf52156e054f248",
+                "59c08fca6cf5217d0f14717d",
+            ]
         # moments = UserMoment.objects.filter(show_status__in=[1, 3, 4], delete_status=1, is_public=1).order_by("-create_time")[(page - 1) * page_count:page * page_count]
         moments = UserMoment.objects.filter(id__in=momentsid).order_by("-create_time")[(page - 1) * page_count:page * page_count]
         print "=========",moments.count()
