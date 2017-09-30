@@ -174,6 +174,8 @@ class PrivateVideoCreate(BaseHandler):
         else:
             user_moment.is_public = 2
 
+        user_moment.save()
+
         from app_redis.user.models.user import UserRedis
         pure_id = "597ef85718ce420b7d46ce11"
         if user.is_video_auth == 1:
@@ -190,7 +192,7 @@ class PrivateVideoCreate(BaseHandler):
             else:
                 user_moment.update(set__is_pure=4)
 
-        user_moment.save()
+
 
         return self.write({"status": "success"})
 
