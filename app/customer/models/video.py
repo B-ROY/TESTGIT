@@ -85,7 +85,7 @@ class PrivateVideo(Document):
                     code = 2
                     message = u"普通用户不能发私房视频"
 
-        print message
+        print str(message)
         return code, message
 
 
