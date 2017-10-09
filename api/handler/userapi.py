@@ -2318,9 +2318,9 @@ class RealNameInfoSubmit(BaseHandler):
             if status:
                 return self.write({"status": "success", })
             else:
-                return self.write({"status": "failed", "error": "create verify error", })
+                return self.write({"status": "failed", "error": _(u"提交申请失败")})
         else:
-            return self.write({"status": "failed", "error": "file no enough", })
+            return self.write({"status": "failed", "error": _(u"缺少图片") })
 
 
 
