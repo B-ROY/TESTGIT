@@ -166,13 +166,14 @@ class BaseHandler(RequestHandler):
     def current_user(self):
         if not hasattr(self, "_current_user"):
             user_id = self.current_user_id
+            user = None
             try:
                 user = User.objects.get(pk=user_id)
-                if user.is_block == 1:
-                    raise HTTPError(401)
             except Exception:
                 user = None
             finally:
+                if user and user.is_block == 1:
+                    raise HTTPError(401)
                 setattr(self, '_current_user', user)
 
         return getattr(self, "_current_user", None)
