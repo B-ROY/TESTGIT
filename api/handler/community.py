@@ -289,8 +289,8 @@ class MomentListV3(BaseHandler):
                       ]
         elif app_name == "tongchengyueai":
             momentsid =[
-                        "59ccbeb26cf5217d0e1471db"
-                        "59ccbfc16cf5217d0f1471cd"
+                        "59ccbeb26cf5217d0e1471db",
+                        "59ccbfc16cf5217d0f1471cd",
                         "59c09d3b6cf5217d0e147197",
                         "59c09beb6cf5217d0f14718f",
                         "59c09af26cf5217d0f14718e",
