@@ -24,6 +24,7 @@ class GenerateVoiceSig(BaseHandler):
         [
             Param('user_id', False, str, "", "", u'当前用户id'),
         ],description=u'生成声网登录sig')
+    @login_required
     def get(self):
         user_id = self.current_user_id
         if self.has_arg("user_id"):

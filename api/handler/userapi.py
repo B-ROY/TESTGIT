@@ -2508,6 +2508,11 @@ class UserHeartBeatReport(BaseHandler):
             platform = 0
         else:
             platform = 2
+
+        #android 有传-1的bug 次数需要坐下处理
+        if int(user_id) == -1:
+            return self.write({"status": "fail"})
+
         user = User.objects.get(id=int(user_id))
         heart_beat = UserHeartBeat.objects.get(user=user)
         heart_beat.last_report_time = int(time.time())
