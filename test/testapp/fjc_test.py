@@ -431,12 +431,6 @@ def init_gold_diamond():
     GoldDiamond.create(1000, 10)
 
 
-def test():
-    user_id = 1
-    task_identity = 1
-    MessageSender.send_do_task(user_id, task_identity)
-
-
 def fix_target_user_moment():
     from app.customer.models.community import UserMoment
     target_user_id = UserRedis.get_target_user_ids()
@@ -484,6 +478,42 @@ def init_invite():
     TempInviteTicket.create("带上脑子", 11305)
     TempInviteTicket.create("谨慎的橘子", 11733)
 
+
+def msg():
+    # activityInfo = {
+    #     "img_url": "123",
+    #     "activity_title": "title",
+    #     "action_url": "www.baidu.com",
+    # }
+    content = "老洋邀请您上传更多照片"
+    messageSubType = 1  # 0.普通（默认）  1.加跳转  2.活动
+    actionType = 3
+    action_url = "h5url"
+    jump_name = "【立即前往】"
+    user_id = 16964
+    MessageSender.send_system_message_v2(6526, user_id=user_id, content=content, messageSubType=messageSubType,
+                        actionType=actionType, action_url=action_url, jump_name=jump_name)
+
+
+def daytask():
+    from app.customer.models.task import Task
+
+    id = "59b396cc421aa9082ae4d70c"
+    task = Task.objects.filter(id=id).first()
+    flag = Task.get_day_task(task)
+    print flag
+
+
+def pus_msg():
+    MessageSender.send_push_msg_v2(user_id=6526, content="我的content", title="上线title", type=3, url="www.baidu.com", userId="999")
+
+
+    # ua = self.request.headers.get('User-Agent')
+    # ua_version = ua.split(";")[1]
+    # if ua_version and ua_version < "2.4.0":
+    #     print "old"
+    # else:
+    #     print "new
 
 
 
@@ -538,6 +568,24 @@ def init_pwd():
     import string
     salt = ''.join(random.sample(string.ascii_letters + string.digits, 6))
     return salt
+
+
+def fix_gift_records():
+    from app.customer.models.gift import Gift, GiftRecord
+    gift_dict = {}
+
+    gifts = Gift.objects.all()
+    for gift in gifts:
+        gift_id = str(gift.id)
+        gift_dict[gift_id] = gift.logo
+
+    records = GiftRecord.objects.all()
+    for record in records:
+        gift_id = str(record.gift_id)
+        if gift_id not in gift_dict:
+            continue
+        new_logo = gift_dict[gift_id]
+        record.update(set__gift_logo=new_logo)
 
 
 
