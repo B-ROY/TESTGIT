@@ -588,6 +588,22 @@ def fix_gift_records():
         record.update(set__gift_logo=new_logo)
 
 
+def fix_gift_records_batch():
+    from app.customer.models.gift import Gift, GiftRecord
+    gift_dict = {}
+
+    gifts = Gift.objects.all()
+    for gift in gifts:
+        gift_id = str(gift.id)
+        gift_dict[gift_id] = gift.logo
+
+    for k, v in gift_dict.items():
+        print k, v
+        records = GiftRecord.objects.filter(gift_id=k)
+        records.update(set__gift_logo=v)
+
+
+
 
 
 
