@@ -101,7 +101,7 @@ class WithdrawInfo(BaseHandler):
 
         data = {
             "total_revenue": int(ticket_account.total_ticket),
-            "my_revenue": int(ticket_account.call_ticket + ticket_account.gift_ticket),
+            "my_revenue": int(ticket_account.call_ticket + ticket_account.gift_ticket + ticket_account.video_ticket),
             "friend_revenue": int(ticket_account.friend_benifit_ticket + ticket_account.friend_charge_ticket),
             "withdraw_money": int(ticket_account.money - ticket_account.money_requesting - ticket_account.money_withdrawed)
         }

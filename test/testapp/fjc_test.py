@@ -398,6 +398,43 @@ def init_pwd():
     return salt
 
 
+def fix_ticket_account():
+    from app.customer.models.video import PrivateVideo, VideoPurchaseRecord
+    from app.customer.models.benifit import TicketAccount
+    from app.customer.models.user import User
+    video_dict = {}
+    user_ticket_dict = {}
+
+    videos = PrivateVideo.objects.all()
+    for video in videos:
+        video_dict[str(video.id)] = {}
+        video_dict[str(video.id)]["price"] = video.price
+        video_dict[str(video.id)]["user_id"] = video.user_id
+
+    records = VideoPurchaseRecord.objects.all()
+    for record in records:
+        video_id = record.video_id
+
+        if video_id not in video_dict:
+            continue
+        price = video_dict[video_id]["price"]
+        user_id = video_dict[video_id]["user_id"]
+        if user_id not in user_ticket_dict:
+            user_ticket_dict[user_id] = price
+        else:
+            old_price = user_ticket_dict[user_id]
+            user_ticket_dict[user_id] = old_price + price
+
+    print user_ticket_dict
+
+    for k, v in user_ticket_dict.items():
+        user = User.objects.filter(id=k).first()
+        account = TicketAccount.objects.filter(user=user).first()
+        if account:
+            account.update(set__video_ticket=v)
+    print "ok"
+
+
 
 
 
