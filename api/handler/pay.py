@@ -284,12 +284,15 @@ class AliPayNoticeHandler(BaseHandler):
             return self.write("failed")
 
         dic = dict(params)
-        if dic.get("trade_status") == "TRADE_CLOSED":
+        if dic.get("trade_status") == "TRADE_CLOSED" or dic.get("trade_status") == "TRADE_FINISHED":
             return self.write({"success"})
-        success = AlipayFillNotice.create_order(dic)
+        elif dic.get("trade_status") == "TRADE_SUCCESS":
+            success = AlipayFillNotice.create_order(dic)
+            if success:
+                self.write("success")
+        else:
+            return self.write({"success"})
 
-        if success:
-            self.write("success")
 
 @handler_define
 class WePayNoticeHandler(BaseHandler):
@@ -596,7 +599,7 @@ class PayRulesV2(BaseHandler):
                 wepay_qrcode_rule_list.append(rule.normal_info())
 
         # todo 做到redis中 CMS可调配
-        is_wechat_show = 1 #1: 显示 0:隐藏
+        is_wechat_show = 0 #1: 显示 0:隐藏
 
 
         self.write({'status': "success", "data": {
