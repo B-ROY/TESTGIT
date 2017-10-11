@@ -234,6 +234,7 @@ class Account(Document):
             # 判断首充
             from app.customer.models.task import Task
             role = Task.get_role(user.id)
+            task_identity = 0
             if role == 1:
                 task_identity = 35
                 order_count = TradeBalanceOrder.objects.filter(status='1', user=user).count()
@@ -854,7 +855,7 @@ class WithdrawRequest(Document):
         }
 
     @classmethod
-    def create_withdraw_request(cls, user_id, request_money, user_agent, openid, ip=''):
+    def create_withdraw_request(cls, user_id, request_money, user_agent, openid, ip='', ua_version=""):
         try:
             request = WithdrawRequest(
                 user_id=user_id,
@@ -870,7 +871,13 @@ class WithdrawRequest(Document):
             ticket_account.money_requesting += request_money
             ticket_account.save()
             desc = u"<html><p>"+_(u"亲爱的用户您好，提现申请已成功提交，请等待工作人员审核（1-2工作日）") + u"</p></br></html>"
-            MessageSender.send_system_message(user_id, desc)
+            desc_new = _(u"亲爱的用户您好，提现申请已成功提交，请等待工作人员审核（1-2工作日）")
+
+            if not ua_version or ua_version < "2.4.0":
+                MessageSender.send_system_message(user_id, desc)
+            else:
+                MessageSender.send_system_message_v2(to_user_id=user_id, content=desc_new)
+
             return True
         except Exception,e:
             logging.error("create withdraw request error:{0}".format(e))
