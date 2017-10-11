@@ -19,6 +19,7 @@ class TicketAccount(Document):
     total_ticket = FloatField(verbose_name=u"总收益")
     gift_ticket = FloatField(verbose_name=u"礼物收益")
     call_ticket = FloatField(verbose_name=u"通话收益")
+    video_ticket = FloatField(verbose_name=u"私房视频收益")
     friend_charge_ticket = FloatField(verbose_name=u"好友充值收益")
     friend_benifit_ticket = FloatField(verbose_name=u"好友收益收益")
     money_requesting = FloatField(verbose_name=u"申请中的提现")
@@ -66,6 +67,7 @@ class TicketAccount(Document):
                 set__update_time=datetime.datetime.now(),
                 inc__gift_ticket=ticket if trade_type == TradeTicketRecord.TradeTypeGift else 0,
                 inc__call_ticket=ticket if trade_type == TradeTicketRecord.TradeTypeAudio else 0,
+                inc__video_ticket=ticket if trade_type == TradeTicketRecord.TradeTypePrivateVideo else 0,
                 inc__total_ticket=ticket,
                 inc__money=ticket * self.WITHDRAW_RATIO
             )
