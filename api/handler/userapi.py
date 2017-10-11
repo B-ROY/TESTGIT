@@ -425,7 +425,6 @@ class Login(ThridPardLogin):
         if block_dev:
             return self.write({"status": "fail", "error": _(u"经系统检测，您的账号存在违规行为，设备已经被服务器暂时封停；如您存在疑问请点击下方申诉或联系客服QQ：3270745762"),"errcode":"2002", "_uid":user.id})
 
-
         #convert user info
         data = {}
         data["user"] = convert_user(user)
@@ -540,7 +539,13 @@ class CompletePersonalInfo(BaseHandler):
                 UserInviteCode.create_invite_code(user_id=user.id, invite_id=dev_info_match.user_id, user_guid=user_guid)
 
                 message = u"<html><p>已成功邀请%s</p></html>" % nickname
-                MessageSender.send_system_message(dev_info_match.user_id, message)
+                message_new = u"已成功邀请%s<" % nickname
+                ua = self.request.headers.get('User-Agent')
+                ua_version = ua.split(";")[1]
+                if ua_version and ua_version < "2.4.0":
+                    MessageSender.send_system_message(dev_info_match.user_id, message)
+                else:
+                    MessageSender.send_system_message_v2(to_user_id=dev_info_match.user_id, content=message_new)
 
             dev_info_match.update(set__invite_ret_code=result_code)
 
@@ -1044,9 +1049,6 @@ class BindWX(ThridPardLogin):
             return self.write({"status": "fail", "error": e.message})
 
 
-
-
-
 @handler_define
 class Logout(BaseHandler):
     @api_define("Logout", r'/live/logout', [
@@ -1135,8 +1137,6 @@ class AUserInfo(BaseHandler):
         if user_vip:
             vip = Vip.objects.filter(id=user_vip.vip_id).first()
             dic["vip"] = convert_vip(vip)
-
-
 
         if temp_uid == current_id:
             # 本人的话可以显示认证中的
@@ -1610,21 +1610,24 @@ class UpdateUserInfo(BaseHandler):
                 user.desc = self.arg("desc")
 
                 # 添加签名任务
+                task_identity = 0
                 if role == 1:
-                    task_identity = 42
+                    task_identity = 32
                 elif role == 3:
-                    task_identity = 13
+                    task_identity = 5
+                elif role == 2:
+                    task_identity = 48
                 if task_identity:
                     MessageSender.send_do_task(user_id=user.id, task_identity=task_identity)
-
-
 
             is_change = True
 
         if self.has_arg("gender"):
             user.gender = self.arg_int("gender")
             if user.gender == 1:
-                Tools.send_activity_tools(int(user.id))
+                ua = self.request.headers.get('User-Agent')
+                ua_version = ua.split(";")[1]
+                Tools.send_activity_tools(int(user.id), ua_version=ua_version)
             is_change = True
 
         if self.has_arg("height"):
@@ -1644,13 +1647,15 @@ class UpdateUserInfo(BaseHandler):
             is_change = True
 
             # 上传头像任务
+            head_img_task_identity = 0
             if role == 1:
-                task_identity = 30
+                head_img_task_identity = 30
             elif role == 2:
-                task_identity = 46
+                head_img_task_identity = 46
             elif role == 3:
-                task_identity = 3
-            MessageSender.send_do_task(user_id=user.id, task_identity=task_identity)
+                head_img_task_identity = 3
+            if head_img_task_identity:
+                MessageSender.send_do_task(user_id=user.id, task_identity=head_img_task_identity)
 
         if self.has_arg("nickname"):
             if len(self.arg("nickname")) > 16:
@@ -1922,8 +1927,15 @@ class CreateFeedback(BaseHandler):
                                                        desc=desc,phone_number=phone_number,qq_number=qq_number)
             if feedback_id:
                 desc = u"<html><p>" + _(u"尊敬的%s，感谢您的建议，您的建议就是我们进步的动力" % self.current_user.nickname) + u"</p></br></html>"
+                desc_new = _(u"尊敬的%s，感谢您的建议，您的建议就是我们进步的动力" % self.current_user.nickname)
 
-                MessageSender.send_system_message(user_id, desc)
+                ua = self.request.headers.get('User-Agent')
+                ua_version = ua.split(";")[1]
+                if ua_version and ua_version < "2.4.0":
+                    MessageSender.send_system_message(user_id, desc)
+                else:
+                    MessageSender.send_system_message_v2(to_user_id=user_id, content=desc_new)
+
                 self.write({"status": "success", "feedback_id": feedback_id, })
             else:
                 self.write({"status": "failed", "error_message": "创建反馈失败", })
@@ -1992,11 +2004,10 @@ class IMOnlineOfflineCallback(BaseHandler):
         action = user_info.get("Action")
         if user_id:  # 正式服id从2500开始 测试服id从1开始
             user = User.objects.get(id=user_id)
-
             if action == "Login":
-                Tools.send_activity_tools(user_id)
+                Tools.send_activity_tools(user_id, ua_version="")
 
-            status = OnlineUser.update_online_user(user_id=user_id, action=action)
+            status = OnlineUser.update_online_user(user_id=user_id, action=action, ua_version="")
             if status:
                 self.write({"status": "success"})
             else:
@@ -2275,12 +2286,6 @@ class MessageSendToolV1(BaseHandler):
             # 添加记录
             SendToolsRecord.add(send_id, receive_id, str(tool.id), 1)
 
-            # 千里眼 任务
-            role = Task.get_role(send_id)
-            if role == 1:
-                task_identity = 41
-            if task_identity:
-                MessageSender.send_do_task(user_id=send_id, task_identity=task_identity)
 
             return self.write({"status": "success"})
         else:
@@ -2308,6 +2313,14 @@ class MessageSendToolV2(BaseHandler):
 
             # 消耗道具
             time_type = UserTools.reduce_tools(send_id, str(tool.id))
+
+            # 门禁卡 任务
+            role = Task.get_role(send_id)
+            task_identity = 0
+            if role == 1:
+                task_identity = 41
+            if task_identity:
+                MessageSender.send_do_task(user_id=send_id, task_identity=task_identity)
 
             if not conversation_id:
 
@@ -2381,8 +2394,12 @@ class RealNameInfoSubmit(BaseHandler):
             url_1 = self.arg("pic_1")
             url_2 = self.arg("pic_2")
             url_3 = self.arg("pic_3")
+
+            ua = self.request.headers.get('User-Agent')
+            ua_version = ua.split(";")[1]
+
             status = RealNameVerify.create_real_name_verify(user_id=user_id, real_name=user_name, identity_code=id_num,
-                                                            picture_one=url_1, picture_two=url_2, picture_three=url_3)
+                                                            picture_one=url_1, picture_two=url_2, picture_three=url_3, ua_version=ua_version)
             if status:
                 return self.write({"status": "success", })
             else:
@@ -2456,7 +2473,14 @@ class VideoAuthInfoSubmit(BaseHandler):
                                                                     active_auth=active_auth)
 
             desc = u"<html><p>" + _(u'第一步认证已完成,第二步视频认证完成后就可以成为播主赚钱了,请务必添加审核人员微信:"honeynnm" 完成审核 ') + u"</p></br></br></html>"
-            MessageSender.send_system_message(user_id, desc)
+            desc_new = _(u'第一步认证已完成,第二步视频认证完成后就可以成为播主赚钱了,请务必添加审核人员微信:"honeynnm" 完成审核 ')
+
+            ua = self.request.headers.get('User-Agent')
+            ua_version = ua.split(";")[1]
+            if ua_version and ua_version < "2.4.0":
+                MessageSender.send_system_message(user_id, desc)
+            else:
+                MessageSender.send_system_message_v2(to_user_id=user_id, content=desc_new)
 
             if status:
                 self.write({
@@ -2596,11 +2620,12 @@ class RichUserList(BaseHandler):
         data.reverse()
 
         # 千里眼 任务
-        role = Task.get_role(user.id)
+        role = Task.get_role(user_id)
+        task_identity = 0
         if role == 3:
             task_identity = 14
         if task_identity:
-            MessageSender.send_do_task(user_id=user.id, task_identity=task_identity)
+            MessageSender.send_do_task(user_id=user_id, task_identity=task_identity)
 
         return self.write({"status": "success", "data": data, "has_tools": 1})
 
@@ -2829,6 +2854,7 @@ class ShareTask(BaseHandler):
         user_id = self.current_user_id
         # 分享任务
         role = Task.get_role(user_id)
+        task_identity = 0
         share_channel = self.arg_int("share_channel", 0)
         if role == 1:
             if share_channel == 0:

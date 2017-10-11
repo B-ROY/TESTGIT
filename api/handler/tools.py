@@ -359,12 +359,13 @@ class My_Tools_V2(BaseHandler):
         for user_tool in user_tools:
             tool_id = str(user_tool.tools_id)
             tool = Tools.objects.filter(id=tool_id).first()
-            dic = {
-                "tool": convert_tools(tool),
-                "count": user_tool.tools_count,
-                "time_type": user_tool.time_type
-            }
-            tools_list.append(dic)
+            if tool:
+                dic = {
+                    "tool": convert_tools(tool),
+                    "count": user_tool.tools_count,
+                    "time_type": user_tool.time_type
+                }
+                tools_list.append(dic)
 
         self.write({"status": "success", "tools_list": tools_list})
 

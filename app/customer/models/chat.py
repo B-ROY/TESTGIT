@@ -27,7 +27,6 @@ class ChatMessage(Document):
     @classmethod
     def create_chat_message(cls, from_user_id, to_user_id, type, content, conversation_id, resource_url, user_ip):
 
-
         obj_ = cls()
         obj_.from_user_id = from_user_id
         obj_.to_user_id = to_user_id

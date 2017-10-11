@@ -356,12 +356,11 @@ class BottleMessaegSend_V3(BaseHandler):
                 # 漂流瓶任务
                 from app.customer.models.task import Task
                 role = Task.get_role(user.id)
+                task_identity = 0
                 if role == 1:
-                    task_identity = 32
-                elif role == 2:
-                    task_identity = 48
+                    task_identity = 42
                 elif role == 3:
-                    task_identity = 5
+                    task_identity = 13
                 if task_identity:
                     MessageSender.send_do_task(user_id=user.id, task_identity=task_identity)
 

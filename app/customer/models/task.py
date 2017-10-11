@@ -100,7 +100,6 @@ class Task(Document):
     is_day_task = IntField(verbose_name=u"是否是每日任务(只需标记顶级任务)")  # 1:是
     grow_task_type = IntField(verbose_name=u"成长任务类型")  # 1:完成新手任务  2:通话时长  3: 魅力值
 
-
     @classmethod
     def get_list(cls, user_id):
         user = User.objects.filter(id=user_id).first()
@@ -173,8 +172,8 @@ class Task(Document):
                     else:
                         finish_type = record.finish_type
                         p2_dic["finish_type"] = finish_type
-                        if finish_type == 2:
-                            finish_count += 1
+                        # if finish_type == 2:
+                        finish_count += 1
 
                     p2_dic["total"] = total
                     p2_dic["finish_count"] = finish_count
@@ -213,7 +212,7 @@ class Task(Document):
                         min_video_task = video_task
                     video_count += 1
 
-                charm_task_list = Task.objects.filter(pid=id, is_valid=1, grow_task_type=3).order_by("-reward_count")
+                charm_task_list = Task.objects.filter(pid=id, is_valid=1, grow_task_type=3).order_by("reward_count")
                 charm_task_ids = []
                 charm_count = 1
                 charm_task_len = len(charm_task_list)
@@ -235,8 +234,8 @@ class Task(Document):
                         if record:
                             finish_type = record.finish_type
                             p2_dic["finish_type"] = finish_type
-                            if finish_type == 2:
-                                finish_count += 1
+                            # if finish_type == 2:
+                            finish_count += 1
 
                             if record.finish_type == 1:
                                 p2_dic["record_id"] = str(record.id)
@@ -244,13 +243,13 @@ class Task(Document):
                         p2_dic["total"] = 1
                         p2_dic["finish_count"] = finish_count
                     elif grow_type == 2:
-                        time_len = 0
+                        time_len = 1
                         if user.video_time:
-                            time_len = user.video_time/60  # 分钟
+                            time_len = (user.video_time/60) + 1  # 分钟
 
                         # 当前通话时长任务进度
                         record = UserTaskRecord.objects.filter(task_id__in=video_task_ids,
-                                                               user_id=user_id).order_by("create_time").first()
+                                                               user_id=user_id).order_by("-create_time").first()
                         if not record:
                             name = min_video_task.name.split(",")[0]
                             total = int(min_video_task.name.split(",")[1])
@@ -264,7 +263,7 @@ class Task(Document):
                             p2_dic["finish_count"] = time_len
                         else:
                             task_id = record.task_id
-                            t = Task.objects.filter(task_id=task_id)
+                            t = Task.objects.filter(id=task_id).first()
                             name = t.name.split(",")[0]
                             total = int(t.name.split(",")[1])
                             p2_dic = Task.normal_info(t)
@@ -312,8 +311,8 @@ class Task(Document):
                             p2_dic["finish_type"] = 0
                             p2_dic["finish_count"] = user_charm
                         else:
-                            task_id = record.task_id
-                            t = Task.objects.filter(task_id=task_id)
+                            task_id = str(record.task_id)
+                            t = Task.objects.filter(id=task_id).first()
                             name = t.name.split(",")[0]
                             total = int(t.name.split(",")[1])
                             p2_dic = Task.normal_info(t)
@@ -360,19 +359,15 @@ class Task(Document):
 
     @classmethod
     def get_day_task(cls, task):
-        day_task = cls.get_pid(str(task.id))
-        return day_task
-
-    @classmethod
-    def get_pid(cls, task_id):
-        task = Task.objects.filter(id=task_id)
         if task.pid:
-            cls.get_pid(task.pid)
+            task = Task.objects.filter(id=task.pid).first()
+            return cls.get_day_task(task)
         else:
             if task.is_day_task:
                 return task.is_day_task
             else:
                 return 0
+
 
     @classmethod
     def get_role(cls, user_id):
@@ -446,6 +441,7 @@ class Task(Document):
             # 大转盘机会
             pass
         record.update(set__finish_type=2)
+        return code, error
 
 
 class UserTaskRecord(Document):

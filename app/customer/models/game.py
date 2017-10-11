@@ -138,6 +138,7 @@ class TurnTable(Document):
         free_used_count = 0
         gold_used_count = 0
         share_used_count = 0
+        can_share = 1
 
         free_upper_limit = free_total_count + 3
 
@@ -162,7 +163,10 @@ class TurnTable(Document):
             free_total_count += task_count
             free_used_count += share_used_count
 
-        return free_used_count, free_total_count, gold_used_count, gold_total_count, free_upper_limit
+        if task_count >= ConstantKey.TurnTable_Share_Count:
+            can_share = 0
+
+        return free_used_count, free_total_count, gold_used_count, gold_total_count, free_upper_limit, can_share
 
     @classmethod
     def get_free_total_count(cls, user_id):

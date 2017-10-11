@@ -105,8 +105,14 @@ class ReportMessageUpload(BaseHandler):
                                               file_id=file_id, report_type=report_type)
 
         desc = u"<html><p>" + _(u"%s您好，您的举报我们会及时处理，请静候佳音")% self.current_user.nickname + u"</p></br></html>"
+        desc_new = _(u"%s您好，您的举报我们会及时处理，请静候佳音")% self.current_user.nickname
 
-        MessageSender.send_system_message(user_id, desc)
+        ua = self.request.headers.get('User-Agent')
+        ua_version = ua.split(";")[1]
+        if ua_version and ua_version < "2.4.0":
+            MessageSender.send_system_message(user_id, desc)
+        else:
+            MessageSender.send_system_message_v2(to_user_id=user_id, content=desc_new)
 
         return self.write({"status": "success"})
 

@@ -86,7 +86,7 @@ class Tools(Document):
             return url.replace("http", "https")
 
     @classmethod
-    def send_activity_tools(cls, user_id):
+    def send_activity_tools(cls, user_id, ua_version=""):
         from app.customer.models.real_video_verify import RealVideoVerify
         now = datetime.datetime.now()
         now_str = now.strftime('%Y-%m-%d 23:59:59')
@@ -158,7 +158,12 @@ class Tools(Document):
             activity_record.save()
 
             desc = u"<html><p>" + _(u'您的活动奖励已发送至您的账户，在"我的道具"中,请注意查收，希望您在我们平台玩得开心～') + u"</p></html>"
-            MessageSender.send_system_message(user.sid, desc)
+            desc_new = _(u'您的活动奖励已发送至您的账户，在"我的道具"中,请注意查收，希望您在我们平台玩得开心～')
+
+            if not ua_version or ua_version < "2.4.0":
+                MessageSender.send_system_message(user.sid, desc)
+            else:
+                MessageSender.send_system_message_v2(to_user_id=user.sid, content=desc_new)
 
     @classmethod
     def check_receive(cls, role, date_time, user_id):

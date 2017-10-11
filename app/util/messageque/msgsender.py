@@ -318,3 +318,45 @@ class MessageSender:
         elif result.get("status_code") == 400:
             logging.error("send_return_tool to mq error")
             return 400
+
+
+    @classmethod
+    def send_system_message_v2(cls, to_user_id, **kwargs):
+        body = {}
+        body["to_user_id"] = to_user_id
+        for key in kwargs:
+            if kwargs[key]:
+                body[key] = kwargs[key]
+        path = "/tecent/system_message_v2"
+        data = RequestApi.post_body_request_http(path=path, body=json.dumps(body), headers={}, host=cls.Host)
+        result = json.loads(data)
+        print result.get("status_code")
+        if result.get("status_code") == 200:
+            return 200
+        elif result.get("status_code") == 400:
+            logging.error("send system message to mq error")
+            return
+
+
+    @classmethod
+    def send_push_msg_v2(cls, user_id, content, title, **kwargs):
+        body = {}
+        body["user_id"] = user_id
+        body["content"] = content
+        body["title"] = title
+        for key in kwargs:
+            if kwargs[key]:
+                body[key] = kwargs[key]
+
+        print body
+
+        path = "/push/process_v2"
+        data = RequestApi.post_body_request_http(path=path, body=json.dumps(body), headers={}, host=cls.Host)
+        result = json.loads(data)
+        print data
+        print result.get("status_code")
+        if result.get("status_code") == 200:
+            return 200
+        elif result.get("status_code") == 400:
+            logging.error("send system message to mq error")
+            return

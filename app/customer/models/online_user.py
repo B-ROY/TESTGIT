@@ -52,13 +52,19 @@ class OnlineUser(Document):
             return False
 
     @classmethod
-    def update_online_user(cls, user_id, action):
+    def update_online_user(cls, user_id, action, ua_version=""):
         try:
             user = User.objects.filter(id=user_id).first()
             online_user = OnlineUser.objects.filter(user=user).first()
             if not online_user:
                 desc = u"<html><p>" + _(u"恭喜您注册成功，快去体验我们给您带来的最新交友方式吧！！") + u"</p></br></html>"
-                MessageSender.send_system_message(user_id, desc)
+                desc_new = _(u"恭喜您注册成功，快去体验我们给您带来的最新交友方式吧！！")
+
+                if not ua_version or ua_version < "2.4.0":
+                    MessageSender.send_system_message(user_id, desc)
+                else:
+                    MessageSender.send_system_message_v2(to_user_id=user_id, content=desc_new)
+
                 return OnlineUser.create_online_user(user_id=user_id)
             if action == "Login":
                 logintime = int(time.time())

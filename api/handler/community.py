@@ -337,6 +337,7 @@ class GetMoment(BaseHandler):
             # 观看精华照片 任务
             from app.customer.models.task import Task
             role = Task.get_role(user_id)
+            task_identity = 0
             if moment.type == 2:  # 精华照片
                 if role == 1:
                     task_identity = 34
@@ -831,6 +832,11 @@ class VideoShowList(BaseHandler):
                     else:
                         is_liked = 0
                     dic["is_liked"] = is_liked
+
+                    if moment.type == 3:
+                        buy_video_status = VideoPurchaseRecord.get_buy_status(user_id, moment.video_id)
+                        dic["buy_video_status"] = buy_video_status
+
                     data.append(dic)
                 else:
                     dic["is_liked"] = 0

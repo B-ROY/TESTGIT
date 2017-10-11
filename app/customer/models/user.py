@@ -1,7 +1,6 @@
 # coding=utf-8
 from django.db import models
 import logging
-from django.db.models import Q
 from app.customer.common_util.image import UploadImage
 from base.core.util.dateutils import datetime_to_timestamp
 import time
@@ -1062,7 +1061,7 @@ class RealNameVerify(Document):
         verbose_name_plural = verbose_name
 
     @classmethod
-    def create_real_name_verify(cls, user_id, real_name, identity_code, picture_one, picture_two, picture_three):
+    def create_real_name_verify(cls, user_id, real_name, identity_code, picture_one, picture_two, picture_three, ua_version=""):
         try:
             pre_verify = cls.objects.filter(user_id=user_id, status__ne=2).first()
             if pre_verify:
@@ -1080,7 +1079,13 @@ class RealNameVerify(Document):
             )
             verify.save()
             desc = u"<html><p>"+ _(u"亲爱的播主您好，认证申请已成功提交，请等待工作人员审核（1-2工作日)") + u"</p></br></html>"
-            MessageSender.send_system_message(str(user_id), desc)
+            desc_new = _(u"亲爱的播主您好，认证申请已成功提交，请等待工作人员审核（1-2工作日)")
+
+            if not ua_version or ua_version < "2.4.0":
+                MessageSender.send_system_message(str(user_id), desc)
+            else:
+                MessageSender.send_system_message_v2(to_user_id=str(user_id), content=desc_new)
+
             return True
         except Exception,e:
             logging.error("create real name verify error:{0}".format(e))
@@ -1229,8 +1234,6 @@ class RecommendUser(Document):
     create_time = DateTimeField(verbose_name=u"创建时间", default=datetime.datetime.now())
     is_valid = IntField(verbose_name=u"是否删除", default=1)  # 1未删除 2，删除
 
-
-<<<<<<< HEAD
 class CallScoreTag(Document):
     name = StringField(verbose_name=u"标签名")
     delete_status = IntField(verbose_name=u"是否删除")  # 1未删除 2，删除

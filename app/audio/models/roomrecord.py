@@ -8,7 +8,6 @@ from base.core.util.dateutils import datetime_to_timestamp
 from app.customer.models.user import *
 from app.customer.models.account import *
 from app.customer.models.online_user import *
-from django.db import models
 from base.settings import CHATPAMONGO
 from app.customer.models import user
 
@@ -83,13 +82,19 @@ class RoomRecord(Document):
         from app.customer.models.task import Task
         role = Task.get_role(self.user_id)
         if role == 3:
-            if self.start_time and self.end_time:
-                seconds = (self.end_time - self.start_time).total_seconds()
-                user = User.objects.filter(id=self.user_id).first()
+            room_record = RoomRecord.objects.filter(id=str(self.id)).first()
+            if room_record.start_time and room_record.end_time:
+                seconds = (room_record.end_time - room_record.start_time).total_seconds()
+                user = User.objects.filter(id=room_record.user_id).first()
                 if user:
                     user.update(inc__video_time=seconds)
                 task_identity = 20
+                print "通话时长任务......."
                 MessageSender.send_do_task(user_id=self.user_id, task_identity=task_identity, task_type=2)
+            else:
+                print room_record.end_time
+                print room_record.start_time
+
 
         # 判断回呼
         if end_type in [1, 3, 6]:
@@ -106,7 +111,7 @@ class RoomRecord(Document):
 
     @classmethod
     def get_records(cls, user_id, page, page_count):
-        records = cls.objects.filter((Q(user_id=user_id) | Q(join_id=user_id)), is_show=1, room_type=1, is_dial_back=0).order_by("-create_time")[(page - 1) * page_count:page * page_count]
+        records = cls.objects.filter((Q(user_id=user_id) | Q(join_id=user_id)) & Q(is_show=1) & Q(room_type=1) & Q(is_dial_back=0)).order_by("-create_time")[(page - 1) * page_count:page * page_count]
         return records
 
     @classmethod
@@ -138,7 +143,7 @@ class RoomRecord(Document):
     @classmethod
     def clear_user_call_record(cls, user_id, record_id):
         last_record = cls.objects.filter(id=record_id).first()
-        records = cls.objects.filter(user_id=user_id, create_time__lte=last_record.create_time)
+        records = cls.objects.filter((Q(user_id=user_id) | Q(join_id=user_id)), create_time__lte=last_record.create_time)
         if records:
             for record in records:
                 record.update(set__is_show=0)

@@ -176,6 +176,7 @@ class PrivateVideoCreate(BaseHandler):
             # 发布私房视频 任务
             from app.customer.models.task import Task
             role = Task.get_role(user.id)
+            task_identity = 0
             if role == 3:
                 task_identity = 15
             if task_identity:
@@ -403,20 +404,31 @@ class InviteMessageSend(BaseHandler):
         user_id = self.arg("user_id")
         user = User.objects.filter(id=user_id).first()
         desc = ""
+        desc_new = ""
         if type == 1:
             desc = u"<html><p>" + _(u"%s 邀请您参加播主认证" % self.current_user.nickname) + u"</p></br></html>"
+            desc_new = _(u"%s 邀请您参加播主认证" % self.current_user.nickname)
         elif type == 2:
             desc = u"<html><p>" + _(u"%s 邀请您参加视频认证" % self.current_user.nickname) + u"</p></br></html>"
+            desc_new = _(u"%s 邀请您参加视频认证" % self.current_user.nickname)
         elif type == 3:
             desc = u"<html><p>" + _(u"%s 邀请您上传照片" % self.current_user.nickname) + u"</p></br></html>"
+            desc_new = _(u"%s 邀请您上传照片" % self.current_user.nickname)
         elif type == 4:
             desc = u"<html><p>" + _(u"%s 邀请您上传视频" % self.current_user.nickname) + u"</p></br></html>"
+            desc_new = _(u"%s 邀请您上传视频" % self.current_user.nickname)
 
         if desc:
             message = InviteMessage.objects.filter(from_user_id=self.current_user.id, to_user_id=user_id, type=int(type)).first()
             if message:
                 return self.write({"status": "fail", "error": _(u"您已发送过邀请")})
-            MessageSender.send_system_message(user.sid, desc)
+
+            ua = self.request.headers.get('User-Agent')
+            ua_version = ua.split(";")[1]
+            if ua_version and ua_version < "2.4.0":
+                MessageSender.send_system_message(user.sid, desc)
+            else:
+                MessageSender.send_system_message_v2(to_user_id=user.sid, content=desc_new)
             InviteMessage.create_invite_message(self.current_user.id, user_id, type)
             return self.write({"status": "success"})
 
@@ -433,7 +445,7 @@ class VideoTask(BaseHandler):
 
         from app.customer.models.task import Task
         role = Task.get_role(user_id)
-
+        task_identity = 0
         if role == 1:
             task_identity = 43
 

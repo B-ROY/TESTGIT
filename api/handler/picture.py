@@ -418,6 +418,7 @@ class UserPictureCreate(BaseHandler):
 
         # 上传普通照片,  上传精美照片任务
         role = Task.get_role(user.id)
+        task_identity = 0
         if type == 1:
             # 普通照片
             if role == 1:

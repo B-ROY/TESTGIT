@@ -30,7 +30,7 @@ class TurnTableValue(BaseHandler):
         data["user_gold"] = gold
         price = 1000
 
-        free_used_count, free_total_count, gold_used_count, gold_total_count, free_upper_limit = TurnTable.get_user_count(user_id)
+        free_used_count, free_total_count, gold_used_count, gold_total_count, free_upper_limit, can_share = TurnTable.get_user_count(user_id)
 
         data["price"] = price
 
@@ -39,6 +39,7 @@ class TurnTableValue(BaseHandler):
         data["gold_used_count"] = gold_used_count
         data["gold_total_count"] = gold_total_count
         data["free_upper_limit"] = free_upper_limit
+        data["can_share"] = can_share
 
         self.write({"status": "success", "data": data})
 
@@ -56,7 +57,7 @@ class TurnTableValue(BaseHandler):
 
         is_can, error = TurnTable.check_is_can(type, user_id, price)
         if is_can != 1:
-            return self.write({"status": "failed", "error": _(error)})
+            return self.write({"status": "success", "msg": _(error)})
 
         user = self.current_user
         reward_id = TurnTable.get_reward_id()

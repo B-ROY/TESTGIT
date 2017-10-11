@@ -284,8 +284,11 @@ class WithdrawRequestHandler(BaseHandler):
             if money > money_available:
                 return self.write({"status": "fail", "error": _(u"余额不足"),})
 
+            ua = self.request.headers.get('User-Agent')
+            ua_version = ua.split(";")[1]
+
             status = WithdrawRequest.create_withdraw_request(user_id=user_id, request_money=money,
-                                                             user_agent=user_agent, openid=openid, ip=ip)
+                                                             user_agent=user_agent, openid=openid, ip=ip, ua_version=ua_version)
             if not status:
                 return self.write({"status": "fail", "error": _(u"创建提现请求失败"), })
             else:
