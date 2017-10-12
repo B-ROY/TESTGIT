@@ -73,6 +73,20 @@ class UserTags(Document):
                 user_tags.user_tags.append(tag_name)
                 user_tags.save()
 
+            # 技能标签 任务
+            from app.customer.models.task import Task
+            role = Task.get_role(user_id)
+            task_identity = 0
+            if role == 1:
+                task_identity = 33
+            elif role == 3:
+                task_identity = 6
+            elif role == 2:
+                task_identity = 49
+            if task_identity:
+                MessageSender.send_do_task(user_id=user_id, task_identity=task_identity)
+
+
         except Exception,e:
             logging.error("update user tags error:{0}".format(e))
             return False

@@ -61,7 +61,7 @@ class TurnTableValue(BaseHandler):
 
         user = self.current_user
         reward_id = TurnTable.get_reward_id()
-        TurnTable.save_reward(reward_id, user, type)
+        TurnTable.save_reward(reward_id, user, type, price)
         return self.write({"status": "success", "reward_id": reward_id})
 
 

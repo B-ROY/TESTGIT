@@ -73,12 +73,16 @@ class TurnTable(Document):
         return list
 
     @classmethod
-    def save_reward(cls, reward_id, user, reward_type):
+    def save_reward(cls, reward_id, user, reward_type, price):
         turn_table = cls.objects.filter(id=reward_id).first()
         type = turn_table.type
         account = Account.objects.filter(user=user).first()
         type_list = [50000, 50001, 50002, 50003]
         types = Tools.objects.all().distinct("tools_type")
+
+        if reward_type == 2:
+            # 消耗金币
+            account.gold_trade_out(price, u"大转盘抽奖消耗", TradeGoldRecord.TypeLuckDrawConsume)
         for t in types:
             type_list.append(t)
         if type not in [50000, 50001, 50002, 50003, 0, 1, 2, 3, 4, 5]:

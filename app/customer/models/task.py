@@ -137,10 +137,18 @@ class Task(Document):
                     p2_dic["data"] = []
                     p3_list = cls.objects.filter(pid=str(t2.id), is_valid=1, role=role).order_by("order")
 
+                    if task.is_day_task and task.is_day_task == 1:
+                        record = UserTaskRecord.objects.filter(task_id=str(t2.id), user_id=user_id,
+                                                               create_time__gte=starttime, create_time__lte=endtime).first()
+                    else:
+                        record = UserTaskRecord.objects.filter(task_id=str(t2.id), user_id=user_id).first()
+
                     if not p3_list:
                         # 只有二级任务
                         total = 1
                         finish_count = 0
+                        if record:
+                            finish_count = 1
                     else:
                         total = 0
                         finish_count = 0
@@ -161,19 +169,13 @@ class Task(Document):
                             else:
                                 p3_dic["finish_type"] = 0
 
-                    if task.is_day_task and task.is_day_task == 1:
-                        record = UserTaskRecord.objects.filter(task_id=str(t2.id), user_id=user_id,
-                                                    create_time__gte=starttime, create_time__lte=endtime).first()
-                    else:
-                        record = UserTaskRecord.objects.filter(task_id=str(t2.id), user_id=user_id).first()
-
                     if not record:
                         p2_dic["finish_type"] = 0
                     else:
                         finish_type = record.finish_type
                         p2_dic["finish_type"] = finish_type
                         # if finish_type == 2:
-                        finish_count += 1
+                        # finish_count += 1
 
                     p2_dic["total"] = total
                     p2_dic["finish_count"] = finish_count

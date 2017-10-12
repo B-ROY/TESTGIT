@@ -2881,6 +2881,8 @@ class ShareTask(BaseHandler):
         if task_identity:
             MessageSender.send_do_task(user_id=user_id, task_identity=task_identity)
 
+        return self.write({"status": "success"})
+
 
 
 
