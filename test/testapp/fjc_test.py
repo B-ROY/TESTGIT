@@ -404,6 +404,7 @@ def fix_ticket_account():
     from app.customer.models.user import User
     video_dict = {}
     user_ticket_dict = {}
+    TicketAccount.objects.all().update(set__video_ticket=0)
 
     videos = PrivateVideo.objects.all()
     for video in videos:

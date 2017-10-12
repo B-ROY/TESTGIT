@@ -360,6 +360,7 @@ class User(Document):
                 total_ticket=0,
                 gift_ticket=0,
                 call_ticket=0,
+                video_ticket=0,
                 friend_charge_ticket=0,
                 friend_benifit_ticket=0,
                 money_requesting=0,
