@@ -11,6 +11,7 @@ from app.customer.models.online_user import *
 from django.db import models
 from base.settings import CHATPAMONGO
 from app.customer.models import user
+from app_redis.activity.integral import *
 
 
 class RoomRecord(Document):
@@ -63,5 +64,8 @@ class RoomRecord(Document):
 
         if room_user.is_video_auth == 1:
             UserRedis.add_user_recommed_id_v3_one(self.user_id)
+        #给主播添加积分
+        if self.room_type == 1:
+            Integral.add_integral(self.user_id, self.pay_times*10, 1)
 
 
