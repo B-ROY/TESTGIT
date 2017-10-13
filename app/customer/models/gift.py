@@ -11,6 +11,8 @@ from mongoengine import *
 from app.util.messageque.msgsender import MessageSender
 from app_redis.room.room import RoomRedis
 import international
+# 送礼加积分活动
+from app_redis.activity.integral import *
 
 from app.audio.models.roomrecord import RoomRecord
 
@@ -208,8 +210,14 @@ class Gift(Document):
                 room_record = RoomRecord.objects.get(id=room_id)
                 if from_user.id == room_record.join_id and to_user.id == room_record.user_id:
                     room_record.update(inc__gift_value=gift_total_price)
-
-
+            #增加积分
+            # todo 添加双倍积分礼物id
+            double_integral_gift_list = []
+            if str(gift_id) in double_integral_gift_list:
+                inte = charm_value * 2
+            else:
+                inte = charm_value
+            Integral.add_integral(to_user.id, inte, 2)
             return True, None, None
         except Exception, e:
             logging.error("gift giving error {%s}" % str(e))

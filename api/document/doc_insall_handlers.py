@@ -25,6 +25,7 @@ INSTALL_HANDLERS = [
     "api.handler.getui_controller",
     "api.handler.community",
     "api.handler.videos",
+    "api.handler.temp_activity",
     "api.handler.chat",
 
     "api.handler.task",
