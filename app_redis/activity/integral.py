@@ -30,10 +30,17 @@ class Integral(object):
     @classmethod
     def select_integral(cls, user_id):
         # 注意返回值为字符串 或 None
-        return RQueueClient.getInstance().redis.hget(cls.INTEGRAL_KEY, str(user_id))
+        integral = RQueueClient.getInstance().redis.hget(cls.INTEGRAL_KEY, str(user_id))
+        if not integral:
+            integral = 0
+        return int(integral)
 
     @classmethod
     def select_integral_one_day(cls, user_id, month, day, type):
         day_key = cls.INTEGRAL_KEY + str(month) + "_" + str(day) + "_" + str(type)
         # 注意返回值为字符串 或 None
-        return RQueueClient.getInstance().redis.hget(day_key, str(user_id))
+
+        integral = RQueueClient.getInstance().redis.hget(day_key, str(user_id))
+        if not integral:
+            integral = 0
+        return int(integral)
