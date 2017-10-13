@@ -205,7 +205,7 @@ class Gift(Document):
                     room_record.update(inc__gift_value=gift_total_price)
             #增加积分
             # todo 添加双倍积分礼物id
-            double_integral_gift_list = []
+            double_integral_gift_list = ["59e0528c18ce426431c1988c", "59e0523018ce426431c19888", "59e051e818ce426431c19885"]
             if str(gift_id) in double_integral_gift_list:
                 inte = charm_value * 2
             else:
