@@ -117,7 +117,7 @@ class Get_Index_Column(BaseHandler):
             ua = self.request.headers.get('User-Agent')
             uas = ua.split(";")
             app_name = uas[0]
-
+            app_version = uas[1]
             if app_name == "reliaozaixian":
                 ids = [
                     3080101,
@@ -139,8 +139,15 @@ class Get_Index_Column(BaseHandler):
                     3301391
                 ]
             random.shuffle(ids)
-            if app_name == "tianmireyue":
-                ids = []
+            if app_name == "tianmireyue" and app_version > "2.3.5":
+                ids = [
+                    3301398,
+                    3301397,
+                    3080102,
+                    3014195,
+                    3301392,
+                    3301396,
+                ]
 
             if app_name == "liaoai_yelaixiang":
                 ids=[
